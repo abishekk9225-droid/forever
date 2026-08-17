@@ -142,9 +142,111 @@ export default function BackgroundEffects() {
       }
     }
 
+    // Dynamic Butterfly Class
+    class Butterfly {
+      constructor() {
+        this.reset(true);
+      }
+      reset(init = false) {
+        this.x = init ? Math.random() * canvas.width : (Math.random() < 0.5 ? -30 : canvas.width + 30);
+        this.y = Math.random() * canvas.height * 0.8;
+        this.size = Math.random() * 0.5 + 0.5; // Scale factor
+        this.speed = Math.random() * 0.8 + 0.6; // Speed of travel
+        
+        if (!init) {
+          if (this.x < 0) {
+            this.angle = (Math.random() - 0.5) * 0.5; // moving right
+          } else {
+            this.angle = Math.PI + (Math.random() - 0.5) * 0.5; // moving left
+          }
+        } else {
+          this.angle = Math.random() * Math.PI * 2;
+        }
+        
+        const colors = ['#F472B6', '#38BDF8', '#A78BFA', '#FBBF24', '#34D399', '#FB7185'];
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.flapPhase = Math.random() * Math.PI * 2;
+        this.flapSpeed = Math.random() * 0.15 + 0.12;
+        this.noiseOffset = Math.random() * 1000;
+      }
+      update() {
+        this.flapPhase += this.flapSpeed;
+        
+        // Ethereal curvilinear motion
+        this.angle += Math.sin(time + this.noiseOffset) * 0.02;
+        
+        const vx = Math.cos(this.angle) * this.speed;
+        const vy = (Math.sin(this.angle) + Math.sin(time * 2 + this.noiseOffset) * 0.3) * this.speed * 0.8;
+        
+        this.x += vx;
+        this.y += vy;
+
+        if (this.x < -100 || this.x > canvas.width + 100 || this.y < -100 || this.y > canvas.height + 100) {
+          this.reset();
+        }
+      }
+      draw() {
+        const flapScale = 0.25 + 0.75 * Math.abs(Math.sin(this.flapPhase));
+        
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle + Math.PI / 2); // Align heading along movement path
+        ctx.globalAlpha = 0.85;
+        
+        const { isLowEnd } = settingsRef.current;
+        if (!isLowEnd) {
+          ctx.shadowColor = this.color;
+          ctx.shadowBlur = 12;
+        }
+        
+        // Wing 1 (Left)
+        ctx.save();
+        ctx.scale(-flapScale * this.size, this.size);
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(-15, -20, -30, -10, -25, 10);
+        ctx.bezierCurveTo(-20, 25, -5, 15, 0, 0);
+        ctx.fill();
+        ctx.restore();
+        
+        // Wing 2 (Right)
+        ctx.save();
+        ctx.scale(flapScale * this.size, this.size);
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(15, -20, 30, -10, 25, 10);
+        ctx.bezierCurveTo(20, 25, 5, 15, 0, 0);
+        ctx.fill();
+        ctx.restore();
+        
+        // Body
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#110c24';
+        ctx.beginPath();
+        ctx.ellipse(0, 2, 1.5, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Antennae
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(-0.5, -6);
+        ctx.quadraticCurveTo(-3, -12, -6, -14);
+        ctx.moveTo(0.5, -6);
+        ctx.quadraticCurveTo(3, -12, 6, -14);
+        ctx.stroke();
+        
+        ctx.restore();
+      }
+    }
+
     // Initialize Pools
     const starsList = Array.from({ length: 120 }, () => new Star());
     const firefliesList = Array.from({ length: 60 }, () => new Firefly());
+    const butterfliesList = Array.from({ length: 16 }, () => new Butterfly());
 
     const updateAndDrawFrame = () => {
       time += 0.02;
@@ -177,6 +279,16 @@ export default function BackgroundEffects() {
           firefliesList[i].update(mousePos.x, mousePos.y);
           firefliesList[i].draw();
         }
+      }
+
+      // 2b. Draw Butterflies (active across all scenes, count based on performance)
+      const targetButterflies = low ? 5 : 11;
+      const celebrationMultiplier = scene === SCENES.YES ? 1.5 : 1.0;
+      const activeButterfliesCount = Math.floor(targetButterflies * celebrationMultiplier);
+
+      for (let i = 0; i < activeButterfliesCount; i++) {
+        butterfliesList[i].update();
+        butterfliesList[i].draw();
       }
 
       // 3. Draw Water Reflection Strip at the bottom

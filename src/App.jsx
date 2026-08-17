@@ -15,6 +15,7 @@ import CelebrationCanvas from './components/CelebrationCanvas';
 import EasterEggs from './components/EasterEggs';
 import ErrorBoundary from './components/ErrorBoundary';
 import HeartBurst from './components/HeartBurst';
+import TextHeart3D from './components/TextHeart3D';
 
 function DairyMilkBar() {
   return (
@@ -80,6 +81,37 @@ function IndividualChocolate() {
 
 function MainApp() {
   const { currentScene, goToScene, storyIntensity, isMobile, isLowEnd } = useScene();
+
+  // Disclaimer / Gate states
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
+  const [notReadyPos, setNotReadyPos] = useState({ x: 0, y: 0 });
+  const [notReadyCount, setNotReadyCount] = useState(0);
+
+  const handleEnterGarden = () => {
+    setDisclaimerAccepted(true);
+    if (window.playRomanticChime) window.playRomanticChime();
+    if (window.unlockAudio) window.unlockAudio();
+  };
+
+  const handleNotReady = () => {
+    setNotReadyCount((prev) => prev + 1);
+    const maxRangeX = typeof window !== 'undefined' ? Math.min(window.innerWidth * 0.25, 100) : 80;
+    const maxRangeY = typeof window !== 'undefined' ? Math.min(window.innerHeight * 0.15, 60) : 50;
+    const randomX = (Math.random() - 0.5) * maxRangeX * 2;
+    const randomY = (Math.random() - 0.5) * maxRangeY * 2;
+    setNotReadyPos({ x: randomX, y: randomY });
+  };
+
+  const getNotReadyText = () => {
+    const texts = [
+      "NOT READY 🙈",
+      "Are you sure? 🥺",
+      "Think again! 🧐",
+      "No exit! 🚪",
+      "Okay, I'm ready! ❤️"
+    ];
+    return texts[Math.min(notReadyCount, texts.length - 1)];
+  };
 
   // Awaken sequence states (Scene 1)
   const [awakenStep, setAwakenStep] = useState(0); // 0: initial, 1: quiets, 2: stars, 3: flowers, 4: fireflies, 5: water, 6: animals, 7: text
@@ -313,39 +345,98 @@ function MainApp() {
       )}
 
       {/* Global Mute Toggle and Header */}
-      <header className="fixed top-0 inset-x-0 z-50 p-4 md:p-6 flex items-center justify-between pointer-events-none">
-        <div className="flex items-center gap-1">
-          <Heart size={14} className="text-rose-500 fill-rose-500 animate-pulse" />
-          <span className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-rose-300 font-sans">
-            For Saranya ❤️
-          </span>
-        </div>
-        <div className="pointer-events-auto">
-          <AudioPlayer />
-        </div>
-      </header>
+      {disclaimerAccepted && (
+        <header className="fixed top-0 inset-x-0 z-50 p-4 md:p-6 flex items-center justify-between pointer-events-none">
+          <div className="flex items-center gap-1">
+            <Heart size={14} className="text-rose-500 fill-rose-500 animate-pulse" />
+            <span className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-rose-300 font-sans">
+              For Saranya ❤️
+            </span>
+          </div>
+          <div className="pointer-events-auto">
+            <AudioPlayer />
+          </div>
+        </header>
+      )}
 
       {/* Left Bird & Right Mascot Companions */}
-      <ErrorBoundary>
-        <LeftDecorations />
-      </ErrorBoundary>
-      <ErrorBoundary>
-        <RightDecorations />
-      </ErrorBoundary>
+      {disclaimerAccepted && (
+        <>
+          <ErrorBoundary>
+            <LeftDecorations />
+          </ErrorBoundary>
+          <ErrorBoundary>
+            <RightDecorations />
+          </ErrorBoundary>
+        </>
+      )}
 
       {/* Easter Egg Overlay */}
-      <ErrorBoundary>
-        <EasterEggs />
-      </ErrorBoundary>
+      {disclaimerAccepted && (
+        <ErrorBoundary>
+          <EasterEggs />
+        </ErrorBoundary>
+      )}
 
       {/* MAIN VIEWPORT */}
       <main className="flex-grow flex items-center justify-center py-12 relative z-30 px-4">
-        <div className="w-full max-w-lg mx-auto">
+        {/* Background 3D Rotating Typography Heart in Letter and Confession scenes */}
+        {disclaimerAccepted && (currentScene === SCENES.LETTER || currentScene === SCENES.CONFESSION) && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
+            <div className="opacity-60 scale-75 sm:scale-100">
+              <TextHeart3D />
+            </div>
+          </div>
+        )}
+
+        <div className="w-full max-w-lg mx-auto relative z-10">
           <ErrorBoundary>
             <AnimatePresence mode="wait">
             
+            {/* INTRO Gate Disclaimer */}
+            {!disclaimerAccepted && (
+              <motion.div
+                key="disclaimer"
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="w-full max-w-xl mx-auto p-6 md:p-8 rounded-3xl bg-slate-950/80 backdrop-blur-2xl border border-white/10 text-center shadow-2xl space-y-6 pointer-events-auto"
+              >
+                <p className="text-amber-200/90 text-sm font-semibold tracking-widest uppercase">
+                  A Small Note Before Entering...
+                </p>
+                
+                <p className="text-slate-200 text-base sm:text-lg leading-relaxed font-['Plus_Jakarta_Sans',sans-serif]">
+                  "நான் சொல்ல போற விஷயத்த கேட்டு தப்பா எதுவும் நினைக்க கூடாது... எனக்கு சொல்லணும்னு தோணுச்சு. நீ என்ன நினைப்பன்னு தெரியல, அதான் இப்படி சொல்றேன். ஸ்டார்ட்டிங்ல அப்படி தோணல, பேச பேச தான் அதிகமாச்சு... நீ இத அக்செப்ட் பண்ணுவியா மாட்டியான்னு எனக்கு தெரியல, ஆனா உனக்கு கேக்கணும்னு தோணுச்சுன்னா உள்ள வா..."
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2 relative min-h-[70px]">
+                  {/* Hero "ENTER" Button */}
+                  <button 
+                    onClick={handleEnterGarden}
+                    className="btn-primary !px-8 !py-3.5 !text-sm !font-bold tracking-wider uppercase bg-gradient-to-r from-rose-500/20 to-amber-500/20 border-amber-300/40 text-amber-200 hover:border-amber-300 shadow-[0_0_25px_rgba(253,224,139,0.3)] z-20"
+                  >
+                    கேக்கலாம் (ENTER) 💖
+                  </button>
+
+                  {/* Playful "NOT READY" Button */}
+                  <motion.button 
+                    type="button"
+                    animate={{ x: notReadyPos.x, y: notReadyPos.y }}
+                    transition={{ type: "spring", stiffness: 350, damping: 20 }}
+                    onMouseEnter={notReadyCount < 4 ? handleNotReady : undefined}
+                    onClick={notReadyCount < 4 ? handleNotReady : handleEnterGarden}
+                    className="btn-secondary !px-6 !py-3 !text-xs !font-semibold uppercase tracking-wider text-slate-300 border-white/10 hover:border-white/20 z-10"
+                  >
+                    {getNotReadyText()}
+                  </motion.button>
+                </div>
+              </motion.div>
+            )}
+
             {/* SCENE 1: Intro opening */}
-            {currentScene === SCENES.INTRO && (
+            {disclaimerAccepted && currentScene === SCENES.INTRO && (
               <motion.div
                 key="scene_intro"
                 variants={pageVariants}

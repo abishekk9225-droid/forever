@@ -93,9 +93,23 @@ Are you ready?`;
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.55, ease: 'easeOut' }}
-            className="w-full flex flex-col items-center"
+            className="w-full flex flex-col items-center relative"
           >
-            <div className="w-full bg-[#160d21] border border-rose-500/20 rounded-3xl p-1 relative shadow-paper overflow-hidden flex flex-col pointer-events-auto">
+            {/* Left emerging spring-coil branch */}
+            <div className="absolute -left-16 top-1/4 -translate-y-1/2 z-0 pointer-events-none">
+              <svg viewBox="0 0 200 200" className="coil">
+                <path className="coil-track" d="M 100,100 A 5,5 0 0,1 110,100 A 10,10 0 0,1 90,100 A 15,15 0 0,1 120,100 A 20,20 0 0,1 80,100 A 25,25 0 0,1 130,100 A 30,30 0 0,1 70,100 A 35,35 0 0,1 140,100 A 40,40 0 0,1 60,100" />
+              </svg>
+            </div>
+            
+            {/* Right emerging spring-coil branch */}
+            <div className="absolute -right-16 top-1/4 -translate-y-1/2 z-0 pointer-events-none scale-x-[-1]">
+              <svg viewBox="0 0 200 200" className="coil">
+                <path className="coil-track" d="M 100,100 A 5,5 0 0,1 110,100 A 10,10 0 0,1 90,100 A 15,15 0 0,1 120,100 A 20,20 0 0,1 80,100 A 25,25 0 0,1 130,100 A 30,30 0 0,1 70,100 A 35,35 0 0,1 140,100 A 40,40 0 0,1 60,100" />
+              </svg>
+            </div>
+
+            <div className="w-full bg-[#160d21] border border-rose-500/20 rounded-3xl p-1 relative shadow-paper overflow-hidden flex flex-col pointer-events-auto z-10">
               <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-rose-500 via-purple-600 to-rose-500" />
               
               {/* Envelope inside header */}

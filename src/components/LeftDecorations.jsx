@@ -29,11 +29,11 @@ export default function LeftDecorations() {
           scale: [1, 1.1, 0.75, 0.3],
           rotate: [0, -12, 10, 5],
           opacity: [1, 1, 0.8, 0],
-          transition: { duration: 3.8, ease: 'easeInOut' }
+          transition: { duration: 3.8, ease: 'easeInOut', delay: 2.5 }
         });
         wingControls.start({
           rotate: [0, -40, 40, -40, 0],
-          transition: { repeat: Infinity, duration: 0.22, ease: 'linear' }
+          transition: { repeat: Infinity, duration: 0.22, ease: 'linear', delay: 2.5 }
         });
       } else if (currentScene === SCENES.NO || currentScene === SCENES.LET_ME_THINK) {
         headControls.start({ rotate: -15, y: 2, transition: { duration: 1.0 } });

@@ -43,25 +43,37 @@ export default function RightDecorations() {
     lanternGlowOpacity = 0.3 + storyIntensity * 0.4;
   }
 
-  // Derive mascot state based on current story beat
-  let state = 'idle';
-  if (currentScene === SCENES.GATECHECK || currentScene === SCENES.CALL) {
-    state = 'curious';
-  } else if (currentScene === SCENES.MEMORIES) {
-    state = 'excited';
-  } else if (currentScene === SCENES.QUALITIES || currentScene === SCENES.LETTER) {
-    state = 'shy';
-  } else if (currentScene === SCENES.GAME) {
-    state = 'excited';
-  } else if (currentScene === SCENES.BUILD || currentScene === SCENES.SUSPENSE) {
-    state = 'nervous';
-  } else if (currentScene === SCENES.CONFESSION) {
-    state = 'excited';
-  } else if (currentScene === SCENES.YES) {
-    state = 'celebrating';
-  } else if (currentScene === SCENES.NO || currentScene === SCENES.LET_ME_THINK) {
-    state = 'sad';
-  }
+  // Derive mascot state based on current story beat (with a delayed reaction on YES)
+  const [delayedState, setDelayedState] = React.useState('idle');
+
+  React.useEffect(() => {
+    let timer;
+    if (currentScene === SCENES.YES) {
+      setDelayedState('nervous'); // Keep nervous/shy during suspense
+      timer = setTimeout(() => {
+        setDelayedState('celebrating'); // Happy celebrating on impact
+      }, 2500);
+    } else {
+      if (currentScene === SCENES.GATECHECK || currentScene === SCENES.CALL) {
+        setDelayedState('curious');
+      } else if (currentScene === SCENES.MEMORIES) {
+        setDelayedState('excited');
+      } else if (currentScene === SCENES.QUALITIES || currentScene === SCENES.LETTER) {
+        setDelayedState('shy');
+      } else if (currentScene === SCENES.GAME) {
+        setDelayedState('excited');
+      } else if (currentScene === SCENES.BUILD || currentScene === SCENES.SUSPENSE) {
+        setDelayedState('nervous');
+      } else if (currentScene === SCENES.CONFESSION) {
+        setDelayedState('excited');
+      } else if (currentScene === SCENES.NO || currentScene === SCENES.LET_ME_THINK) {
+        setDelayedState('sad');
+      } else {
+        setDelayedState('idle');
+      }
+    }
+    return () => clearTimeout(timer);
+  }, [currentScene]);
 
   return (
     <div 
@@ -85,7 +97,7 @@ export default function RightDecorations() {
         <path d="M125,35 Q105,30 115,20 Q125,25 125,35 Z" fill="#4d7247" />
         <path d="M102,96 Q85,92 90,80 Q105,82 102,96 Z" fill="#4d7247" />
         <path d="M83,114 Q65,116 72,106 Q82,104 83,114 Z" fill="#4d7247" />
-
+ 
         <path d="M80,115 Q80,125 78,130" fill="none" stroke="#222222" strokeWidth="2" />
         
         {/* The Lantern */}
@@ -99,14 +111,14 @@ export default function RightDecorations() {
           <circle cx="15" cy="20" r="25" fill="#ffe066" opacity={lanternGlowOpacity > 0.1 ? 0.12 : 0} className="animate-pulse transition-opacity duration-1000" style={{ animationDuration: '3s' }} />
         </g>
       </svg>
-
+ 
       {/* Mascot Rendering */}
       {mascotOpacity > 0 && (
         <div 
           className="w-full relative h-16 md:h-36 overflow-visible flex items-end justify-end p-1 md:p-2 mb-1 md:mb-2 transition-opacity duration-[2000ms]"
           style={{ opacity: mascotOpacity }}
         >
-          <Mascot state={state} />
+          <Mascot state={delayedState} />
         </div>
       )}
     </div>

@@ -128,15 +128,13 @@ function MainApp() {
         <HeartBurst />
       </ErrorBoundary>
 
-      {/* Persistent living GardenCanvas */}
-      {currentScene !== SCENES.YES && (
-        <ErrorBoundary>
-          <BackgroundEffects />
-        </ErrorBoundary>
-      )}
+      {/* Persistent living GardenCanvas (Always active across all scenes) */}
+      <ErrorBoundary>
+        <BackgroundEffects />
+      </ErrorBoundary>
 
-      {/* Persistent YES Celebration Canvas */}
-      {currentScene === SCENES.YES && (
+      {/* Persistent YES / NO Celebration Canvas */}
+      {(currentScene === SCENES.YES || currentScene === SCENES.LET_ME_THINK) && (
         <ErrorBoundary>
           <CelebrationCanvas />
         </ErrorBoundary>

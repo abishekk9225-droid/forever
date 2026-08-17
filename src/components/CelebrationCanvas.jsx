@@ -7,7 +7,6 @@ export default function CelebrationCanvas() {
   const [showTypography, setShowTypography] = useState(false);
   const [showSubText, setShowSubText] = useState(false);
   
-  // Track all timeouts for clean unmounting
   const timeoutsRef = useRef([]);
 
   const addSafeTimeout = (callback, delay) => {
@@ -24,8 +23,9 @@ export default function CelebrationCanvas() {
 
     let animId;
     const startTime = Date.now();
-    let shakeDuration = 0; // ms to shake canvas
-    let impactGlow = 0.0;  // radial impact flash opacity
+    let shakeDuration = 0;
+    let impactGlow = 0.0;
+    let arrowTrail = []; // Array of {x, y, alpha} for motion blur trail
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
@@ -37,7 +37,7 @@ export default function CelebrationCanvas() {
     const CX = canvas.width / 2;
     const CY = canvas.height * 0.35;
 
-    // ─── Celebration Classes ──────────────────────────────
+    // ─── YES Celebration Classes ──────────────────────────
 
     class Petal {
       constructor(yOffset = -20) {
@@ -99,12 +99,10 @@ export default function CelebrationCanvas() {
 
         const wingSpread = Math.abs(Math.sin(this.flapPhase)) * this.size;
 
-        // Draw Left Wing
         ctx.beginPath();
         ctx.ellipse(-this.size / 2, 0, wingSpread / 2, this.size, Math.PI / 6, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw Right Wing
         ctx.beginPath();
         ctx.ellipse(this.size / 2, 0, wingSpread / 2, this.size, -Math.PI / 6, 0, Math.PI * 2);
         ctx.fill();
@@ -116,11 +114,13 @@ export default function CelebrationCanvas() {
     class FireworkRocket {
       constructor(fromSide) {
         this.fromSide = fromSide;
-        this.x = fromSide === 'left' ? 0 : canvas.width;
+        this.x = fromSide === 'left' ? 20 : canvas.width - 20; // launch from bottom corners
         this.y = canvas.height;
 
-        // Target location in upper 40% bounds
-        const tx = canvas.width * 0.15 + Math.random() * canvas.width * 0.7;
+        // Diagonal trajectories towards upper sky
+        const tx = fromSide === 'left' 
+          ? canvas.width * (0.2 + Math.random() * 0.25)
+          : canvas.width * (0.55 + Math.random() * 0.25);
         const ty = canvas.height * 0.1 + Math.random() * canvas.height * 0.3;
 
         const steps = 60 + Math.random() * 20;
@@ -132,7 +132,7 @@ export default function CelebrationCanvas() {
         this.trail = [];
         this.exploded = false;
         this.particles = [];
-        this.color = `hsl(${14 + Math.random() * 32}, 100%, 65%)`; // Magical warm gold-reds
+        this.color = `hsl(${14 + Math.random() * 32}, 100%, 65%)`;
       }
       update() {
         if (!this.exploded) {
@@ -142,7 +142,7 @@ export default function CelebrationCanvas() {
           this.x += this.vx;
           this.y += this.vy;
 
-          if (Math.hypot(this.x - this.tx, this.y - this.ty) < 10 || this.vy > 0.5) {
+          if (Math.hypot(this.x - this.tx, this.y - this.ty) < 12 || this.vy > 0.5) {
             this.exploded = true;
             this.explode();
           }
@@ -163,7 +163,7 @@ export default function CelebrationCanvas() {
         if (!this.exploded) {
           if (this.trail.length > 1) {
             ctx.strokeStyle = this.color;
-            ctx.lineWidth = 2.0;
+            ctx.lineWidth = 2.5;
             ctx.beginPath();
             ctx.moveTo(this.trail[0].x, this.trail[0].y);
             this.trail.forEach(pt => ctx.lineTo(pt.x, pt.y));
@@ -214,132 +214,277 @@ export default function CelebrationCanvas() {
 
     // Timeline Loop Runner
     const tick = () => {
-      const elapsed = Date.now() - startTime; // milliseconds
+      const elapsed = Date.now() - startTime;
 
       ctx.save();
-      // Apply Camera Shake on impact (2.2s to 2.4s)
-      if (elapsed >= 2200 && elapsed < 2400) {
-        const shakeX = (Math.random() - 0.5) * 6;
-        const shakeY = (Math.random() - 0.5) * 6;
+
+      // Apply camera shake on impact (2.2s to 2.4s)
+      if (currentScene === SCENES.YES && elapsed >= 2200 && elapsed < 2400) {
+        const shakeAmount = 8 * (1.0 - (elapsed - 2200) / 200);
+        const shakeX = (Math.random() - 0.5) * shakeAmount;
+        const shakeY = (Math.random() - 0.5) * shakeAmount;
         ctx.translate(shakeX, shakeY);
       }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // --- Stage 0: 0.0s to 0.7s (cinematic silence, no heart) ---
+      if (currentScene === SCENES.YES) {
+        // ==========================================
+        // YES Celebration Timeline
+        // ==========================================
 
-      // --- Stage 1: 0.7s onward (glowing center heart appears) ---
-      if (elapsed >= 700) {
-        const pulse = 1.0 + Math.sin(elapsed * 0.007) * 0.05;
-        const s = (isMobile ? 18 : 28) * pulse;
+        // 0.7s onward: draw center glowing heart silhouette
+        if (elapsed >= 700) {
+          const pulse = 1.0 + Math.sin(elapsed * 0.007) * 0.05;
+          const s = (isMobile ? 18 : 28) * pulse;
 
-        ctx.save();
-        ctx.translate(CX, CY);
-        ctx.fillStyle = 'rgba(214, 69, 119, 0.9)';
-        ctx.shadowColor = '#d64577';
-        ctx.shadowBlur = 35;
+          ctx.save();
+          ctx.translate(CX, CY);
+          ctx.fillStyle = 'rgba(255, 77, 109, 0.9)';
+          ctx.shadowColor = '#d64577';
+          ctx.shadowBlur = 35;
 
-        ctx.beginPath();
-        ctx.moveTo(0, s / 4);
-        ctx.bezierCurveTo(-s / 1.5, -s / 1.5, -s, s / 3, 0, s);
-        ctx.bezierCurveTo(s, s / 3, s / 1.5, -s / 1.5, 0, s / 4);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-      }
+          ctx.beginPath();
+          ctx.moveTo(0, s / 4);
+          ctx.bezierCurveTo(-s / 1.5, -s / 1.5, -s, s / 3, 0, s);
+          ctx.bezierCurveTo(s, s / 3, s / 1.5, -s / 1.5, 0, s / 4);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
 
-      // --- Stage 2: 1.0s to 2.2s (Arrow travels visibly toward the heart) ---
-      if (elapsed >= 1000 && elapsed < 2200) {
-        const progress = (elapsed - 1000) / 1200; // 0.0 to 1.0 (1.2s travel time)
+        // 1.0s to 2.2s: Arrow travels visibly from off-screen top-right
+        if (elapsed >= 1000 && elapsed < 2200) {
+          const progress = (elapsed - 1000) / 1200; // 0.0 to 1.0
 
-        const startX = canvas.width + 40;
-        const startY = -40;
-        const currentX = startX + (CX - startX) * progress;
-        const currentY = startY + (CY - startY) * progress;
+          const startX = canvas.width + 45;
+          const startY = -45;
+          const currentX = startX + (CX - startX) * progress;
+          const currentY = startY + (CY - startY) * progress;
 
-        // Draw visible arrow shaft
-        ctx.strokeStyle = 'rgba(255, 234, 117, 0.8)';
-        ctx.lineWidth = 3.5;
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(currentX, currentY);
-        ctx.stroke();
+          // Save trail positions for motion blur fletching fanning
+          arrowTrail.push({ x: currentX, y: currentY });
+          if (arrowTrail.length > 8) arrowTrail.shift();
 
-        // Draw arrowhead
-        ctx.fillStyle = '#ffea75';
-        ctx.shadowColor = '#ffe74c';
-        ctx.shadowBlur = 12;
-        ctx.beginPath();
-        ctx.arc(currentX, currentY, 8, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      }
+          // Draw fletching fanning motion trail
+          ctx.save();
+          arrowTrail.forEach((pt, idx) => {
+            const alpha = (idx / arrowTrail.length) * 0.22;
+            ctx.fillStyle = `rgba(255, 234, 117, ${alpha})`;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+            ctx.fill();
+          });
+          ctx.restore();
 
-      // --- Stage 3: 2.2s (Impact) ---
-      if (elapsed >= 2200 && !impactTriggered) {
-        impactTriggered = true;
-        impactGlow = 1.0;
+          // Calculate unit vectors for drawing fletched arrow shaft
+          const dx = CX - startX;
+          const dy = CY - startY;
+          const len = Math.hypot(dx, dy);
+          const ux = dx / len;
+          const uy = dy / len;
 
-        // 2.2s: Massive HeartBurst
-        if (window.triggerHeartBurst) {
-          window.triggerHeartBurst(CX, CY, isLowEnd ? 90 : 180, {
-            speed: 2.8,
-            upwardBoost: 3.5
+          const arrowLen = 50;
+          const tailX = currentX - ux * arrowLen;
+          const tailY = currentY - uy * arrowLen;
+
+          // Draw golden glowing arrow shaft
+          ctx.save();
+          ctx.strokeStyle = '#ffea75';
+          ctx.shadowColor = '#ffe74c';
+          ctx.shadowBlur = 10;
+          ctx.lineWidth = 3.5;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(tailX, tailY);
+          ctx.lineTo(currentX, currentY);
+          ctx.stroke();
+
+          // Draw arrowhead
+          ctx.fillStyle = '#ffea75';
+          ctx.beginPath();
+          ctx.arc(currentX, currentY, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // 2.2s: Arrow Impact
+        if (elapsed >= 2200 && !impactTriggered) {
+          impactTriggered = true;
+          impactGlow = 1.0;
+
+          // 2.2s onward: Radial light flash (drawn via impactGlow) and HeartBurst
+          if (window.triggerHeartBurst) {
+            window.triggerHeartBurst(CX, CY, isLowEnd ? 100 : 220, {
+              speed: 3.2,
+              upwardBoost: 3.8
+            });
+          }
+
+          // 2.5s onward: Butterflies and Fireflies explode
+          addSafeTimeout(() => {
+            const bCount = isLowEnd ? 4 : 8;
+            for (let i = 0; i < bCount; i++) {
+              butterflies.push(new Butterfly());
+            }
+          }, 300);
+
+          // 3.0s+: Show typography overlays
+          addSafeTimeout(() => setShowTypography(true), 800);
+          addSafeTimeout(() => setShowSubText(true), 2400);
+
+          // 2.5s onward: diagonal corner fireworks launch
+          const fireworksTimeline = [300, 1000, 1800, 2700, 3800, 4800, 6000, 7400, 8800];
+          fireworksTimeline.forEach((delay) => {
+            addSafeTimeout(() => {
+              const side = Math.random() > 0.5 ? 'left' : 'right';
+              rockets.push(new FireworkRocket(side));
+            }, delay);
           });
         }
 
-        // 2.3s: Radial light overlay state (handled via impactGlow decrement)
-        // 2.5s: Populate butterflies + fireflies
-        addSafeTimeout(() => {
-          const bCount = isLowEnd ? 4 : 8;
-          for (let i = 0; i < bCount; i++) {
-            butterflies.push(new Butterfly());
+        // Draw radial flash explosion (2.3s onward)
+        if (impactGlow > 0) {
+          // Draw full-screen white/pink flash first on impact
+          if (impactGlow > 0.85) {
+            ctx.fillStyle = `rgba(255, 255, 255, ${(impactGlow - 0.85) / 0.15})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
           }
-        }, 300);
 
-        // 3.0s+: Show Text overlays
-        addSafeTimeout(() => setShowTypography(true), 800);
-        addSafeTimeout(() => setShowSubText(true), 2400);
+          const rad = (1.0 - impactGlow) * (isMobile ? 180 : 360);
+          const grad = ctx.createRadialGradient(CX, CY, 0, CX, CY, rad);
+          grad.addColorStop(0, `rgba(255, 77, 109, ${impactGlow * 0.7})`);
+          grad.addColorStop(0.5, `rgba(180, 50, 140, ${impactGlow * 0.3})`);
+          grad.addColorStop(1.0, 'rgba(0, 0, 0, 0)');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 2.5s: Staggered bottom corner fireworks launch over 8-12 seconds
-        const fireworksTimeline = [300, 1000, 1800, 2700, 3700, 4800, 6000, 7500, 9000];
-        fireworksTimeline.forEach((delay) => {
-          addSafeTimeout(() => {
-            const side = Math.random() > 0.5 ? 'left' : 'right';
-            rockets.push(new FireworkRocket(side));
-          }, delay);
-        });
-      }
+          impactGlow = Math.max(0, impactGlow - 0.02);
+        }
 
-      // Render radial glow flash pulse
-      if (impactGlow > 0) {
-        const rad = (1.0 - impactGlow) * (isMobile ? 180 : 360);
-        const grad = ctx.createRadialGradient(CX, CY, 0, CX, CY, rad);
-        grad.addColorStop(0, `rgba(255, 77, 109, ${impactGlow * 0.65})`);
-        grad.addColorStop(0.5, `rgba(180, 50, 140, ${impactGlow * 0.25})`);
-        grad.addColorStop(1.0, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (impactTriggered) {
+          petals.forEach(p => {
+            p.update();
+            p.draw();
+          });
 
-        impactGlow = Math.max(0, impactGlow - 0.025);
-      }
+          butterflies.forEach(b => {
+            b.update();
+            b.draw();
+          });
 
-      // Render active celebration layers
-      if (impactTriggered) {
-        petals.forEach(p => {
-          p.update();
-          p.draw();
-        });
+          rockets.forEach(r => {
+            r.update();
+            r.draw();
+          });
+        }
+      } else if (currentScene === SCENES.LET_ME_THINK) {
+        // ==========================================
+        // NO Heartbreak Split Timeline
+        // ==========================================
+        const s = (isMobile ? 18 : 28);
 
-        butterflies.forEach(b => {
-          b.update();
-          b.draw();
-        });
+        if (elapsed < 800) {
+          // 0.0s to 0.8s: draw glowing center heart
+          ctx.save();
+          ctx.translate(CX, CY);
+          ctx.fillStyle = 'rgba(255, 77, 109, 0.8)';
+          ctx.shadowColor = '#d64577';
+          ctx.shadowBlur = 25;
+          ctx.beginPath();
+          ctx.moveTo(0, s / 4);
+          ctx.bezierCurveTo(-s / 1.5, -s / 1.5, -s, s / 3, 0, s);
+          ctx.bezierCurveTo(s, s / 3, s / 1.5, -s / 1.5, 0, s / 4);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        } else if (elapsed >= 800 && elapsed < 1800) {
+          // 0.8s to 1.8s: Draw central heart with drawing crack line
+          ctx.save();
+          ctx.translate(CX, CY);
+          ctx.fillStyle = 'rgba(255, 77, 109, 0.8)';
+          ctx.shadowColor = '#d64577';
+          ctx.shadowBlur = 20;
+          ctx.beginPath();
+          ctx.moveTo(0, s / 4);
+          ctx.bezierCurveTo(-s / 1.5, -s / 1.5, -s, s / 3, 0, s);
+          ctx.bezierCurveTo(s, s / 3, s / 1.5, -s / 1.5, 0, s / 4);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
 
-        rockets.forEach(r => {
-          r.update();
-          r.draw();
-        });
+          // Draw zig-zag crack line progressively
+          const crackProgress = (elapsed - 800) / 1000;
+          ctx.save();
+          ctx.translate(CX, CY);
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(0, s / 4);
+          
+          const nodes = [
+            { x: -3, y: s * 0.25 },
+            { x: 2, y: s * 0.5 },
+            { x: -2, y: s * 0.7 },
+            { x: 0, y: s }
+          ];
+
+          const showNodes = Math.floor(crackProgress * nodes.length);
+          for (let i = 0; i < showNodes; i++) {
+            ctx.lineTo(nodes[i].x, nodes[i].y);
+          }
+          ctx.stroke();
+          ctx.restore();
+        } else {
+          // 1.8s onward: split halves fall down under gravity
+          const dt = (elapsed - 1800) / 1000; // time offset in seconds
+          const gravity = 950; // gravity acceleration px/s^2
+
+          // Left Half offsets
+          const lx = -dt * 55;
+          const ly = 0.5 * gravity * dt * dt;
+          const lRot = -dt * 0.75;
+
+          // Right Half offsets
+          const rx = dt * 55;
+          const ry = 0.5 * gravity * dt * dt;
+          const rRot = dt * 0.75;
+
+          // Draw Left split piece
+          ctx.save();
+          ctx.translate(CX + lx, CY + ly);
+          ctx.rotate(lRot);
+          ctx.fillStyle = 'rgba(255, 77, 109, 0.65)';
+          ctx.shadowColor = '#d64577';
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.moveTo(0, s / 4);
+          ctx.bezierCurveTo(-s / 1.5, -s / 1.5, -s, s / 3, 0, s);
+          ctx.lineTo(-2, s * 0.7);
+          ctx.lineTo(2, s * 0.5);
+          ctx.lineTo(-3, s * 0.25);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+
+          // Draw Right split piece
+          ctx.save();
+          ctx.translate(CX + rx, CY + ry);
+          ctx.rotate(rRot);
+          ctx.fillStyle = 'rgba(255, 77, 109, 0.65)';
+          ctx.shadowColor = '#d64577';
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.moveTo(0, s / 4);
+          ctx.lineTo(-3, s * 0.25);
+          ctx.lineTo(2, s * 0.5);
+          ctx.lineTo(-2, s * 0.7);
+          ctx.lineTo(0, s);
+          ctx.bezierCurveTo(s, s / 3, s / 1.5, -s / 1.5, 0, s / 4);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
       }
 
       ctx.restore();
@@ -352,9 +497,8 @@ export default function CelebrationCanvas() {
       window.removeEventListener('resize', resizeCanvas);
       cancelAnimationFrame(animId);
     };
-  }, [isLowEnd, isMobile]);
+  }, [currentScene, isLowEnd, isMobile]);
 
-  // Cleanup all timeouts on unmount
   useEffect(() => {
     return () => {
       timeoutsRef.current.forEach(clearTimeout);
@@ -367,35 +511,37 @@ export default function CelebrationCanvas() {
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
 
       {/* Typography Overlay */}
-      <div className="absolute inset-x-0 bottom-1/4 flex flex-col items-center text-center space-y-4 px-6 z-25">
-        <AnimatePresence>
-          {showTypography && (
-            <motion.h2
-              initial={{ opacity: 0, scale: 0.9, filter: 'blur(4px)' }}
-              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-              transition={{ duration: 1.0, ease: 'easeOut' }}
-              className="text-3xl md:text-5xl font-playfair font-black text-rose-100 tracking-wider drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]"
-            >
-              SHE SAID YES ❤️
-            </motion.h2>
-          )}
+      {currentScene === SCENES.YES && (
+        <div className="absolute inset-x-0 bottom-1/4 flex flex-col items-center text-center space-y-4 px-6 z-25">
+          <AnimatePresence>
+            {showTypography && (
+              <motion.h2
+                initial={{ opacity: 0, scale: 0.9, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                transition={{ duration: 1.0, ease: 'easeOut' }}
+                className="text-3xl md:text-5xl font-playfair font-black text-rose-100 tracking-wider drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]"
+              >
+                SHE SAID YES ❤️
+              </motion.h2>
+            )}
 
-          {showSubText && (
-            <motion.p
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, ease: 'easeOut' }}
-              className="text-base md:text-xl text-rose-200 leading-loose italic drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]"
-              style={{
-                fontFamily: "'Mukta Malar', 'Latha', 'Tamil', sans-serif"
-              }}
-            >
-              "இந்த நிமிடம்...
-              நம்முடையது. 🌸"
-            </motion.p>
-          )}
-        </AnimatePresence>
-      </div>
+            {showSubText && (
+              <motion.p
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1.2, ease: 'easeOut' }}
+                className="text-base md:text-xl text-rose-200 leading-loose italic drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]"
+                style={{
+                  fontFamily: "'Mukta Malar', 'Latha', 'Tamil', sans-serif"
+                }}
+              >
+                "இந்த நிமிடம்...
+                நம்முடையது. 🌸"
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }

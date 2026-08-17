@@ -1,634 +1,613 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
+import { useScene } from '../context/SceneProvider';
 
-export default function AudioPlayer({ scene = 'scene1_mystery' }) {
-  const [isPlaying, setIsPlaying] = useState(false);
+export default function AudioPlayer() {
+  const { muted, toggleMute, currentScene } = useScene();
   const audioCtxRef = useRef(null);
-  
-  // Audio Gain Nodes
+
+  // Audio Node Refs
   const masterGainRef = useRef(null);
   const windGainRef = useRef(null);
   const waterGainRef = useRef(null);
-  const heartbeatGainRef = useRef(null);
   const musicGainRef = useRef(null);
   const effectGainRef = useRef(null);
-  
-  // Loops & Timers
-  const chordsTimerRef = useRef(null);
-  const birdTimerRef = useRef(null);
-  const heartbeatTimerRef = useRef(null);
+  const heartbeatGainRef = useRef(null);
 
+  // Timer/Interval Refs
+  const ambientMusicIntervalRef = useRef(null);
+  const birdChirpTimeoutRef = useRef(null);
+  const heartbeatIntervalRef = useRef(null);
   const activeOscillatorsRef = useRef([]);
 
-  const chords = [
-    [130.81, 196.00, 329.63, 493.88, 587.33], // Cmaj9
-    [110.00, 164.81, 261.63, 392.00, 493.88], // Am9
-    [87.31, 130.81, 220.00, 329.63, 392.00],   // Fmaj9
-    [98.00, 146.83, 246.94, 392.00, 587.33]    // G6
-  ];
-  const currentChordIndexRef = useRef(0);
-
-  // 1. Procedural Wind Noise
-  const startWindNoise = (ctx, destination) => {
+  // Synthesize soft wind noise (bandpass filtered white noise)
+  const startWindNoise = (ctx, dest) => {
     try {
       const bufferSize = ctx.sampleRate * 2;
-      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const output = noiseBuffer.getChannelData(0);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
+        data[i] = Math.random() * 2 - 1;
       }
 
-      const whiteNoiseSource = ctx.createBufferSource();
-      whiteNoiseSource.buffer = noiseBuffer;
-      whiteNoiseSource.loop = true;
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
 
-      const windFilter = ctx.createBiquadFilter();
-      windFilter.type = 'bandpass';
-      windFilter.frequency.value = 160;
-      windFilter.Q.value = 1.8;
-
-      whiteNoiseSource.connect(windFilter);
-      windFilter.connect(destination);
-
-      whiteNoiseSource.start();
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 350;
+      filter.Q.value = 1.5;
 
       const lfo = ctx.createOscillator();
       const lfoGain = ctx.createGain();
-      lfo.frequency.value = 0.08;
-      lfoGain.gain.value = 0.02;
+      lfo.frequency.value = 0.05; // Slow breeze modulation
+      lfoGain.gain.value = 0.012;
 
       lfo.connect(lfoGain);
-      lfoGain.connect(destination.gain);
-      lfo.start();
+      lfoGain.connect(dest.gain);
 
-      activeOscillatorsRef.current.push(whiteNoiseSource, lfo);
+      source.connect(filter);
+      filter.connect(dest);
+
+      source.start(0);
+      lfo.start(0);
+
+      activeOscillatorsRef.current.push(source, lfo);
     } catch (e) {
-      console.warn("Failed to synthesize wind", e);
+      console.warn('Failed to start wind noise:', e);
     }
   };
 
-  // 2. Procedural Water Flow Noise
-  const startWaterNoise = (ctx, destination) => {
+  // Synthesize soft water/creek ripple (lowpass filtered white noise + ripple LFO)
+  const startWaterNoise = (ctx, dest) => {
     try {
       const bufferSize = ctx.sampleRate * 2;
-      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const output = noiseBuffer.getChannelData(0);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
+        data[i] = Math.random() * 2 - 1;
       }
 
-      const waterSource = ctx.createBufferSource();
-      waterSource.buffer = noiseBuffer;
-      waterSource.loop = true;
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
 
-      const waterFilter = ctx.createBiquadFilter();
-      waterFilter.type = 'lowpass';
-      waterFilter.frequency.value = 240;
-      waterFilter.Q.value = 1.0;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 180;
+      filter.Q.value = 0.8;
 
       const lfo = ctx.createOscillator();
       const lfoGain = ctx.createGain();
-      lfo.frequency.value = 0.15; // Slow wave ripple
-      lfoGain.gain.value = 40;
+      lfo.frequency.value = 0.12; // wave ripple
+      lfoGain.gain.value = 25;
 
       lfo.connect(lfoGain);
-      lfoGain.connect(waterFilter.frequency);
+      lfoGain.connect(filter.frequency);
 
-      waterSource.connect(waterFilter);
-      waterFilter.connect(destination);
+      source.connect(filter);
+      filter.connect(dest);
 
-      waterSource.start();
-      lfo.start();
+      source.start(0);
+      lfo.start(0);
 
-      activeOscillatorsRef.current.push(waterSource, lfo);
+      activeOscillatorsRef.current.push(source, lfo);
     } catch (e) {
-      console.warn("Failed to synthesize water", e);
+      console.warn('Failed to start water noise:', e);
     }
   };
 
-  // 3. Spatialized Bird Chirps
-  const triggerBirdChirp = (forcedPan) => {
-    if (!audioCtxRef.current || audioCtxRef.current.state !== 'running' || !effectGainRef.current) return;
+  // Trigger a soft procedural spatial chirp
+  const playBirdChirp = (panValue = 0) => {
+    const ctx = audioCtxRef.current;
+    if (!ctx || ctx.state !== 'running' || muted) return;
+
     try {
-      const ctx = audioCtxRef.current;
-      const parentGain = effectGainRef.current;
       const now = ctx.currentTime;
+      const count = Math.floor(Math.random() * 2) + 2;
+      let timeOffset = 0;
 
-      const chirpsCount = Math.floor(Math.random() * 2) + 2; 
-      let offset = 0;
-
-      // Stereo panner for spatial birds chirping
       const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
       if (panner) {
-        // Random pan left (-0.8) or right (0.8) if not forced
-        panner.pan.value = forcedPan !== undefined ? forcedPan : (Math.random() > 0.5 ? 0.75 : -0.75);
-        panner.connect(parentGain);
+        panner.pan.setValueAtTime(panValue, now);
+        panner.connect(effectGainRef.current);
       }
 
-      for (let i = 0; i < chirpsCount; i++) {
+      const dest = panner || effectGainRef.current;
+
+      for (let i = 0; i < count; i++) {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        
-        osc.type = 'sine';
-        const startFreq = 1400 + Math.random() * 300;
-        const endFreq = 2200 + Math.random() * 200;
-        osc.frequency.setValueAtTime(startFreq, now + offset);
-        osc.frequency.exponentialRampToValueAtTime(endFreq, now + offset + 0.08);
 
-        gain.gain.setValueAtTime(0, now + offset);
-        gain.gain.linearRampToValueAtTime(0.01, now + offset + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.08);
+        osc.type = 'sine';
+        const startFreq = 1600 + Math.random() * 250;
+        const endFreq = 2300 + Math.random() * 150;
+        osc.frequency.setValueAtTime(startFreq, now + timeOffset);
+        osc.frequency.exponentialRampToValueAtTime(endFreq, now + timeOffset + 0.08);
+
+        gain.gain.setValueAtTime(0, now + timeOffset);
+        gain.gain.linearRampToValueAtTime(0.012, now + timeOffset + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + timeOffset + 0.08);
 
         osc.connect(gain);
-        if (panner) {
-          gain.connect(panner);
-        } else {
-          gain.connect(parentGain);
-        }
+        gain.connect(dest);
 
-        osc.start(now + offset);
-        osc.stop(now + offset + 0.09);
-        
-        offset += 0.12 + Math.random() * 0.08;
+        osc.start(now + timeOffset);
+        osc.stop(now + timeOffset + 0.09);
+
+        timeOffset += 0.14 + Math.random() * 0.05;
       }
     } catch (e) {
-      console.warn("Failed to chirp bird", e);
+      console.warn('Bird chirp failed:', e);
     }
   };
 
-  // 4. Procedural Heartbeat Double-Thump
-  const triggerHeartbeatThump = (customVolume) => {
-    if (!audioCtxRef.current || audioCtxRef.current.state !== 'running' || !heartbeatGainRef.current) return;
-    try {
-      const ctx = audioCtxRef.current;
-      const parentGain = heartbeatGainRef.current;
-      const now = ctx.currentTime;
-      const vol = customVolume !== undefined ? customVolume : 0.32;
+  // Play a soft synth chime chord
+  const playChimeSequence = () => {
+    const ctx = audioCtxRef.current;
+    if (!ctx || ctx.state !== 'running' || muted) return;
 
-      const playThump = (time, volume) => {
+    try {
+      const now = ctx.currentTime;
+      const chord = [523.25, 659.25, 783.99, 987.77]; // Cmaj7 notes
+
+      chord.forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(55, time);
-        osc.frequency.exponentialRampToValueAtTime(35, time + 0.12);
+        osc.frequency.value = freq;
+
+        gain.gain.setValueAtTime(0, now + i * 0.06);
+        gain.gain.linearRampToValueAtTime(0.02, now + i * 0.06 + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.06 + 0.4);
+
+        osc.connect(gain);
+        gain.connect(effectGainRef.current);
+
+        osc.start(now + i * 0.06);
+        osc.stop(now + i * 0.06 + 0.45);
+      });
+    } catch (e) {
+      console.warn('Chime failed:', e);
+    }
+  };
+
+  // Double sine wave heartbeat thump
+  const triggerHeartbeatThump = (vol = 0.35) => {
+    const ctx = audioCtxRef.current;
+    if (!ctx || ctx.state !== 'running' || muted) return;
+
+    try {
+      const now = ctx.currentTime;
+
+      const thump = (time, volume) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(60, time);
+        osc.frequency.exponentialRampToValueAtTime(32, time + 0.15);
 
         gain.gain.setValueAtTime(0, time);
         gain.gain.linearRampToValueAtTime(volume, time + 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.18);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.2);
 
         osc.connect(gain);
-        gain.connect(parentGain);
+        gain.connect(heartbeatGainRef.current);
 
         osc.start(time);
-        osc.stop(time + 0.2);
+        osc.stop(time + 0.22);
       };
 
-      playThump(now, vol);
-      playThump(now + 0.24, vol * 0.7); // double thump
+      thump(now, vol);
+      thump(now + 0.22, vol * 0.7);
     } catch (e) {
-      console.warn("Heartbeat thump failed", e);
+      console.warn('Heartbeat thump failed:', e);
     }
   };
 
-  // 5. Procedural Magical Chimes
-  const playChimeSequence = () => {
-    if (!audioCtxRef.current || audioCtxRef.current.state !== 'running' || !effectGainRef.current) return;
-    try {
-      const ctx = audioCtxRef.current;
-      const parentGain = effectGainRef.current;
-      const now = ctx.currentTime;
-      const notes = [659.25, 783.99, 987.77, 1318.51]; 
+  // Procedural low synth pad note to play in sequence
+  const playAmbientPadNote = (freq) => {
+    const ctx = audioCtxRef.current;
+    if (!ctx || ctx.state !== 'running' || muted) return;
 
-      notes.forEach((freq, idx) => {
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+
+      filter.type = 'lowpass';
+      filter.frequency.value = 400;
+
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.015, now + 1.8);
+      gain.gain.setValueAtTime(0.015, now + 4.2);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 6.0);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(musicGainRef.current);
+
+      osc.start(now);
+      osc.stop(now + 6.1);
+    } catch (e) {
+      console.warn('Pad note failed:', e);
+    }
+  };
+
+  // Start procedural music chords loop
+  const startAmbientLoop = () => {
+    if (ambientMusicIntervalRef.current) clearInterval(ambientMusicIntervalRef.current);
+
+    const chords = [
+      [130.81, 164.81, 196.00], // C major
+      [146.83, 174.61, 220.00], // D minor
+      [110.00, 130.81, 164.81], // A minor
+      [130.81, 174.61, 220.00]  // F major
+    ];
+    let chordIdx = 0;
+
+    const tick = () => {
+      const nowChord = chords[chordIdx];
+      nowChord.forEach(f => playAmbientPadNote(f));
+      chordIdx = (chordIdx + 1) % chords.length;
+    };
+
+    tick();
+    ambientMusicIntervalRef.current = setInterval(tick, 6000);
+  };
+
+  // Initialize Web Audio API components
+  const unlockAudio = () => {
+    if (audioCtxRef.current) return;
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      audioCtxRef.current = new AudioContextClass();
+
+      const ctx = audioCtxRef.current;
+
+      // Master Volume Gain
+      const master = ctx.createGain();
+      master.gain.value = muted ? 0.0 : 0.45;
+      master.connect(ctx.destination);
+      masterGainRef.current = master;
+
+      // Channels
+      windGainRef.current = ctx.createGain();
+      windGainRef.current.gain.value = 0.04;
+      windGainRef.current.connect(master);
+
+      waterGainRef.current = ctx.createGain();
+      waterGainRef.current.gain.value = 0.03;
+      waterGainRef.current.connect(master);
+
+      musicGainRef.current = ctx.createGain();
+      musicGainRef.current.gain.value = 0.12;
+      musicGainRef.connect(master);
+
+      effectGainRef.current = ctx.createGain();
+      effectGainRef.current.gain.value = 0.35;
+      effectGainRef.connect(master);
+
+      heartbeatGainRef.current = ctx.createGain();
+      heartbeatGainRef.current.gain.value = 0.5;
+      heartbeatGainRef.connect(master);
+
+      // Start procedural generation
+      startWindNoise(ctx, windGainRef.current);
+      startWaterNoise(ctx, waterGainRef.current);
+      startAmbientLoop();
+
+      // Spatial birds chirp loop
+      const runBirdChirps = () => {
+        const delay = 6000 + Math.random() * 8000;
+        birdChirpTimeoutRef.current = setTimeout(() => {
+          // Pan left (-0.85) or right (0.85) randomly
+          const pan = Math.random() > 0.5 ? -0.85 : 0.85;
+          playBirdChirp(pan);
+          runBirdChirps();
+        }, delay);
+      };
+      runBirdChirps();
+    } catch (e) {
+      console.error('Audio synthesizer initialization failed:', e);
+    }
+  };
+
+  const stopAllAudio = () => {
+    if (ambientMusicIntervalRef.current) clearInterval(ambientMusicIntervalRef.current);
+    if (birdChirpTimeoutRef.current) clearTimeout(birdChirpTimeoutRef.current);
+    if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current);
+
+    activeOscillatorsRef.current.forEach(osc => {
+      try { osc.stop(); } catch (err) {}
+    });
+    activeOscillatorsRef.current = [];
+  };
+
+  // Handle muted sync
+  useEffect(() => {
+    if (audioCtxRef.current) {
+      const targetGain = muted ? 0.0 : 0.45;
+      const now = audioCtxRef.current.currentTime;
+      masterGainRef.current.gain.linearRampToValueAtTime(targetGain, now + 0.35);
+
+      if (!muted && audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume();
+      }
+    }
+  }, [muted]);
+
+  // Adjust gains per scene dynamically
+  useEffect(() => {
+    const ctx = audioCtxRef.current;
+    if (!ctx || ctx.state !== 'running' || muted) return;
+
+    const now = ctx.currentTime;
+
+    if (currentScene === 'intro') {
+      // Ambient wind/water low, no effects
+      windGainRef.current.gain.linearRampToValueAtTime(0.015, now + 1.0);
+      waterGainRef.current.gain.linearRampToValueAtTime(0.01, now + 1.0);
+      musicGainRef.current.gain.linearRampToValueAtTime(0.05, now + 1.0);
+      effectGainRef.current.gain.linearRampToValueAtTime(0.0, now + 1.0);
+    } else if (currentScene === 'suspense') {
+      // Quiet everything
+      windGainRef.current.gain.linearRampToValueAtTime(0.005, now + 1.5);
+      waterGainRef.current.gain.linearRampToValueAtTime(0.003, now + 1.5);
+      musicGainRef.current.gain.linearRampToValueAtTime(0.015, now + 1.5);
+      effectGainRef.current.gain.linearRampToValueAtTime(0.0, now + 1.5);
+    } else if (currentScene === 'confession') {
+      // Pure silence, prepare heartbeat thumps
+      windGainRef.current.gain.linearRampToValueAtTime(0.0, now + 0.8);
+      waterGainRef.current.gain.linearRampToValueAtTime(0.0, now + 0.8);
+      musicGainRef.current.gain.linearRampToValueAtTime(0.0, now + 0.8);
+      effectGainRef.current.gain.linearRampToValueAtTime(0.0, now + 0.8);
+    } else {
+      // Restore standard gain settings
+      windGainRef.current.gain.linearRampToValueAtTime(0.04, now + 1.0);
+      waterGainRef.current.gain.linearRampToValueAtTime(0.03, now + 1.0);
+      musicGainRef.current.gain.linearRampToValueAtTime(0.12, now + 1.0);
+      effectGainRef.current.gain.linearRampToValueAtTime(0.35, now + 1.0);
+    }
+  }, [currentScene, muted]);
+
+  // Bind global triggers
+  useEffect(() => {
+    window.unlockAudio = unlockAudio;
+    window.playRomanticChime = playChimeSequence;
+    window.triggerBirdChirp = playBirdChirp;
+
+    window.setHeartbeatActive = (active) => {
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = null;
+      }
+      if (active) {
+        triggerHeartbeatThump(0.42);
+        heartbeatIntervalRef.current = setInterval(() => {
+          triggerHeartbeatThump(0.42);
+        }, 1100);
+      }
+    };
+
+    // Strict multi-second YES sound design sequence
+    window.triggerYesSoundDesign = () => {
+      const ctx = audioCtxRef.current;
+      if (!ctx || muted) return;
+
+      const now = ctx.currentTime;
+
+      // 0.0s: Mute background ambience and heartbeat
+      if (musicGainRef.current) musicGainRef.current.gain.setValueAtTime(0, now);
+      if (windGainRef.current) windGainRef.current.gain.setValueAtTime(0, now);
+      if (waterGainRef.current) waterGainRef.current.gain.setValueAtTime(0, now);
+      if (heartbeatGainRef.current) heartbeatGainRef.current.gain.setValueAtTime(0, now);
+
+      // 0.5s: Single deep heartbeat thump
+      setTimeout(() => {
+        const t = ctx.currentTime;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.value = freq;
-
-        const time = now + idx * 0.08;
-        gain.gain.setValueAtTime(0, time);
-        gain.gain.linearRampToValueAtTime(0.03, time + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.32);
-
+        osc.frequency.setValueAtTime(55, t);
+        osc.frequency.exponentialRampToValueAtTime(28, t + 0.25);
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.5, t + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
         osc.connect(gain);
-        gain.connect(parentGain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.26);
+      }, 500);
 
-        osc.start(time);
-        osc.stop(time + 0.35);
-      });
-    } catch (e) {
-      console.warn("Chime sequence failed", e);
-    }
-  };
-
-  // 6. Play Ambient Chords Loop
-  const playChord = (frequencies, ctx, parentGain) => {
-    try {
-      const now = ctx.currentTime;
-      const duration = 5.8;
-
-      frequencies.forEach((freq) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        const filter = ctx.createBiquadFilter();
-
-        osc.type = 'triangle';
-        osc.frequency.value = freq;
-
-        filter.type = 'lowpass';
-        filter.frequency.value = 650;
-
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.04 / frequencies.length, now + 1.6);
-        gain.gain.setValueAtTime(0.04 / frequencies.length, now + duration - 1.6);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-
-        osc.connect(gain);
-        gain.connect(filter);
-        filter.connect(parentGain);
-
-        osc.start(now);
-        osc.stop(now + duration);
-      });
-    } catch (e) {
-      console.warn("Chord trigger failed", e);
-    }
-  };
-
-  // Expose global YES sound timeline
-  const triggerYesSoundDesign = () => {
-    if (!audioCtxRef.current || audioCtxRef.current.state !== 'running') return;
-    try {
-      const ctx = audioCtxRef.current;
-      const now = ctx.currentTime;
-
-      // 0.0s: Silence ambient loops
-      if (musicGainRef.current) musicGainRef.current.gain.linearRampToValueAtTime(0.0001, now + 0.1);
-      if (windGainRef.current) windGainRef.current.gain.linearRampToValueAtTime(0.0001, now + 0.1);
-      if (waterGainRef.current) waterGainRef.current.gain.linearRampToValueAtTime(0.0001, now + 0.1);
-      if (heartbeatGainRef.current) heartbeatGainRef.current.gain.linearRampToValueAtTime(0.0001, now + 0.1);
-
-      // 0.3s: Deep heartbeat thump
-      setTimeout(() => {
-        triggerHeartbeatThump(0.45);
-      }, 300);
-
-      // 0.5s: Magical rising tone
+      // 1.0s: Rising chime swell tone
       setTimeout(() => {
         const t = ctx.currentTime;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(261.63, t); // C4
-        osc.frequency.exponentialRampToValueAtTime(1046.50, t + 0.3); // C6
+        osc.frequency.exponentialRampToValueAtTime(880.00, t + 0.4); // A5
         gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.06, t + 0.15);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+        gain.gain.linearRampToValueAtTime(0.08, t + 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(t);
-        osc.stop(t + 0.31);
-      }, 500);
-
-      // 0.8s: Heart impact (chimes)
-      setTimeout(() => {
-        playChimeSequence();
-      }, 800);
-
-      // 1.0s: Firework launch (whoosh)
-      setTimeout(() => {
-        const t = ctx.currentTime;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(110, t);
-        osc.frequency.exponentialRampToValueAtTime(400, t + 0.2);
-        gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.08, t + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(t);
-        osc.stop(t + 0.21);
+        osc.stop(t + 0.41);
       }, 1000);
 
-      // 1.2s: Fireworks explosions (low boom + crackles)
+      // 1.5s: Arrow projectile whistle
       setTimeout(() => {
         const t = ctx.currentTime;
-        // Boom
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(70, t);
-        osc.frequency.exponentialRampToValueAtTime(30, t + 0.4);
-        gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.4, t + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(t);
-        osc.stop(t + 0.51);
-
-        // Crackles
-        for (let i = 0; i < 10; i++) {
-          const cTime = t + 0.15 + i * 0.035;
-          const cOsc = ctx.createOscillator();
-          const cGain = ctx.createGain();
-          cOsc.type = 'sine';
-          cOsc.frequency.value = 1100 + Math.random() * 1500;
-          cGain.gain.setValueAtTime(0, cTime);
-          cGain.gain.linearRampToValueAtTime(0.008, cTime + 0.005);
-          cGain.gain.exponentialRampToValueAtTime(0.0001, cTime + 0.03);
-          cOsc.connect(cGain);
-          cGain.connect(ctx.destination);
-          cOsc.start(cTime);
-          cOsc.stop(cTime + 0.031);
-        }
-      }, 1200);
-
-      // 1.5s onwards: Beautiful emotional synth pad sweep
-      setTimeout(() => {
-        const t = ctx.currentTime;
-        // Slowly recover background ambient levels
-        if (windGainRef.current) windGainRef.current.gain.linearRampToValueAtTime(0.04, t + 2.0);
-        if (waterGainRef.current) waterGainRef.current.gain.linearRampToValueAtTime(0.03, t + 2.0);
-
-        const freqs = [261.63, 329.63, 392.00, 523.25, 587.33]; // Cmaj9 pad chords
-        freqs.forEach((freq) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          const filter = ctx.createBiquadFilter();
-          
-          osc.type = 'sawtooth';
-          osc.frequency.value = freq;
-          
-          filter.type = 'lowpass';
-          filter.frequency.setValueAtTime(90, t);
-          filter.frequency.exponentialRampToValueAtTime(1300, t + 2.5); // Filter sweep
-          
-          gain.gain.setValueAtTime(0, t);
-          gain.gain.linearRampToValueAtTime(0.08 / freqs.length, t + 1.5);
-          gain.gain.exponentialRampToValueAtTime(0.0001, t + 5.0);
-          
-          osc.connect(filter);
-          filter.connect(gain);
-          gain.connect(musicGainRef.current);
-          
-          osc.start(t);
-          osc.stop(t + 5.1);
-        });
-      }, 1500);
-
-    } catch (e) {
-      console.warn("YES sound design failed", e);
-    }
-  };
-
-  // Expose global glass crack sound for LET ME THINK
-  const triggerNoSoundDesign = () => {
-    if (!audioCtxRef.current || audioCtxRef.current.state !== 'running') return;
-    try {
-      const ctx = audioCtxRef.current;
-      const now = ctx.currentTime;
-      // High frequency sweeps mimicking crystal/glass crack
-      for (let i = 0; i < 4; i++) {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(3200 - i * 650, now + i * 0.015);
-        osc.frequency.exponentialRampToValueAtTime(200, now + i * 0.015 + 0.06);
-
-        gain.gain.setValueAtTime(0, now + i * 0.015);
-        gain.gain.linearRampToValueAtTime(0.015, now + i * 0.015 + 0.004);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.015 + 0.06);
-
+        osc.frequency.setValueAtTime(150, t);
+        osc.frequency.exponentialRampToValueAtTime(750, t + 0.65);
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.04, t + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start(now + i * 0.015);
-        osc.stop(now + i * 0.015 + 0.07);
-      }
-    } catch (e) {
-      console.warn("NO sound design failed", e);
-    }
-  };
+        osc.start(t);
+        osc.stop(t + 0.71);
+      }, 1500);
 
-  const startAllAudio = () => {
-    try {
-      if (!audioCtxRef.current) {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        audioCtxRef.current = new AudioContextClass();
+      // 2.2s: Arrow impact boom + chimes
+      setTimeout(() => {
+        const t = ctx.currentTime;
+        // Deep magical low impact thump (non-aggressive)
+        const boom = ctx.createOscillator();
+        const boomGain = ctx.createGain();
+        boom.type = 'sine';
+        boom.frequency.setValueAtTime(80, t);
+        boom.frequency.exponentialRampToValueAtTime(25, t + 0.55);
+        boomGain.gain.setValueAtTime(0, t);
+        boomGain.gain.linearRampToValueAtTime(0.38, t + 0.05);
+        boomGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+        boom.connect(boomGain);
+        boomGain.connect(ctx.destination);
+        boom.start(t);
+        boom.stop(t + 0.61);
+
+        // Chimes sweep on impact
+        playChimeSequence();
         
-        // Master Volume Gain
-        const masterGain = audioCtxRef.current.createGain();
-        masterGain.gain.setValueAtTime(0, audioCtxRef.current.currentTime);
-        masterGain.gain.linearRampToValueAtTime(0.5, audioCtxRef.current.currentTime + 0.6);
-        masterGain.connect(audioCtxRef.current.destination);
-        masterGainRef.current = masterGain;
+        // Staggered magical fireworks (boom, crackle, sparkle) launch simulation
+        const launchFirework = (delaySec, freq) => {
+          setTimeout(() => {
+            const time = ctx.currentTime;
+            // soft whistle upward
+            const wOsc = ctx.createOscillator();
+            const wGain = ctx.createGain();
+            wOsc.type = 'triangle';
+            wOsc.frequency.setValueAtTime(220, time);
+            wOsc.frequency.exponentialRampToValueAtTime(650, time + 0.25);
+            wGain.gain.setValueAtTime(0, time);
+            wGain.gain.linearRampToValueAtTime(0.03, time + 0.05);
+            wGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.25);
+            wOsc.connect(wGain);
+            wGain.connect(ctx.destination);
+            wOsc.start(time);
+            wOsc.stop(time + 0.26);
 
-        // Sub Gain Nodes
-        musicGainRef.current = audioCtxRef.current.createGain();
-        musicGainRef.current.gain.value = 0.3;
-        musicGainRef.current.connect(masterGain);
+            // soft sparkle pop
+            setTimeout(() => {
+              const popTime = ctx.currentTime;
+              const pop = ctx.createOscillator();
+              const popGain = ctx.createGain();
+              pop.type = 'sine';
+              pop.frequency.setValueAtTime(freq, popTime);
+              pop.frequency.exponentialRampToValueAtTime(freq * 0.5, popTime + 0.35);
+              popGain.gain.setValueAtTime(0, popTime);
+              popGain.gain.linearRampToValueAtTime(0.12, popTime + 0.03);
+              popGain.gain.exponentialRampToValueAtTime(0.0001, popTime + 0.4);
+              pop.connect(popGain);
+              popGain.connect(ctx.destination);
+              pop.start(popTime);
+              pop.stop(popTime + 0.41);
 
-        windGainRef.current = audioCtxRef.current.createGain();
-        windGainRef.current.gain.value = 0.04;
-        windGainRef.current.connect(masterGain);
+              // tiny sparkle crackles
+              for (let j = 0; j < 6; j++) {
+                const cTime = popTime + 0.08 + j * 0.04;
+                const cOsc = ctx.createOscillator();
+                const cGain = ctx.createGain();
+                cOsc.type = 'sine';
+                cOsc.frequency.value = 1400 + Math.random() * 600;
+                cGain.gain.setValueAtTime(0, cTime);
+                cGain.gain.linearRampToValueAtTime(0.008, cTime + 0.003);
+                cGain.gain.exponentialRampToValueAtTime(0.0001, cTime + 0.022);
+                cOsc.connect(cGain);
+                cGain.connect(ctx.destination);
+                cOsc.start(cTime);
+                cOsc.stop(cTime + 0.025);
+              }
+            }, 250);
+          }, delaySec * 1000);
+        };
 
-        waterGainRef.current = audioCtxRef.current.createGain();
-        waterGainRef.current.gain.value = 0.03;
-        waterGainRef.current.connect(masterGain);
+        // Trigger staggered celebratory fireworks over 8-12 seconds
+        launchFirework(0.2, 380);
+        launchFirework(0.8, 420);
+        launchFirework(1.5, 330);
+        launchFirework(2.2, 510);
+        launchFirework(3.1, 460);
+        launchFirework(4.2, 390);
+        launchFirework(5.5, 410);
+        launchFirework(7.0, 360);
+        launchFirework(8.5, 480);
+      }, 2200);
 
-        heartbeatGainRef.current = audioCtxRef.current.createGain();
-        heartbeatGainRef.current.gain.value = 0.55;
-        heartbeatGainRef.current.connect(masterGain);
-
-        effectGainRef.current = audioCtxRef.current.createGain();
-        effectGainRef.current.gain.value = 0.35;
-        effectGainRef.current.connect(masterGain);
-      }
-
-      if (audioCtxRef.current.state === 'suspended') {
-        audioCtxRef.current.resume();
-      }
-
-      const ctx = audioCtxRef.current;
-
-      // Start procedural ambient noises
-      startWindNoise(ctx, windGainRef.current);
-      startWaterNoise(ctx, waterGainRef.current);
-
-      // Play first chord
-      playChord(chords[currentChordIndexRef.current], ctx, musicGainRef.current);
-      currentChordIndexRef.current = (currentChordIndexRef.current + 1) % chords.length;
-
-      // Ambient chords loop
-      if (chordsTimerRef.current) clearInterval(chordsTimerRef.current);
-      chordsTimerRef.current = setInterval(() => {
-        if (audioCtxRef.current && audioCtxRef.current.state === 'running') {
-          playChord(chords[currentChordIndexRef.current], audioCtxRef.current, musicGainRef.current);
-          currentChordIndexRef.current = (currentChordIndexRef.current + 1) % chords.length;
-        }
-      }, 6000);
-
-      // Random bird chirps (spatial left/right)
-      const queueBirdChirp = () => {
-        const delay = 7000 + Math.random() * 8000;
-        birdTimerRef.current = setTimeout(() => {
-          triggerBirdChirp();
-          queueBirdChirp();
-        }, delay);
-      };
-      queueBirdChirp();
-      
-    } catch (e) {
-      console.warn("Failed to start audio synthesizer", e);
-    }
-  };
-
-  const stopAllAudio = () => {
-    if (chordsTimerRef.current) { clearInterval(chordsTimerRef.current); chordsTimerRef.current = null; }
-    if (birdTimerRef.current) { clearTimeout(birdTimerRef.current); birdTimerRef.current = null; }
-    if (heartbeatTimerRef.current) { clearInterval(heartbeatTimerRef.current); heartbeatTimerRef.current = null; }
-
-    if (masterGainRef.current && audioCtxRef.current) {
-      try {
-        const now = audioCtxRef.current.currentTime;
-        masterGainRef.current.gain.setValueAtTime(masterGainRef.current.gain.value, now);
-        masterGainRef.current.gain.linearRampToValueAtTime(0, now + 0.6);
-        
-        setTimeout(() => {
-          activeOscillatorsRef.current.forEach(osc => {
-            try { osc.stop(); } catch (err) {}
-          });
-          activeOscillatorsRef.current = [];
-        }, 700);
-      } catch (e) {
-        console.warn("Error stopping audio", e);
-      }
-    }
-  };
-
-  const toggleSound = () => {
-    if (isPlaying) {
-      stopAllAudio();
-      setIsPlaying(false);
-    } else {
-      startAllAudio();
-      setIsPlaying(true);
-    }
-  };
-
-  // Sync ambient gains & details dynamically based on active scene prop
-  useEffect(() => {
-    if (!audioCtxRef.current || audioCtxRef.current.state !== 'running' || !isPlaying) return;
-    try {
-      const ctx = audioCtxRef.current;
-      const now = ctx.currentTime;
-
-      if (scene === 'scene1_mystery') {
-        // very faint water, almost unnoticeable wind, no birds
-        if (windGainRef.current) windGainRef.current.gain.linearRampToValueAtTime(0.015, now + 1.2);
-        if (waterGainRef.current) waterGainRef.current.gain.linearRampToValueAtTime(0.012, now + 1.2);
-        if (musicGainRef.current) musicGainRef.current.gain.linearRampToValueAtTime(0.12, now + 1.2);
-        if (effectGainRef.current) effectGainRef.current.gain.linearRampToValueAtTime(0.0, now + 1.2);
-      } else if (scene === 'scene2_check') {
-        // more stars, gentle bird chirp on one side
-        if (windGainRef.current) windGainRef.current.gain.linearRampToValueAtTime(0.03, now + 1.2);
-        if (waterGainRef.current) waterGainRef.current.gain.linearRampToValueAtTime(0.02, now + 1.2);
-        if (musicGainRef.current) musicGainRef.current.gain.linearRampToValueAtTime(0.2, now + 1.2);
-        if (effectGainRef.current) effectGainRef.current.gain.linearRampToValueAtTime(0.28, now + 1.2);
-        // trigger left pan bird
-        setTimeout(() => triggerBirdChirp(-0.75), 1200);
-      } else if (scene === 'scene9_suspense') {
-        // quiet, birds stop, water faint, wind fades
-        if (windGainRef.current) windGainRef.current.gain.linearRampToValueAtTime(0.004, now + 1.8);
-        if (waterGainRef.current) waterGainRef.current.gain.linearRampToValueAtTime(0.003, now + 1.8);
-        if (musicGainRef.current) musicGainRef.current.gain.linearRampToValueAtTime(0.015, now + 1.8);
-        if (effectGainRef.current) effectGainRef.current.gain.linearRampToValueAtTime(0.0, now + 1.8);
-      } else if (scene === 'scene10_proposal') {
-        // absolute quiet, only heartbeat
-        if (windGainRef.current) windGainRef.current.gain.linearRampToValueAtTime(0.0, now + 1.0);
-        if (waterGainRef.current) waterGainRef.current.gain.linearRampToValueAtTime(0.0, now + 1.0);
-        if (musicGainRef.current) musicGainRef.current.gain.linearRampToValueAtTime(0.0, now + 1.0);
-        if (effectGainRef.current) effectGainRef.current.gain.linearRampToValueAtTime(0.0, now + 1.0);
-      } else if (scene === 'scene11_yes') {
-        // YES Celebration: handled by triggerYesSoundDesign
-      } else {
-        // Normal scenes restore defaults
-        if (windGainRef.current) windGainRef.current.gain.linearRampToValueAtTime(0.04, now + 1.0);
-        if (waterGainRef.current) waterGainRef.current.gain.linearRampToValueAtTime(0.03, now + 1.0);
-        if (musicGainRef.current) musicGainRef.current.gain.linearRampToValueAtTime(0.3, now + 1.0);
-        if (effectGainRef.current) effectGainRef.current.gain.linearRampToValueAtTime(0.35, now + 1.0);
-      }
-    } catch (e) {
-      console.warn("Error modulating scene gains", e);
-    }
-  }, [scene, isPlaying]);
-
-  // Bind global hooks
-  useEffect(() => {
-    window.playRomanticChime = () => {
-      if (isPlaying) playChimeSequence();
+      // Restore soft wind/water loops slowly at 10.5 seconds
+      setTimeout(() => {
+        const t = ctx.currentTime;
+        if (windGainRef.current) windGainRef.current.gain.linearRampToValueAtTime(0.04, t + 2.0);
+        if (waterGainRef.current) waterGainRef.current.gain.linearRampToValueAtTime(0.03, t + 2.0);
+        if (musicGainRef.current) musicGainRef.current.gain.linearRampToValueAtTime(0.12, t + 2.5);
+      }, 10500);
     };
 
-    window.triggerYesSoundDesign = () => {
-      if (isPlaying) triggerYesSoundDesign();
-    };
-
+    // Soft glass-like crack sound for NO response
     window.triggerNoSoundDesign = () => {
-      if (isPlaying) triggerNoSoundDesign();
-    };
+      const ctx = audioCtxRef.current;
+      if (!ctx || muted) return;
+      try {
+        const now = ctx.currentTime;
 
-    window.setHeartbeatActive = (active) => {
-      if (heartbeatTimerRef.current) {
-        clearInterval(heartbeatTimerRef.current);
-        heartbeatTimerRef.current = null;
-      }
-      
-      if (active && isPlaying) {
-        triggerHeartbeatThump();
-        heartbeatTimerRef.current = setInterval(() => {
-          triggerHeartbeatThump();
-        }, 1100);
+        // Decrease ambient wind/water volume instead of cutting hard
+        if (windGainRef.current) windGainRef.current.gain.linearRampToValueAtTime(0.01, now + 1.5);
+        if (waterGainRef.current) waterGainRef.current.gain.linearRampToValueAtTime(0.008, now + 1.5);
+        if (musicGainRef.current) musicGainRef.current.gain.linearRampToValueAtTime(0.02, now + 1.5);
+
+        for (let i = 0; i < 4; i++) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(2900 - i * 600, now + i * 0.015);
+          osc.frequency.exponentialRampToValueAtTime(150, now + i * 0.015 + 0.05);
+
+          gain.gain.setValueAtTime(0, now + i * 0.015);
+          gain.gain.linearRampToValueAtTime(0.015, now + i * 0.015 + 0.003);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.015 + 0.055);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + i * 0.015);
+          osc.stop(now + i * 0.015 + 0.06);
+        }
+      } catch (e) {
+        console.warn('NO sound sweep failed:', e);
       }
     };
 
     return () => {
+      window.unlockAudio = null;
       window.playRomanticChime = null;
+      window.triggerBirdChirp = null;
       window.triggerYesSoundDesign = null;
       window.triggerNoSoundDesign = null;
       window.setHeartbeatActive = null;
-    };
-  }, [isPlaying]);
-
-  useEffect(() => {
-    return () => {
       stopAllAudio();
     };
-  }, []);
+  }, [muted]);
 
   return (
     <button
-      onClick={toggleSound}
-      className="p-2.5 rounded-full glass-card border border-white/10 text-white/80 hover:text-white hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-1.5 shadow-lg relative z-50 group pointer-events-auto"
+      onClick={toggleMute}
+      className="fixed top-4 right-4 p-3.5 rounded-full bg-white/2 hover:bg-white/8 border border-white/10 text-white/80 hover:text-white transition-all duration-300 flex items-center justify-center shadow-lg relative z-50 pointer-events-auto w-12 h-12"
       aria-label="Toggle Sound"
+      aria-pressed={!muted}
+      id="btn-audio-mute"
     >
-      {isPlaying ? (
-        <>
-          <Volume2 size={16} className="animate-pulse text-rose-400" />
-          <span className="text-[10px] uppercase tracking-wider font-semibold max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 ease-in-out whitespace-nowrap text-rose-300">
-            Sound On
-          </span>
-        </>
-      ) : (
-        <>
-          <VolumeX size={16} />
-          <span className="text-[10px] uppercase tracking-wider font-semibold max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 ease-in-out whitespace-nowrap">
-            Sound Muted
-          </span>
-        </>
-      )}
+      {muted ? <VolumeX size={18} /> : <Volume2 size={18} className="animate-pulse text-rose-400" />}
     </button>
   );
 }

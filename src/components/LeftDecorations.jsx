@@ -1,172 +1,179 @@
 import React, { useEffect } from 'react';
 import { motion, useAnimation } from 'framer-motion';
+import { useScene, SCENES } from '../context/SceneProvider';
 
-export default function LeftDecorations({ celebrating = false, scene = 'scene1_mystery' }) {
+export default function LeftDecorations() {
+  const { currentScene } = useScene();
   const birdControls = useAnimation();
   const wingControls = useAnimation();
-  const tailControls = useAnimation();
+  const headControls = useAnimation();
   const eyeControls = useAnimation();
+  const tailControls = useAnimation();
 
   useEffect(() => {
+    let blinkInterval;
+    let tiltTimeout;
+
+    if (currentScene !== SCENES.YES) {
+      birdControls.set({ x: 0, y: 0, scale: 1, rotate: 0, opacity: 1 });
+      wingControls.set({ rotate: 0 });
+      headControls.set({ rotate: 0 });
+      tailControls.set({ rotate: 0 });
+    }
+
     try {
-      if (celebrating || scene === 'scene11_yes') {
-        // Fly away across the screen
+      if (currentScene === SCENES.YES) {
         birdControls.start({
-          x: [0, 100, 300, 600],
-          y: [0, -50, -180, -250],
-          scale: [1, 1.1, 0.8, 0.4],
-          rotate: [0, -10, 15, 10],
+          x: [0, 150, 350, 750],
+          y: [0, -60, -180, -220],
+          scale: [1, 1.1, 0.75, 0.3],
+          rotate: [0, -12, 10, 5],
           opacity: [1, 1, 0.8, 0],
-          transition: { duration: 3.5, ease: 'easeInOut' }
+          transition: { duration: 3.8, ease: 'easeInOut' }
         });
         wingControls.start({
-          rotate: [0, -35, 35, -35, 0],
-          transition: { repeat: Infinity, duration: 0.25 }
+          rotate: [0, -40, 40, -40, 0],
+          transition: { repeat: Infinity, duration: 0.22, ease: 'linear' }
         });
+      } else if (currentScene === SCENES.NO || currentScene === SCENES.LET_ME_THINK) {
+        headControls.start({ rotate: -15, y: 2, transition: { duration: 1.0 } });
+        wingControls.start({ rotate: 12, transition: { duration: 1.0 } });
+        tailControls.start({ rotate: -10, transition: { duration: 1.0 } });
       } else {
-        // Idle cycles
+        // Active loops
         birdControls.start({
-          y: [0, -1.5, 0],
+          y: [0, -2, 0],
           transition: { repeat: Infinity, duration: 3.5, ease: 'easeInOut' }
         });
         wingControls.start({
-          rotate: [0, -5, 0],
-          transition: { repeat: Infinity, duration: 4, ease: 'easeInOut', delay: 1 }
-        });
-        tailControls.start({
-          rotate: [0, 8, -8, 0],
-          transition: { repeat: Infinity, duration: 2.5, ease: 'easeInOut', delay: 0.5 }
+          rotate: [0, -4, 0],
+          transition: { repeat: Infinity, duration: 4.5, ease: 'easeInOut', delay: 0.5 }
         });
 
-        const blink = () => {
+        const triggerBlink = () => {
           eyeControls.start({
             scaleY: [1, 0.1, 1],
-            transition: { duration: 0.25 }
+            transition: { duration: 0.2 }
           });
-          setTimeout(blink, 4000 + Math.random() * 2000);
+          blinkInterval = setTimeout(triggerBlink, 3500 + Math.random() * 2500);
         };
-        const blinkTimeout = setTimeout(blink, 2000);
-        return () => clearTimeout(blinkTimeout);
+        triggerBlink();
+
+        const triggerHeadTilt = () => {
+          const deg = (Math.random() - 0.5) * 16;
+          headControls.start({
+            rotate: deg,
+            transition: { duration: 0.4, ease: 'easeInOut' }
+          });
+          tiltTimeout = setTimeout(triggerHeadTilt, 2000 + Math.random() * 2500);
+        };
+        triggerHeadTilt();
       }
     } catch (e) {
-      console.warn("Left bird animation error", e);
+      console.warn('Left bird animation failure:', e);
     }
-  }, [celebrating, scene, birdControls, wingControls, tailControls, eyeControls]);
 
-  // Determine branch and bird visibility based on scene progression
+    return () => {
+      clearTimeout(blinkInterval);
+      clearTimeout(tiltTimeout);
+    };
+  }, [currentScene, birdControls, wingControls, headControls, eyeControls, tailControls]);
+
+  // Determine branch and bird styling parameters dynamically
   let branchOpacity = 1.0;
-  let branchScale = 1.0;
+  let scale = 1.0;
   let birdOpacity = 1.0;
 
-  if (scene === 'scene1_mystery') {
-    branchOpacity = 0.15; // faint silhouette
-    branchScale = 0.75;
-    birdOpacity = 0.0; // Hidden first screen
-  } else if (scene === 'scene2_check') {
-    branchOpacity = 0.4; // Slightly visible
-    branchScale = 0.85;
-    birdOpacity = 0.0; // still sleeping
-  } else if (scene === 'scene3_call') {
-    branchOpacity = 0.75; // branch begins appearing
-    branchScale = 0.95;
-    birdOpacity = 1.0; // bird appears
-  } else if (scene === 'scene9_suspense') {
-    branchOpacity = 0.15; // fades back to silhouette
-    branchScale = 0.85;
-    birdOpacity = 0.0; // bird hides
-  } else if (scene === 'scene10_proposal') {
-    branchOpacity = 0.0; // complete darkness
-    branchScale = 0.85;
+  if (currentScene === SCENES.INTRO) {
+    branchOpacity = 0.2; // faint branch silhouette
+    scale = 0.75;
+    birdOpacity = 0.25; // visible at low intensity
+  } else if (currentScene === SCENES.GATECHECK) {
+    branchOpacity = 0.45;
+    scale = 0.85;
+    birdOpacity = 0.45;
+  } else if (currentScene === SCENES.SUSPENSE) {
+    branchOpacity = 0.12;
+    scale = 0.85;
     birdOpacity = 0.0;
-  } else if (scene === 'let_me_think') {
-    branchOpacity = 0.2; // dimmed
-    branchScale = 0.9;
-    birdOpacity = 0.3; // quiet drooping bird
+  } else if (currentScene === SCENES.CONFESSION) {
+    branchOpacity = 0.0;
+    birdOpacity = 0.0;
+  } else if (currentScene === SCENES.NO || currentScene === SCENES.LET_ME_THINK) {
+    branchOpacity = 0.35;
+    birdOpacity = 0.4; // quiet drooping bird
   }
 
   return (
-    <div 
-      className="fixed -left-4 md:left-0 top-1/4 z-20 pointer-events-none select-none max-w-[80px] md:max-w-[200px] w-full h-[300px] transition-all duration-[2000ms]"
-      style={{ opacity: branchOpacity, transform: `scale(${branchScale})`, transformOrigin: 'left center' }}
+    <div
+      className="fixed -left-4 md:left-0 top-1/4 z-20 pointer-events-none select-none max-w-[100px] md:max-w-[210px] w-full h-[320px] transition-all duration-[2000ms]"
+      style={{ opacity: branchOpacity, transform: `scale(${scale})`, transformOrigin: 'left center' }}
     >
       <svg
-        viewBox="0 0 200 300"
-        className="w-full h-full filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.4)]"
+        viewBox="0 0 200 320"
+        className="w-full h-full filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.55)]"
       >
-        {/* Flowering Branch */}
         <motion.path
-          d="M0,150 Q60,140 100,180 T180,190"
+          d="M0,160 Q70,145 110,185 T190,195"
           fill="none"
-          stroke="#4b3525"
+          stroke="#402e20"
           strokeWidth="6"
           strokeLinecap="round"
           initial={{ pathLength: 0 }}
           animate={{ pathLength: 1 }}
           transition={{ duration: 1.5, ease: 'easeOut' }}
         />
-        
-        {/* Sub branches */}
-        <path d="M70,160 Q90,140 110,145" fill="none" stroke="#4b3525" strokeWidth="4" strokeLinecap="round" />
-        <path d="M110,183 Q130,195 150,190" fill="none" stroke="#4b3525" strokeWidth="3" strokeLinecap="round" />
+        <path d="M75,170 Q95,150 115,155" fill="none" stroke="#402e20" strokeWidth="4.5" strokeLinecap="round" />
+        <path d="M120,188 Q140,200 160,195" fill="none" stroke="#402e20" strokeWidth="3" strokeLinecap="round" />
 
-        {/* Pink Blossoms */}
-        <g id="blossoms" className="transition-all duration-1000">
-          <circle cx="85" cy="150" r="8" fill="#d64577" />
-          <circle cx="80" cy="144" r="6" fill="#f285a8" />
-          <circle cx="90" cy="144" r="6" fill="#f285a8" />
-          <circle cx="80" cy="156" r="6" fill="#f285a8" />
-          <circle cx="90" cy="156" r="6" fill="#f285a8" />
-          <circle cx="85" cy="150" r="3" fill="#ffd43f" />
+        <g id="blossoms-left">
+          <circle cx="90" cy="155" r="7" fill="#d64577" />
+          <circle cx="85" cy="150" r="5.5" fill="#f285a8" />
+          <circle cx="95" cy="150" r="5.5" fill="#f285a8" />
+          <circle cx="90" cy="155" r="2.5" fill="#ffd43f" />
 
-          <circle cx="125" cy="190" r="7" fill="#d64577" />
-          <circle cx="120" cy="185" r="5" fill="#f285a8" />
-          <circle cx="130" cy="185" r="5" fill="#f285a8" />
-          <circle cx="120" cy="195" r="5" fill="#f285a8" />
-          <circle cx="130" cy="195" r="5" fill="#f285a8" />
-          <circle cx="125" cy="190" r="2.5" fill="#ffd43f" />
-
-          <circle cx="100" cy="142" r="5" fill="#d64577" />
-          <circle cx="150" cy="190" r="4" fill="#d64577" />
+          <circle cx="130" cy="192" r="6" fill="#d64577" />
+          <circle cx="125" cy="188" r="4.5" fill="#f285a8" />
+          <circle cx="135" cy="188" r="4.5" fill="#f285a8" />
+          <circle cx="130" cy="192" r="2" fill="#ffd43f" />
         </g>
 
-        {/* Animated Bird */}
-        <motion.g
-          animate={birdControls}
-          style={{ originX: '100px', originY: '180px', opacity: birdOpacity }}
-          className="transition-opacity duration-1000"
-        >
-          <g transform="translate(85, 125)">
-            {/* Tail */}
-            <motion.g animate={tailControls} style={{ originX: '5px', originY: '35px' }}>
-              <path d="M0,32 L-15,48 L-5,50 L5,35 Z" fill="#3b5998" />
-              <path d="M5,32 L-5,52 L2,54 L10,35 Z" fill="#4d77cb" />
-            </motion.g>
+        {birdOpacity > 0 && (
+          <motion.g
+            animate={birdControls}
+            style={{ originX: '100px', originY: '185px', opacity: birdOpacity }}
+            className="transition-opacity duration-1000"
+          >
+            <g transform="translate(85, 128)">
+              <motion.g animate={tailControls} style={{ originX: '5px', originY: '35px' }}>
+                <path d="M0,32 L-18,48 L-8,50 L5,35 Z" fill="#314e8a" />
+                <path d="M5,32 L-8,52 L2,54 L10,35 Z" fill="#4d77cb" />
+              </motion.g>
 
-            {/* Body */}
-            <ellipse cx="20" cy="20" rx="22" ry="16" fill="#4d77cb" />
-            <ellipse cx="28" cy="22" rx="14" ry="12" fill="#e1f5fe" />
+              <ellipse cx="20" cy="20" rx="23" ry="17" fill="#4d77cb" />
+              <ellipse cx="28" cy="22" rx="14" ry="11" fill="#e1f5fe" />
 
-            {/* Head */}
-            <circle cx="34" cy="3" r="14" fill="#3b5998" />
-            <polygon points="46,-2 56,2 46,6" fill="#ffd43f" />
+              <motion.g animate={headControls} style={{ originX: '34px', originY: '3px' }}>
+                <circle cx="34" cy="3" r="14.5" fill="#314e8a" />
+                <polygon points="46,-2 57,2 46,6" fill="#ffd43f" />
+                
+                <motion.circle
+                  cx="37"
+                  cy="-2"
+                  r="2.5"
+                  fill="#ffffff"
+                  animate={eyeControls}
+                  style={{ originX: '37px', originY: '-2px' }}
+                />
+                <circle cx="38" cy="-3" r="0.8" fill="#000000" />
+              </motion.g>
 
-            {/* Wing */}
-            <motion.g animate={wingControls} style={{ originX: '12px', originY: '18px' }}>
-              <path d="M6,16 C6,16 1,28 12,32 C23,36 22,22 22,22 Z" fill="#2a3f70" />
-            </motion.g>
-
-            {/* Eye */}
-            <motion.circle
-              cx="38"
-              cy="-2"
-              r="2.5"
-              fill="#ffffff"
-              animate={eyeControls}
-              style={{ originX: '38px', originY: '-2px' }}
-            />
-            <circle cx="39" cy="-3" r="0.8" fill="#000000" />
-          </g>
-        </motion.g>
+              <motion.g animate={wingControls} style={{ originX: '12px', originY: '18px' }}>
+                <path d="M6,16 C6,16 1,29 13,33 C25,37 23,22 23,22 Z" fill="#243763" />
+              </motion.g>
+            </g>
+          </motion.g>
+        )}
       </svg>
     </div>
   );

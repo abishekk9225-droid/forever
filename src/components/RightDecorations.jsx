@@ -1,51 +1,73 @@
 import React from 'react';
+import { useScene, SCENES } from '../context/SceneProvider';
 import Mascot from './Mascot';
 
-export default function RightDecorations({ state = 'idle', scene = 'scene1_mystery' }) {
+export default function RightDecorations() {
+  const { currentScene, storyIntensity } = useScene();
+
   // Determine vine and lantern opacity/scale based on scene progression
   let vineOpacity = 1.0;
   let vineScale = 1.0;
   let mascotOpacity = 1.0;
-  let lanternGlowOpacity = 0.4;
+  let lanternGlowOpacity = 0.45;
 
-  if (scene === 'scene1_mystery') {
-    vineOpacity = 0.15; // faint silhouette
+  if (currentScene === SCENES.INTRO) {
+    vineOpacity = 0.2; // faint silhouette
     vineScale = 0.75;
-    mascotOpacity = 0.0; // hidden initially
-    lanternGlowOpacity = 0.0; // unlit
-  } else if (scene === 'scene2_check') {
-    vineOpacity = 0.35; // slightly visible
+    mascotOpacity = 0.25; // visible at low intensity
+    lanternGlowOpacity = 0.1; // faint flicker
+  } else if (currentScene === SCENES.GATECHECK) {
+    vineOpacity = 0.45;
     vineScale = 0.85;
-    mascotOpacity = 0.0; // still sleeping
-    lanternGlowOpacity = 0.0;
-  } else if (scene === 'scene3_call') {
-    vineOpacity = 0.75; // begins appearing
-    vineScale = 0.95;
-    mascotOpacity = 1.0; // appears
-    lanternGlowOpacity = 0.4; // starts glowing
-  } else if (scene === 'scene9_suspense') {
-    vineOpacity = 0.15; // silhouette
+    mascotOpacity = 0.45;
+    lanternGlowOpacity = 0.2;
+  } else if (currentScene === SCENES.SUSPENSE) {
+    vineOpacity = 0.15;
     vineScale = 0.85;
-    mascotOpacity = 1.0; // stays for nervous state
-    lanternGlowOpacity = 0.1; // dims for suspense focus
-  } else if (scene === 'scene10_proposal') {
-    vineOpacity = 0.0; // complete proposal darkness
-    vineScale = 0.85;
+    mascotOpacity = 0.25; // dims but stays visible
+    lanternGlowOpacity = 0.05;
+  } else if (currentScene === SCENES.CONFESSION) {
+    vineOpacity = 0.0; // complete dark suspense
     mascotOpacity = 0.0;
     lanternGlowOpacity = 0.0;
-  } else if (scene === 'let_me_think') {
-    vineOpacity = 0.2; // dimmed
+  } else if (currentScene === SCENES.NO || currentScene === SCENES.LET_ME_THINK) {
+    vineOpacity = 0.35;
     vineScale = 0.9;
-    mascotOpacity = 1.0; // sad mascot visible
+    mascotOpacity = 0.75; // sad mascot visible
     lanternGlowOpacity = 0.1;
+  } else {
+    // Other scenes get full intensity
+    vineOpacity = 1.0;
+    vineScale = 1.0;
+    mascotOpacity = 1.0;
+    lanternGlowOpacity = 0.3 + storyIntensity * 0.4;
+  }
+
+  // Derive mascot state based on current story beat
+  let state = 'idle';
+  if (currentScene === SCENES.GATECHECK || currentScene === SCENES.CALL) {
+    state = 'curious';
+  } else if (currentScene === SCENES.MEMORIES) {
+    state = 'excited';
+  } else if (currentScene === SCENES.QUALITIES || currentScene === SCENES.LETTER) {
+    state = 'shy';
+  } else if (currentScene === SCENES.GAME) {
+    state = 'excited';
+  } else if (currentScene === SCENES.BUILD || currentScene === SCENES.SUSPENSE) {
+    state = 'nervous';
+  } else if (currentScene === SCENES.CONFESSION) {
+    state = 'excited';
+  } else if (currentScene === SCENES.YES) {
+    state = 'celebrating';
+  } else if (currentScene === SCENES.NO || currentScene === SCENES.LET_ME_THINK) {
+    state = 'sad';
   }
 
   return (
     <div 
-      className="fixed -right-2 md:right-0 top-1/4 bottom-0 z-20 pointer-events-none select-none w-[64px] md:w-[180px] flex flex-col justify-between items-end transition-all duration-[2000ms]"
+      className="fixed -right-2 md:right-0 top-1/4 bottom-0 z-20 pointer-events-none select-none w-[68px] md:w-[190px] flex flex-col justify-between items-end transition-all duration-[2000ms]"
       style={{ opacity: vineOpacity, transform: `scale(${vineScale})`, transformOrigin: 'right center' }}
     >
-      
       {/* Hanging Vine and Glowing Lantern */}
       <svg
         viewBox="0 0 150 200"
@@ -78,14 +100,15 @@ export default function RightDecorations({ state = 'idle', scene = 'scene1_myste
         </g>
       </svg>
 
-      {/* Renders the Mascot inside the environment wrapper */}
-      <div 
-        className="w-full relative h-16 md:h-36 overflow-visible flex items-end justify-end p-1 md:p-2 mb-1 md:mb-2 transition-opacity duration-[2000ms]"
-        style={{ opacity: mascotOpacity }}
-      >
-        <Mascot state={state} />
-      </div>
-
+      {/* Mascot Rendering */}
+      {mascotOpacity > 0 && (
+        <div 
+          className="w-full relative h-16 md:h-36 overflow-visible flex items-end justify-end p-1 md:p-2 mb-1 md:mb-2 transition-opacity duration-[2000ms]"
+          style={{ opacity: mascotOpacity }}
+        >
+          <Mascot state={state} />
+        </div>
+      )}
     </div>
   );
 }

@@ -1,179 +1,145 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Sparkles } from 'lucide-react';
+import { Phone, Star, Moon, FileText, Coffee, Flame, Heart } from 'lucide-react';
 
-export default function FeelingCards({ onComplete, onStateChange }) {
-  const [visited, setVisited] = useState({
-    voice: false,
-    caring: false,
-    talk: false,
-    feel: false
-  });
-  
-  const [activeCard, setActiveCard] = useState(null);
+const memoryItems = [
+  { id: 'phone', icon: Phone, label: "The first call", text: "That phone conversation changed everything.", x: '18%', y: '22%' },
+  { id: 'star', icon: Star, label: "Twinkling star", text: "Finding comfort under the same night sky.", x: '75%', y: '15%' },
+  { id: 'coffee', icon: Coffee, label: "Coffee chats", text: "Conversations that made hours feel like minutes.", x: '35%', y: '65%' },
+  { id: 'note', icon: FileText, label: "Unspoken notes", text: "The words we didn't need to speak to understand.", x: '80%', y: '60%' },
+  { id: 'moon', icon: Moon, label: "Moonlight", text: "Our thoughts aligning under the quiet moon.", x: '48%', y: '12%' },
+  { id: 'firefly', icon: Flame, label: "Fireflies", text: "Simple moments lit up with genuine laughter.", x: '12%', y: '58%' }
+];
 
-  const cards = [
-    { 
-      key: 'voice', 
-      text: "Your voice", 
-      desc: "Every time my phone screen lit up, my day got a little brighter. 😌" 
-    },
-    { 
-      key: 'caring', 
-      text: "Your caring", 
-      desc: "Honestly... this is the one that touched my heart the most. ❤️" 
-    },
-    { 
-      key: 'talk', 
-      text: "The way you talk", 
-      desc: "We could talk for hours, and it still felt like we just started." 
-    },
-    { 
-      key: 'feel', 
-      text: "The way you make me feel", 
-      desc: "Like I'm talking to someone who genuinely cares about me." 
+export default function FeelingCards({ onComplete }) {
+  const [tappedItems, setTappedItems] = useState(new Set());
+  const [activeMessage, setActiveMessage] = useState('');
+  const [activeCoords, setActiveCoords] = useState({ x: '50%', y: '50%' });
+
+  const handleTap = (item, e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = rect.left + rect.width / 2;
+    const clickY = rect.top + rect.height / 2;
+
+    // Trigger reusable HeartBurst
+    if (window.triggerHeartBurst) {
+      window.triggerHeartBurst(clickX, clickY, 12);
     }
-  ];
-
-  const handleCardClick = (key) => {
     // Play chime sound
-    if (window.playRomanticChime) {
-      window.playRomanticChime();
-    }
-    
-    setVisited((prev) => ({ ...prev, [key]: true }));
-    setActiveCard(key);
-    
-    // Trigger mascot reaction
-    if (onStateChange) {
-      const reactions = ['shy', 'laughing', 'excited'];
-      const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
-      onStateChange(randomReaction);
-    }
+    if (window.playRomanticChime) window.playRomanticChime();
+
+    setTappedItems(prev => {
+      const next = new Set(prev);
+      next.add(item.id);
+      return next;
+    });
+
+    setActiveMessage(item.text);
+    setActiveCoords({ x: item.x, y: item.y });
   };
 
-  const exploredCount = Object.values(visited).filter(Boolean).length;
-  const allExplored = exploredCount === 4;
-  const remaining = 4 - exploredCount;
+  const showContinue = tappedItems.size >= 2;
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 md:p-8 rounded-3xl glass-card border border-white/5 shadow-2xl relative flex flex-col gap-6 select-none min-h-[460px] justify-between">
-      
-      {/* Card Header Prompt */}
-      <div className="text-center space-y-1">
-        <span className="text-[10px] uppercase tracking-widest text-rose-400 font-semibold font-sans">
-          First Feeling
+    <div className="relative w-full max-w-lg mx-auto h-[480px] select-none flex flex-col justify-between p-4">
+      {/* Title */}
+      <div className="text-center z-10 space-y-1">
+        <span className="text-[10px] uppercase tracking-widest text-rose-400 font-bold">
+          Memory Trail
         </span>
-        <h3 className="text-lg md:text-xl font-playfair font-semibold text-white">
-          Explore my initial feelings...
-        </h3>
-      </div>
-
-      {/* The 4 Grid Cards */}
-      <div className="grid grid-cols-2 gap-3.5 my-2">
-        {cards.map((card) => {
-          const isVisited = visited[card.key];
-          const isActive = activeCard === card.key;
-          
-          return (
-            <motion.button
-              key={card.key}
-              id={`btn-feel-card-${card.key}`}
-              whileHover={{ scale: 1.04, y: -2 }}
-              whileTap={{ scale: 0.96 }}
-              onClick={() => handleCardClick(card.key)}
-              className={`p-4 h-24 rounded-2xl border text-center flex flex-col items-center justify-center gap-1.5 transition-all duration-300 backdrop-blur-md relative overflow-hidden ${
-                isActive
-                  ? 'bg-rose-500/10 border-rose-500/40 shadow-lg shadow-rose-500/10'
-                  : isVisited
-                  ? 'bg-white/5 border-rose-500/20 opacity-90'
-                  : 'bg-white/2 border-white/5 opacity-50 hover:opacity-80'
-              }`}
-            >
-              <Heart 
-                size={16} 
-                className={`transition-all duration-300 ${isVisited ? 'text-rose-500 scale-110 filter drop-shadow-[0_0_4px_#ff0055]' : 'text-gray-500'}`} 
-                fill={isVisited ? 'currentColor' : 'none'} 
-              />
-              <span className="text-xs font-semibold text-white tracking-wide leading-tight">
-                {card.text}
-              </span>
-            </motion.button>
-          );
-        })}
-      </div>
-
-      {/* Card Content Reveal Display Box */}
-      <div className="min-h-[70px] flex items-center justify-center px-2">
-        <AnimatePresence mode="wait">
-          {activeCard && (
-            <motion.div
-              key={activeCard}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="text-center"
-            >
-              <p className="text-xs md:text-sm text-rose-200/90 italic leading-relaxed font-sans">
-                "{cards.find((c) => c.key === activeCard).desc}"
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Progress & Hints Container */}
-      <div className="text-center space-y-2 py-2 border-t border-white/5">
-        <motion.div
-          key={exploredCount}
-          initial={{ scale: 0.95, opacity: 0.7 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="text-sm font-bold tracking-wide text-rose-300 font-sans"
-        >
-          {allExplored ? (
-            <span className="flex items-center justify-center gap-1 text-green-400">
-              4 / 4 discovered ❤️
-            </span>
-          ) : (
-            <span>{exploredCount} / 4 discovered</span>
-          )}
-        </motion.div>
-
-        <p className="text-[11px] text-gray-500 min-h-[16px]">
-          {allExplored ? (
-            "You found all the secrets! ✨"
-          ) : remaining === 4 ? (
-            "Tap each one... there's something I want you to know. ❤️"
-          ) : (
-            `There's still ${remaining} more little secret${remaining > 1 ? 's' : ''} to discover... 👀`
-          )}
+        <p className="text-xs text-gray-400">
+          Tap the objects hidden in our garden to recall memories...
         </p>
       </div>
 
-      {/* Next Scene Continuation Button */}
-      <div className="min-h-[50px] flex items-center justify-center mt-2">
-        <AnimatePresence>
-          {allExplored && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="w-full text-center"
+      {/* Floating Garden Objects Layer */}
+      <div className="relative flex-grow w-full my-4 border border-white/5 bg-white/2 rounded-3xl overflow-hidden shadow-inner">
+        {memoryItems.map((item) => {
+          const Icon = item.icon;
+          const isTapped = tappedItems.has(item.id);
+
+          return (
+            <button
+              key={item.id}
+              onClick={(e) => handleTap(item, e)}
+              className="absolute p-3 rounded-full border bg-zinc-950/40 hover:bg-rose-500/10 active:scale-95 transition-all duration-300 pointer-events-auto"
+              style={{
+                left: item.x,
+                top: item.y,
+                transform: 'translate(-50%, -50%)',
+                borderColor: isTapped ? 'rgba(242, 133, 168, 0.45)' : 'rgba(255, 255, 255, 0.08)',
+                boxShadow: isTapped ? '0 0 16px rgba(242, 133, 168, 0.22)' : 'none'
+              }}
+              aria-label={item.label}
             >
-              <motion.button
-                id="btn-feeling-cards-continue"
-                onClick={onComplete}
-                animate={{ scale: [1, 1.04, 1] }}
-                transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
-                className="w-full py-3 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-semibold text-xs tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(214,69,119,0.3)] hover:shadow-[0_0_25px_rgba(214,69,119,0.5)] flex items-center justify-center gap-2"
-              >
-                ENTER OUR GARDEN ❤️ <Sparkles size={14} className="text-yellow-300 animate-spin" style={{ animationDuration: '4s' }} />
-              </motion.button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <Icon
+                size={22}
+                className={isTapped ? 'text-rose-300 animate-pulse' : 'text-gray-400/80'}
+              />
+            </button>
+          );
+        })}
+
+        {/* Display Active Memory Overlay */}
+        {activeMessage && (
+          <div
+            key={activeMessage}
+            className="absolute bg-zinc-950/85 border border-rose-500/20 backdrop-blur-md rounded-2xl p-3.5 max-w-[200px] text-xs text-rose-100 font-sans shadow-xl text-center pointer-events-none animate-fadeIn z-30"
+            style={{
+              left: activeCoords.x,
+              top: `calc(${activeCoords.y} + 40px)`,
+              transform: 'translateX(-50%)'
+            }}
+          >
+            {activeMessage}
+          </div>
+        )}
       </div>
 
+      {/* Progress and Tamil Verse Overlay */}
+      <div className="z-10 text-center space-y-4">
+        {/* Discovered progress */}
+        <div className="flex justify-center items-center gap-1.5 text-[9px] uppercase tracking-wider font-semibold text-gray-500">
+          <span>Discovered:</span>
+          {memoryItems.map((item) => (
+            <div
+              key={item.id}
+              className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+                tappedItems.has(item.id) ? 'bg-rose-500 shadow-[0_0_4px_#ff0055]' : 'bg-white/10'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* First Tamil split beat appears upon tapping >= 2 items */}
+        {showContinue && (
+          <div className="animate-fadeIn p-4 border border-rose-500/5 bg-rose-950/5 rounded-2xl max-w-sm mx-auto">
+            <p
+              className="text-xs md:text-sm text-rose-200 leading-relaxed font-sans italic select-none"
+              style={{
+                fontFamily: "'Mukta Malar', 'Latha', 'Tamil', sans-serif"
+              }}
+            >
+              "சில சந்திப்புகள்...
+              நினைவாக மட்டும் இருப்பதில்லை.
+              
+              நம்மை அறியாமலே...
+              நம் வாழ்க்கையின் ஒரு பகுதியாக மாறிவிடும்."
+            </p>
+          </div>
+        )}
+
+        {/* Action Continue Nudge */}
+        <div className="flex justify-center pt-2 min-h-[44px]">
+          {showContinue && (
+            <button
+              onClick={onComplete}
+              className="px-8 py-2.5 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white text-xs font-semibold hover:scale-105 active:scale-95 transition-all shadow-md shadow-rose-500/10 pointer-events-auto"
+            >
+              Continue when ready →
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

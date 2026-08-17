@@ -242,10 +242,10 @@ function MainApp() {
           setShowILoveYou(true);
         }, 7000),
 
-        // 10.2s: Luminous rose heart fades in underneath 'I LOVE YOU'
+        // 9.5s: Luminous rose heart fades in underneath 'I LOVE YOU'
         setTimeout(() => {
           setShowRoseHeart(true);
-        }, 10200),
+        }, 9500),
 
         // 11.0s: Final message area fades in
         setTimeout(() => {
@@ -755,43 +755,52 @@ function MainApp() {
                   {/* cinematic "I LOVE YOU" text reveal block overlaying on center */}
                   {showILoveYou && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center z-45">
-                      <div className="flex gap-4 md:gap-6 items-center justify-center text-5xl md:text-7xl font-playfair font-black tracking-wide drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)]">
-                        {/* Word "I" (moves left -> center) */}
+                      <motion.div
+                        animate={{
+                          filter: [
+                            "brightness(1) drop-shadow(0 0 0px rgba(240,139,152,0))",
+                            "brightness(1) drop-shadow(0 0 0px rgba(240,139,152,0))",
+                            "brightness(1.22) drop-shadow(0 0 14px rgba(240,139,152,0.45))",
+                            "brightness(1) drop-shadow(0 0 0px rgba(240,139,152,0))"
+                          ]
+                        }}
+                        transition={{
+                          times: [0, 0.77, 0.88, 1.0],
+                          delay: 2.1,
+                          duration: 0.8,
+                          ease: "easeOut"
+                        }}
+                        className="flex gap-4 md:gap-6 items-center justify-center text-5xl md:text-7xl font-playfair font-black tracking-wide drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)]"
+                      >
+                        {/* Word "I" (moves left -> center at 7.0s) */}
                         <motion.span
                           initial={{ x: '-50vw', opacity: 0 }}
                           animate={{ 
                             x: 0, 
                             opacity: 1,
-                            textShadow: [
-                              "0 0 8px rgba(255,255,255,0)",
-                              "0 0 16px rgba(255,246,230,0.6)",
-                              "0 0 10px rgba(255,246,230,0.3)"
-                            ]
+                            textShadow: "0 0 10px rgba(255,246,230,0.25)"
                           }}
                           transition={{ 
-                            duration: 1.2, 
-                            ease: [0.25, 0.1, 0.25, 1.0],
-                            times: [0, 0.9, 1.0]
+                            delay: 0, 
+                            duration: 0.7, 
+                            ease: [0.25, 0.1, 0.25, 1.0]
                           }}
-                          className="text-[#fff6e6] inline-block"
+                          className="text-[#fffbe6] inline-block"
                         >
                           I
                         </motion.span>
 
-                        {/* Word "LOVE" (descends above -> center) */}
+                        {/* Word "LOVE" (descends above -> center at 7.7s) */}
                         <motion.span
                           initial={{ y: '-30vh', opacity: 0 }}
                           animate={{ 
                             y: 0, 
                             opacity: 1,
-                            textShadow: [
-                              "0 0 8px rgba(244,63,94,0)",
-                              "0 0 20px rgba(240,139,152,0.7)",
-                              "0 0 12px rgba(240,139,152,0.4)"
-                            ]
+                            textShadow: "0 0 14px rgba(240,139,152,0.4)"
                           }}
                           transition={{ 
-                            duration: 1.2, 
+                            delay: 0.7, 
+                            duration: 0.7, 
                             ease: [0.25, 0.1, 0.25, 1.0]
                           }}
                           className="text-[#f08b98] font-serif italic inline-block"
@@ -799,46 +808,42 @@ function MainApp() {
                           LOVE
                         </motion.span>
 
-                        {/* Word "YOU" (moves right -> center) */}
+                        {/* Word "YOU" (moves right -> center at 8.4s) */}
                         <motion.span
                           initial={{ x: '50vw', opacity: 0 }}
                           animate={{ 
                             x: 0, 
                             opacity: 1,
-                            textShadow: [
-                              "0 0 8px rgba(255,255,255,0)",
-                              "0 0 16px rgba(255,246,230,0.6)",
-                              "0 0 10px rgba(255,246,230,0.3)"
-                            ]
+                            textShadow: "0 0 10px rgba(255,246,230,0.25)"
                           }}
                           transition={{ 
-                            duration: 1.2, 
-                            ease: [0.25, 0.1, 0.25, 1.0],
-                            times: [0, 0.9, 1.0]
+                            delay: 1.4, 
+                            duration: 0.7, 
+                            ease: [0.25, 0.1, 0.25, 1.0]
                           }}
-                          className="text-[#fff6e6] inline-block"
+                          className="text-[#fffbe6] inline-block"
                         >
                           YOU
                         </motion.span>
-                      </div>
+                      </motion.div>
 
-                      {/* Small elegant ROSE/PINK heart directly underneath (fades in at 10.2s) */}
+                      {/* Small elegant classic ROSE/PINK heart directly underneath (fades in at 9.5s) */}
                       {showRoseHeart && (
                         <motion.div
-                          initial={{ scale: 0, opacity: 0 }}
+                          initial={{ scale: 0.65, opacity: 0 }}
                           animate={{ 
-                            scale: [0, 1.2, 1.0], 
+                            scale: [0.65, 1.0], 
                             opacity: 1
                           }}
                           transition={{ 
-                            duration: 0.6, 
+                            duration: 0.5, 
                             ease: 'easeOut'
                           }}
                           className="mt-6 flex justify-center items-center"
                         >
                           <motion.svg
                             animate={{ scale: [1, 1.08, 1] }}
-                            transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+                            transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut', delay: 0.5 }}
                             viewBox="0 0 100 100"
                             className="w-8 h-8 text-rose-400 fill-rose-400 filter drop-shadow-[0_0_10px_rgba(244,63,94,0.65)]"
                           >

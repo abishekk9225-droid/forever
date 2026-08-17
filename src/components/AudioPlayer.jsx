@@ -546,6 +546,41 @@ export default function AudioPlayer() {
         launchFirework(8.5, 480);
       }, 2200);
 
+      // 4.6s: Gift Box opening sound (soft chimes sweep + low-pass sweep)
+      setTimeout(() => {
+        const time = ctx.currentTime;
+        // Soft sweep upward for "reveal"
+        const rOsc = ctx.createOscillator();
+        const rGain = ctx.createGain();
+        rOsc.type = 'triangle';
+        rOsc.frequency.setValueAtTime(180, time);
+        rOsc.frequency.exponentialRampToValueAtTime(550, time + 0.6);
+        rGain.gain.setValueAtTime(0, time);
+        rGain.gain.linearRampToValueAtTime(0.04, time + 0.1);
+        rGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.6);
+        rOsc.connect(rGain);
+        rGain.connect(ctx.destination);
+        rOsc.start(time);
+        rOsc.stop(time + 0.61);
+
+        // Sparkle chimes chord (A major chord notes ascending)
+        const notes = [440, 554, 659, 880];
+        notes.forEach((freq, idx) => {
+          const tNote = time + idx * 0.08;
+          const oscN = ctx.createOscillator();
+          const gainN = ctx.createGain();
+          oscN.type = 'sine';
+          oscN.frequency.value = freq;
+          gainN.gain.setValueAtTime(0, tNote);
+          gainN.gain.linearRampToValueAtTime(0.03, tNote + 0.02);
+          gainN.gain.exponentialRampToValueAtTime(0.0001, tNote + 0.5);
+          oscN.connect(gainN);
+          gainN.connect(ctx.destination);
+          oscN.start(tNote);
+          oscN.stop(tNote + 0.51);
+        });
+      }, 4600);
+
       // Restore soft wind/water loops slowly at 10.5 seconds
       setTimeout(() => {
         const t = ctx.currentTime;

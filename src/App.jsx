@@ -567,75 +567,23 @@ function MainApp() {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className="fixed inset-0 flex items-center justify-center z-40 pointer-events-none select-none"
+                className="fixed inset-0 flex flex-col items-center justify-between z-40 pointer-events-none select-none py-12 px-6"
               >
-                {/* 1. Glowing Center Heart (appears at 0.7s) */}
-                <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: [0, 1.25, 1.0], opacity: 1 }}
-                  transition={{ delay: 0.7, duration: 0.5, ease: 'easeOut' }}
-                  className="relative flex items-center justify-center"
-                >
-                  <motion.svg
-                    animate={{ scale: [1, 1.08, 1] }}
-                    transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut', delay: 1.2 }}
-                    viewBox="0 0 100 100"
-                    className="w-32 h-32 md:w-44 md:h-44 text-rose-500 fill-rose-500 drop-shadow-[0_0_40px_rgba(244,63,94,0.85)]"
-                  >
-                    <path d="M12,30 C5,10 -15,25 10,55 C17,62 43,82 50,85 C57,82 83,62 90,55 C115,25 95,10 88,30 C80,50 60,40 50,55 C40,40 20,50 12,30 Z" />
-                  </motion.svg>
-                </motion.div>
-
-                {/* 2. Traveling Golden Arrow (appears at 1.0s, travels for 1.2s, hits heart, vanishes at 2.2s) */}
-                <motion.div
-                  initial={{ x: '60vw', y: '-60vh', rotate: -45, opacity: 0 }}
-                  animate={{ 
-                    x: [ '60vw', 0 ], 
-                    y: [ '-60vh', 0 ], 
-                    opacity: [ 0, 1, 1, 0 ]
-                  }}
-                  transition={{ 
-                    delay: 1.0, 
-                    duration: 1.2, 
-                    ease: 'linear',
-                    times: [0, 0.05, 0.99, 1.0]
-                  }}
-                  className="absolute flex items-center justify-center"
-                >
-                  <svg viewBox="0 0 100 100" className="w-16 h-16 md:w-24 md:h-24 text-yellow-300 drop-shadow-[0_0_15px_rgba(253,224,71,0.9)]">
-                    {/* Golden Arrow shaft pointed at center */}
-                    <line x1="85" y1="15" x2="20" y2="80" stroke="currentColor" strokeWidth="4.5" />
-                    {/* Head */}
-                    <polygon points="12,88 32,76 24,68" fill="currentColor" />
-                    {/* Fletching */}
-                    <path d="M82,12 L92,8 L95,15 L85,18 Z" fill="currentColor" />
-                    <path d="M88,18 L95,22 L92,29 L85,25 Z" fill="currentColor" />
-                  </svg>
-                </motion.div>
-
-                {/* 3. Screen Impact Flash (at 2.2s, decays over 300ms) */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0, 0.85, 0] }}
-                  transition={{ delay: 2.2, duration: 0.35, ease: 'easeOut', times: [0, 0.1, 1.0] }}
-                  className="fixed inset-0 bg-white/90 z-50 pointer-events-none"
-                />
-
-                {/* 4. Final Text Overlay (appears at 3.0s) */}
-                <div className="absolute inset-x-0 bottom-1/4 flex flex-col items-center space-y-4 px-6 text-center z-45">
+                {/* 1. ELEGANT CELEBRATION TITLE (Top) */}
+                <div className="text-center space-y-2 mt-8 z-45">
                   <motion.h2
-                    initial={{ opacity: 0, scale: 0.9, filter: 'blur(4px)' }}
-                    animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 3.0, duration: 1.0, ease: 'easeOut' }}
-                    className="text-3xl md:text-5xl font-playfair font-black text-rose-100 tracking-wider drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)]"
+                    className="text-3xl md:text-5xl font-playfair font-black text-rose-100 tracking-wider drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)] flex items-center justify-center gap-2"
                   >
-                    SHE SAID YES. ❤️
+                    SHE SAID YES. <Heart size={22} className="text-rose-500 fill-rose-500 inline animate-pulse" />
                   </motion.h2>
 
                   <motion.p
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 4.2, duration: 1.2, ease: 'easeOut' }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 4.0, duration: 1.2, ease: 'easeOut' }}
                     className="text-base md:text-xl text-rose-200 leading-loose italic drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]"
                     style={{
                       fontFamily: "'Mukta Malar', 'Latha', 'Tamil', sans-serif"
@@ -645,61 +593,200 @@ function MainApp() {
                   </motion.p>
                 </div>
 
-                {showCelebrationSkip && (
-                  <div className="pointer-events-auto absolute bottom-6 inset-x-0 flex justify-center z-50">
-                    <button
-                      onClick={() => goToScene('scene11_final')}
-                      className="px-8 py-2.5 rounded-full bg-white/5 border border-white/10 text-white/80 hover:text-white text-xs font-medium backdrop-blur-md transition-all active:scale-95"
+                {/* 2. HUGE CENTER GLOWING REAL HEART & ARROW (Center) */}
+                <div className="relative flex-grow flex items-center justify-center w-full min-h-[300px]">
+                  {/* Heart wrapper */}
+                  <motion.div
+                    animate={heartAnimate}
+                    className="relative flex items-center justify-center z-40"
+                  >
+                    {/* Glowing Heart SVG */}
+                    <svg
+                      viewBox="0 0 100 100"
+                      className="w-36 h-36 md:w-52 md:h-52 text-rose-500 fill-rose-500 filter drop-shadow-[0_0_35px_rgba(244,63,94,0.7)] drop-shadow-[0_0_12px_rgba(255,255,255,0.45)]"
                     >
-                      Step Into Our Future →
-                    </button>
-                  </div>
-                )}
-              </motion.div>
-            )}
+                      <path d="M 50, 90 C 25, 75 5, 55 5, 35 C 5, 17 18, 5 35, 5 C 44, 5 50, 10 50, 10 C 50, 10 56, 5 65, 5 C 82, 5 95, 17 95, 35 C 95, 55 75, 75 50, 90 Z" />
+                    </svg>
+                  </motion.div>
 
-            {/* SCENE 11a FINAL: Afterglow resting page */}
-            {currentScene === 'scene11_final' && (
-              <motion.div
-                key="scene_yes_final"
-                variants={pageVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                className="w-full max-w-sm mx-auto p-6 md:p-8 rounded-3xl glass-panel border border-white/5 shadow-2xl relative text-center space-y-6"
-              >
-                <div className="space-y-2">
-                  <h3 className="text-xl md:text-2xl font-playfair text-white">
-                    Our Quiet Garden
-                  </h3>
-                  <p className="text-xs text-rose-300">This little place where my heart speaks.</p>
+                  {/* Embedded Golden Arrow wrapper (moves to (0,0) center of parent which is center of heart!) */}
+                  <motion.div
+                    animate={arrowAnimate}
+                    className="absolute flex items-center justify-center z-45"
+                  >
+                    {/* Arrow tip is centered at 0, 0 of the SVG wrapper, arrow shaft extends top-right */}
+                    <svg viewBox="-20 -20 180 180" className="w-24 h-24 md:w-36 md:h-36 text-yellow-300 drop-shadow-[0_0_12px_rgba(253,224,71,0.9)]">
+                      {/* Golden Arrow shaft */}
+                      <line x1="120" y1="-120" x2="0" y2="0" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" />
+                      {/* Elegant Arrowhead */}
+                      <polygon points="0,0 22,-5 5,-22" fill="currentColor" />
+                      {/* Fletching */}
+                      <path d="M120,-120 L135,-115 L140,-130 L125,-135 Z" fill="currentColor" />
+                      <path d="M115,-115 L130,-110 L135,-125 L120,-130 Z" fill="currentColor" />
+                    </svg>
+                  </motion.div>
                 </div>
 
-                {!msgSubmitted ? (
-                  <form onSubmit={handleMessageSubmit} className="space-y-4 pointer-events-auto">
-                    <textarea
-                      value={finalMsg}
-                      onChange={(e) => setFinalMsg(e.target.value)}
-                      placeholder="Write a message to Abishek... ❤️"
-                      rows="3"
-                      className="w-full p-3 rounded-2xl bg-black/30 border border-white/10 text-white text-xs font-sans placeholder-gray-500 focus:outline-none focus:border-rose-500/40 resize-none transition-colors"
-                    />
-                    <button
-                      type="submit"
-                      className="w-full py-2.5 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 text-white text-xs font-semibold hover:scale-[1.02] active:scale-95 transition-all shadow-md flex items-center justify-center gap-1.5"
-                    >
-                      <Send size={12} />
-                      Send to Abishek
-                    </button>
-                  </form>
-                ) : (
-                  <div className="animate-fadeIn p-4 border border-rose-500/10 bg-rose-950/10 rounded-2xl space-y-2">
-                    <p className="text-xs font-semibold text-rose-200">Message Saved!</p>
-                    <p className="text-[11px] text-gray-400">
-                      "I promise to keep choosing you, Saranya, every single day."
-                    </p>
-                  </div>
+                {/* 3. IMPACT FLASH (Z-50) */}
+                {impactFlash && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: [0, 0.9, 0] }}
+                    transition={{ duration: 0.35, ease: 'easeOut' }}
+                    className="fixed inset-0 bg-white/95 z-50 pointer-events-none"
+                  />
                 )}
+
+                {/* 4. OPEN PURPLE GIFT BOX WITH CADBURY DAIRY MILK CHOCOLATES (Bottom-Center) */}
+                <div className="h-[120px] flex items-end justify-center w-full z-45 relative mt-4 select-none pointer-events-auto">
+                  <AnimatePresence>
+                    {showGiftBox && (
+                      <motion.div
+                        initial={{ y: 150, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 150, opacity: 0 }}
+                        transition={{ type: 'spring', stiffness: 70, damping: 14 }}
+                        className="relative w-48 h-24 flex justify-center items-end"
+                      >
+                        {/* Golden light glow from box when open */}
+                        {isLidOpen && (
+                          <div className="absolute bottom-4 w-32 h-32 rounded-full bg-yellow-400/25 filter blur-[35px] animate-pulse z-15" />
+                        )}
+
+                        {/* Chocolates wrapper (behind front face, in front of background) */}
+                        <div className="absolute bottom-6 w-full h-24 flex items-center justify-center overflow-visible z-15">
+                          {/* Chocolate Bar 1 */}
+                          <motion.div
+                            initial={{ y: 40, scale: 0.1, opacity: 0 }}
+                            animate={chocolatesOut ? { y: -75, x: -70, scale: 0.78, opacity: 1, rotate: -22 } : {}}
+                            transition={{ type: 'spring', stiffness: 80, damping: 11 }}
+                            className="absolute w-16 h-28"
+                          >
+                            <DairyMilkBar />
+                          </motion.div>
+
+                          {/* Chocolate Bar 2 */}
+                          <motion.div
+                            initial={{ y: 40, scale: 0.1, opacity: 0 }}
+                            animate={chocolatesOut ? { y: -105, x: -26, scale: 0.85, opacity: 1, rotate: -8 } : {}}
+                            transition={{ type: 'spring', stiffness: 80, damping: 11 }}
+                            className="absolute w-16 h-28"
+                          >
+                            <DairyMilkBar />
+                          </motion.div>
+
+                          {/* Chocolate Bar 3 */}
+                          <motion.div
+                            initial={{ y: 40, scale: 0.1, opacity: 0 }}
+                            animate={chocolatesOut ? { y: -105, x: 26, scale: 0.85, opacity: 1, rotate: 8 } : {}}
+                            transition={{ type: 'spring', stiffness: 80, damping: 11 }}
+                            className="absolute w-16 h-28"
+                          >
+                            <DairyMilkBar />
+                          </motion.div>
+
+                          {/* Chocolate Bar 4 */}
+                          <motion.div
+                            initial={{ y: 40, scale: 0.1, opacity: 0 }}
+                            animate={chocolatesOut ? { y: -75, x: 70, scale: 0.78, opacity: 1, rotate: 22 } : {}}
+                            transition={{ type: 'spring', stiffness: 80, damping: 11 }}
+                            className="absolute w-16 h-28"
+                          >
+                            <DairyMilkBar />
+                          </motion.div>
+
+                          {/* Bonbon 1 */}
+                          <motion.div
+                            initial={{ y: 40, scale: 0.1, opacity: 0 }}
+                            animate={chocolatesOut ? { y: -45, x: -105, scale: 0.9, opacity: 1, rotate: -40 } : {}}
+                            transition={{ type: 'spring', stiffness: 90 }}
+                            className="absolute w-10 h-8"
+                          >
+                            <IndividualChocolate />
+                          </motion.div>
+
+                          {/* Bonbon 2 */}
+                          <motion.div
+                            initial={{ y: 40, scale: 0.1, opacity: 0 }}
+                            animate={chocolatesOut ? { y: -45, x: 105, scale: 0.9, opacity: 1, rotate: 40 } : {}}
+                            transition={{ type: 'spring', stiffness: 90 }}
+                            className="absolute w-10 h-8"
+                          >
+                            <IndividualChocolate />
+                          </motion.div>
+                        </div>
+
+                        {/* Box Lid */}
+                        <motion.div
+                          animate={isLidOpen ? { y: -110, x: -70, rotate: -32, opacity: 0.25 } : (isLidShaking ? { x: [-2, 2, -2, 2, 0], y: [-1, 1, -1, 1, 0] } : {})}
+                          transition={isLidOpen ? { duration: 0.8, ease: 'easeOut' } : { repeat: Infinity, duration: 0.4 }}
+                          className="absolute bottom-[36px] w-[172px] h-6 z-25 origin-bottom-left"
+                        >
+                          <svg viewBox="0 0 170 24" className="w-full h-full">
+                            <rect x="0" y="0" width="170" height="20" rx="3" fill="#310052" stroke="#ffa500" strokeWidth="1.5" />
+                            <rect x="75" y="0" width="20" height="20" fill="#ffa500" />
+                            <rect x="0" y="20" width="170" height="4" fill="#200038" />
+                          </svg>
+                        </motion.div>
+
+                        {/* Box Body (Front Face) */}
+                        <div className="absolute bottom-0 w-36 h-18 z-20">
+                          <svg viewBox="0 0 140 80" className="w-full h-full">
+                            <rect x="0" y="0" width="140" height="80" rx="5" fill="#2c004a" stroke="#ffa500" strokeWidth="2" />
+                            <rect x="60" y="0" width="20" height="80" fill="#ffa500" />
+                            <rect x="0" y="30" width="140" height="20" fill="#ffa500" />
+                            <circle cx="70" cy="40" r="12" fill="#ffea75" stroke="#ffa500" strokeWidth="1" />
+                            <path d="M66,40 L74,40 M70,36 L70,44" stroke="#2c004a" strokeWidth="1.5" />
+                          </svg>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* 5. ELEGANT MESSAGE AREA (Bottom) */}
+                <div className="w-full max-w-sm mt-4 z-45 pointer-events-auto">
+                  <AnimatePresence>
+                    {showFinalMessage && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1.0, ease: 'easeOut' }}
+                        className="space-y-4 text-center"
+                      >
+                        <p className="text-[11px] md:text-xs text-rose-300 font-serif italic drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                          "Thank you for being the most beautiful part of my life. ❤️"
+                        </p>
+
+                        {!msgSubmitted ? (
+                          <form onSubmit={handleMessageSubmit} className="relative flex items-center bg-black/40 border border-white/10 rounded-full p-1 pl-4 shadow-lg focus-within:border-rose-500/40 transition-colors">
+                            <input
+                              type="text"
+                              value={finalMsg}
+                              onChange={(e) => setFinalMsg(e.target.value)}
+                              placeholder="Write your message to me..."
+                              className="w-full bg-transparent text-white text-xs font-sans placeholder-gray-500 focus:outline-none pr-10"
+                            />
+                            <button
+                              type="submit"
+                              className="absolute right-1 w-8 h-8 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-transform"
+                            >
+                              <Send size={10} />
+                            </button>
+                          </form>
+                        ) : (
+                          <motion.div 
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="p-3 border border-rose-500/10 bg-rose-950/10 rounded-full text-[11px] font-semibold text-rose-200"
+                          >
+                            "I promise to keep choosing you, Saranya, every single day."
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </motion.div>
             )}
 

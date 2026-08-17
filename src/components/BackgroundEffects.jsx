@@ -252,22 +252,84 @@ export default function BackgroundEffects() {
       }
     }
 
+    // Celebration Butterfly Class
+    class CelebrationButterfly {
+      constructor(canvasWidth, canvasHeight, startX, startY) {
+        this.x = startX || canvasWidth / 2;
+        this.y = startY || canvasHeight / 2;
+        this.size = Math.random() * 9 + 8; // 8px - 17px
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 4 + 2;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed - 1.5; // Upward bias
+        this.flapSpeed = Math.random() * 0.25 + 0.15;
+        this.flapPhase = Math.random() * Math.PI;
+        this.colors = ['#F43F5E', '#EC4899', '#A855F7', '#38BDF8', '#34D399', '#FBBF24', '#FB7185', '#E879F9'];
+        this.color = this.colors[Math.floor(Math.random() * this.colors.length)];
+        this.alpha = 1;
+      }
+
+      update(width, height) {
+        this.x += this.vx + Math.sin(this.flapPhase) * 1.5;
+        this.y += this.vy;
+        this.flapPhase += this.flapSpeed;
+
+        // Wrap around screen gracefully
+        if (this.y < -30) this.y = height + 20;
+        if (this.x < -30) this.x = width + 20;
+        if (this.x > width + 30) this.x = -20;
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.shadowBlur = 14;
+        ctx.shadowColor = this.color;
+        ctx.fillStyle = this.color;
+
+        const wingScale = Math.abs(Math.sin(this.flapPhase));
+
+        // Left Wing
+        ctx.beginPath();
+        ctx.ellipse(-this.size * 0.6 * wingScale, 0, this.size * 0.8 * wingScale, this.size * 0.5, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Right Wing
+        ctx.beginPath();
+        ctx.ellipse(this.size * 0.6 * wingScale, 0, this.size * 0.8 * wingScale, this.size * 0.5, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Body
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(-1, -this.size * 0.4, 2, this.size * 0.8);
+        ctx.restore();
+      }
+    }
+
     // Track last scene to trigger transition events
     let lastScene = null;
 
     // Initialize Pools
     const starsList = Array.from({ length: 120 }, () => new Star());
     const firefliesList = Array.from({ length: 60 }, () => new Firefly());
-    const butterfliesList = Array.from({ length: 160 }, () => new Butterfly());
+    const butterfliesList = Array.from({ length: 24 }, () => new Butterfly());
+    const celebrationButterfliesList = Array.from({ length: 100 }, () => new CelebrationButterfly(window.innerWidth || 1200, window.innerHeight || 800));
 
     const updateAndDrawFrame = () => {
       time += 0.02;
       const { storyIntensity: intensity, isLowEnd: low, currentScene: scene } = settingsRef.current;
 
-      // Reset all butterflies to center to explode outward on YES scene transition
+      // Reset all celebration butterflies to center to explode outward on YES scene transition
       if (scene === SCENES.YES && lastScene !== SCENES.YES) {
-        for (let i = 0; i < butterfliesList.length; i++) {
-          butterfliesList[i].reset(true);
+        for (let i = 0; i < celebrationButterfliesList.length; i++) {
+          const b = celebrationButterfliesList[i];
+          b.x = canvas.width / 2;
+          b.y = canvas.height / 2;
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 4 + 2;
+          b.vx = Math.cos(angle) * speed;
+          b.vy = Math.sin(angle) * speed - 1.5;
+          b.flapPhase = Math.random() * Math.PI;
         }
       }
       lastScene = scene;
@@ -302,13 +364,18 @@ export default function BackgroundEffects() {
       }
 
       // 2b. Draw Butterflies (active across all scenes, count based on performance)
-      const activeButterfliesCount = scene === SCENES.YES
-        ? (low ? 50 : 140)
-        : (low ? 5 : 11);
-
-      for (let i = 0; i < activeButterfliesCount; i++) {
-        butterfliesList[i].update();
-        butterfliesList[i].draw();
+      if (scene === SCENES.YES) {
+        const activeCelebrationCount = low ? 50 : 80;
+        for (let i = 0; i < activeCelebrationCount; i++) {
+          celebrationButterfliesList[i].update(canvas.width, canvas.height);
+          celebrationButterfliesList[i].draw(ctx);
+        }
+      } else {
+        const activeButterfliesCount = low ? 5 : 11;
+        for (let i = 0; i < activeButterfliesCount; i++) {
+          butterfliesList[i].update();
+          butterfliesList[i].draw();
+        }
       }
 
       // 3. Draw Water Reflection Strip at the bottom

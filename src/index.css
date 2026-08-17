@@ -204,12 +204,12 @@ body {
   width: 9em;
   height: 9em;
   animation: jolt 3s linear infinite;
-  filter: drop-shadow(0 0 12px rgba(234, 128, 176, 0.6));
+  filter: drop-shadow(0 0 14px rgba(244, 114, 182, 0.55));
 }
 
 .coil-track {
   fill: none;
-  stroke: hsla(330, 85%, 65%, 0.85);
+  stroke: hsla(330, 85%, 65%, 0.9);
   stroke-width: 14;
   stroke-linecap: round;
   transition: stroke 0.3s;

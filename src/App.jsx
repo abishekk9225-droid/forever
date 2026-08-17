@@ -29,6 +29,7 @@ function MainApp() {
   // Confession states (Scene 10)
   const [confessionStep, setConfessionStep] = useState(0); // 0: black screen / heartbeat, 1: Saranya, 2: I LOVE YOU, 3: Will you be mine / buttons
   const [confessionClicked, setConfessionClicked] = useState(false);
+  const [yesButtonWorked, setYesButtonWorked] = useState(false);
 
   // Custom Message Box (Scene 11 final afterglow)
   const [finalMsg, setFinalMsg] = useState('');
@@ -83,6 +84,7 @@ function MainApp() {
     if (currentScene === SCENES.CONFESSION) {
       setConfessionStep(0);
       setConfessionClicked(false);
+      setYesButtonWorked(false);
       if (window.setHeartbeatActive) window.setHeartbeatActive(true);
 
       const timers = [
@@ -123,6 +125,11 @@ function MainApp() {
     <div className={`relative min-h-screen flex flex-col justify-between overflow-x-hidden transition-colors duration-1000 select-none ${
       currentScene === SCENES.SUSPENSE || currentScene === SCENES.CONFESSION ? 'bg-[#030005]' : 'bg-[#05020a]'
     }`}>
+      {yesButtonWorked && (
+        <div className="fixed top-24 left-0 right-0 text-center z-50 text-2xl font-bold text-rose-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] pointer-events-none select-none animate-pulse">
+          YES BUTTON WORKED
+        </div>
+      )}
       {/* Reusable Canvas Heart Burst System */}
       <ErrorBoundary>
         <HeartBurst />
@@ -136,7 +143,9 @@ function MainApp() {
       {/* Persistent YES / NO Celebration Canvas */}
       {(currentScene === SCENES.YES || currentScene === SCENES.LET_ME_THINK) && (
         <ErrorBoundary>
-          <CelebrationCanvas />
+          <div className="fixed inset-0 w-full h-full z-35 pointer-events-none">
+            <CelebrationCanvas />
+          </div>
         </ErrorBoundary>
       )}
 
@@ -533,6 +542,7 @@ function MainApp() {
                           disabled={confessionClicked}
                           onClick={() => {
                             setConfessionClicked(true);
+                            setYesButtonWorked(true);
                             if (window.triggerYesSoundDesign) window.triggerYesSoundDesign();
                             goToScene(SCENES.YES);
                           }}
@@ -549,7 +559,7 @@ function MainApp() {
               </motion.div>
             )}
 
-            {/* SCENE 11a: YES Celebration overlay buttons */}
+            {/* SCENE 11a: YES Celebration overlay with DOM Heart, Arrow, Flash, and Typography */}
             {currentScene === SCENES.YES && (
               <motion.div
                 key="scene_yes"
@@ -557,10 +567,86 @@ function MainApp() {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className="text-center pointer-events-none"
+                className="fixed inset-0 flex items-center justify-center z-40 pointer-events-none select-none"
               >
+                {/* 1. Glowing Center Heart (appears at 0.7s) */}
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: [0, 1.25, 1.0], opacity: 1 }}
+                  transition={{ delay: 0.7, duration: 0.5, ease: 'easeOut' }}
+                  className="relative flex items-center justify-center"
+                >
+                  <motion.svg
+                    animate={{ scale: [1, 1.08, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut', delay: 1.2 }}
+                    viewBox="0 0 100 100"
+                    className="w-32 h-32 md:w-44 md:h-44 text-rose-500 fill-rose-500 drop-shadow-[0_0_40px_rgba(244,63,94,0.85)]"
+                  >
+                    <path d="M12,30 C5,10 -15,25 10,55 C17,62 43,82 50,85 C57,82 83,62 90,55 C115,25 95,10 88,30 C80,50 60,40 50,55 C40,40 20,50 12,30 Z" />
+                  </motion.svg>
+                </motion.div>
+
+                {/* 2. Traveling Golden Arrow (appears at 1.0s, travels for 1.2s, hits heart, vanishes at 2.2s) */}
+                <motion.div
+                  initial={{ x: '60vw', y: '-60vh', rotate: -45, opacity: 0 }}
+                  animate={{ 
+                    x: [ '60vw', 0 ], 
+                    y: [ '-60vh', 0 ], 
+                    opacity: [ 0, 1, 1, 0 ]
+                  }}
+                  transition={{ 
+                    delay: 1.0, 
+                    duration: 1.2, 
+                    ease: 'linear',
+                    times: [0, 0.05, 0.99, 1.0]
+                  }}
+                  className="absolute flex items-center justify-center"
+                >
+                  <svg viewBox="0 0 100 100" className="w-16 h-16 md:w-24 md:h-24 text-yellow-300 drop-shadow-[0_0_15px_rgba(253,224,71,0.9)]">
+                    {/* Golden Arrow shaft pointed at center */}
+                    <line x1="85" y1="15" x2="20" y2="80" stroke="currentColor" strokeWidth="4.5" />
+                    {/* Head */}
+                    <polygon points="12,88 32,76 24,68" fill="currentColor" />
+                    {/* Fletching */}
+                    <path d="M82,12 L92,8 L95,15 L85,18 Z" fill="currentColor" />
+                    <path d="M88,18 L95,22 L92,29 L85,25 Z" fill="currentColor" />
+                  </svg>
+                </motion.div>
+
+                {/* 3. Screen Impact Flash (at 2.2s, decays over 300ms) */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0, 0.85, 0] }}
+                  transition={{ delay: 2.2, duration: 0.35, ease: 'easeOut', times: [0, 0.1, 1.0] }}
+                  className="fixed inset-0 bg-white/90 z-50 pointer-events-none"
+                />
+
+                {/* 4. Final Text Overlay (appears at 3.0s) */}
+                <div className="absolute inset-x-0 bottom-1/4 flex flex-col items-center space-y-4 px-6 text-center z-45">
+                  <motion.h2
+                    initial={{ opacity: 0, scale: 0.9, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                    transition={{ delay: 3.0, duration: 1.0, ease: 'easeOut' }}
+                    className="text-3xl md:text-5xl font-playfair font-black text-rose-100 tracking-wider drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)]"
+                  >
+                    SHE SAID YES. ❤️
+                  </motion.h2>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 4.2, duration: 1.2, ease: 'easeOut' }}
+                    className="text-base md:text-xl text-rose-200 leading-loose italic drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]"
+                    style={{
+                      fontFamily: "'Mukta Malar', 'Latha', 'Tamil', sans-serif"
+                    }}
+                  >
+                    "இந்த நிமிடம்... நம்முடையது. ❤️"
+                  </motion.p>
+                </div>
+
                 {showCelebrationSkip && (
-                  <div className="pointer-events-auto fixed bottom-6 inset-x-0 flex justify-center">
+                  <div className="pointer-events-auto absolute bottom-6 inset-x-0 flex justify-center z-50">
                     <button
                       onClick={() => goToScene('scene11_final')}
                       className="px-8 py-2.5 rounded-full bg-white/5 border border-white/10 text-white/80 hover:text-white text-xs font-medium backdrop-blur-md transition-all active:scale-95"

@@ -1,0 +1,23 @@
+# Rebuild Progress Checklist
+
+- [x] Create `SceneProvider.jsx` for state machine
+- [x] Build reusable Canvas-based `<HeartBurst>` module
+- [x] Overhaul `AudioPlayer.jsx` into the procedural AudioEngine
+- [x] Rewrite `BackgroundEffects.jsx` as `GardenCanvas` with intensity progression
+- [x] Rig Bird (`LeftDecorations.jsx`) and Mascot (`Mascot.jsx`, `RightDecorations.jsx`)
+- [x] Implement/Rebuild Scenes:
+  - [x] Scene 3: Incoming Call & waveform visualizer (`PhoneCallScene.jsx`)
+  - [x] Scene 4: Memory Trail interactive garden tapping (`FeelingCards.jsx`)
+  - [x] Scene 5: What Really Matters / Qualities with Tamil beats (`Qualities.jsx`)
+  - [x] Scene 6: Star-catching game overlay (`StarGame.jsx`)
+  - [x] Scene 8: 3D envelope and letter unfold (`Letter3D.jsx`)
+  - [x] Scene 11: Canvas arrow impact celebration (`CelebrationCanvas.jsx`)
+- [x] Update `App.jsx` with overlays, error boundary, and the 7s awaken timeline
+- [x] Premium Visual QA Updates:
+  - [x] Keep BackgroundEffects mounted during YES / NO screens
+  - [x] Draw fletched golden arrow vector shaft with trailing blur trail
+  - [x] Delay companion bird flight takeoff by 2.5s
+  - [x] Delay mascot celebrating pose switch by 2.5s
+  - [x] Build canvas progressive heartbreak crack and gravity fall animation
+  - [x] Lock confession buttons once clicked to prevent duplicates
+- [x] Verify build, execute test matrix, and commit to GitHub

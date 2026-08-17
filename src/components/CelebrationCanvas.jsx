@@ -507,41 +507,8 @@ export default function CelebrationCanvas() {
   }, []);
 
   return (
-    <div className="absolute inset-0 w-full h-full z-15 pointer-events-none select-none">
+    <div className="absolute inset-0 w-full h-full pointer-events-none select-none">
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
-
-      {/* Typography Overlay */}
-      {currentScene === SCENES.YES && (
-        <div className="absolute inset-x-0 bottom-1/4 flex flex-col items-center text-center space-y-4 px-6 z-25">
-          <AnimatePresence>
-            {showTypography && (
-              <motion.h2
-                initial={{ opacity: 0, scale: 0.9, filter: 'blur(4px)' }}
-                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                transition={{ duration: 1.0, ease: 'easeOut' }}
-                className="text-3xl md:text-5xl font-playfair font-black text-rose-100 tracking-wider drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]"
-              >
-                SHE SAID YES ❤️
-              </motion.h2>
-            )}
-
-            {showSubText && (
-              <motion.p
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.2, ease: 'easeOut' }}
-                className="text-base md:text-xl text-rose-200 leading-loose italic drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]"
-                style={{
-                  fontFamily: "'Mukta Malar', 'Latha', 'Tamil', sans-serif"
-                }}
-              >
-                "இந்த நிமிடம்...
-                நம்முடையது. 🌸"
-              </motion.p>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
     </div>
   );
 }

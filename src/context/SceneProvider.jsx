@@ -15,7 +15,8 @@ export const SCENES = {
   CONFESSION: 'confession',
   YES: 'yes',
   NO: 'no',
-  LET_ME_THINK: 'let_me_think'
+  LET_ME_THINK: 'let_me_think',
+  GATECHECK_STOP: 'gatecheck_stop'
 };
 
 const INTENSITY_MAP = {
@@ -31,7 +32,8 @@ const INTENSITY_MAP = {
   [SCENES.CONFESSION]: 0.05, // Black screen target
   [SCENES.YES]: 1.0, // Maximum intensity
   [SCENES.NO]: 0.2, // Wilting/dimmed
-  [SCENES.LET_ME_THINK]: 0.2
+  [SCENES.LET_ME_THINK]: 0.2,
+  [SCENES.GATECHECK_STOP]: 0.1
 };
 
 export function SceneProvider({ children }) {

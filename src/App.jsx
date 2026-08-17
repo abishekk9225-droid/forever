@@ -267,7 +267,7 @@ function MainApp() {
                   </p>
                   <div className="flex gap-4 justify-center pointer-events-auto">
                     <button
-                      onClick={() => goToScene(SCENES.LET_ME_THINK)}
+                      onClick={() => goToScene(SCENES.GATECHECK_STOP)}
                       className="px-6 py-2.5 rounded-full border border-white/10 hover:border-rose-500/30 bg-white/2 hover:bg-rose-500/10 text-rose-300 font-medium text-xs transition-all duration-300 active:scale-95 flex-1"
                     >
                       Yes
@@ -282,6 +282,39 @@ function MainApp() {
                       No
                     </button>
                   </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* SCENE 2 EXIT: Respectful Exit Stop */}
+            {currentScene === SCENES.GATECHECK_STOP && (
+              <motion.div
+                key="scene_gate_stop"
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="w-full max-w-sm mx-auto p-6 md:p-8 rounded-3xl glass-panel border border-white/5 shadow-2xl relative text-center space-y-6 select-none"
+              >
+                <div className="space-y-3">
+                  <Heart size={20} className="text-gray-600 mx-auto" />
+                  <h4 className="text-base font-semibold text-white uppercase tracking-wider">
+                    Respectful Ending
+                  </h4>
+                  <p className="text-xs text-gray-400 leading-relaxed px-4">
+                    "Okay... I'll stop here. I genuinely hope you're happy."
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-white/5 pointer-events-auto">
+                  <button
+                    onClick={() => {
+                      if (window.playRomanticChime) window.playRomanticChime();
+                      goToScene(SCENES.INTRO);
+                    }}
+                    className="px-8 py-2 rounded-full border border-white/10 text-white/80 hover:text-white text-xs font-medium flex items-center gap-1.5 mx-auto active:scale-95 transition-all"
+                  >
+                    Go Back
+                  </button>
                 </div>
               </motion.div>
             )}

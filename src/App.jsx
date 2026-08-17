@@ -16,6 +16,7 @@ import EasterEggs from './components/EasterEggs';
 import ErrorBoundary from './components/ErrorBoundary';
 import HeartBurst from './components/HeartBurst';
 import TextHeart3D from './components/TextHeart3D';
+import SpringCoilFinale from './components/SpringCoilFinale';
 
 function DairyMilkBar() {
   return (
@@ -380,10 +381,10 @@ function MainApp() {
 
       {/* MAIN VIEWPORT */}
       <main className="flex-grow flex items-center justify-center py-12 relative z-30 px-4">
-        {/* Background 3D Rotating Typography Heart in Letter and Confession scenes */}
-        {disclaimerAccepted && (currentScene === SCENES.LETTER || currentScene === SCENES.CONFESSION) && (
+        {/* Background 3D Rotating Typography Heart in Confession scene */}
+        {disclaimerAccepted && currentScene === SCENES.CONFESSION && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
-            <div className="opacity-60 scale-75 sm:scale-100">
+            <div className="scale-75 sm:scale-100">
               <TextHeart3D />
             </div>
           </div>
@@ -693,7 +694,7 @@ function MainApp() {
                 animate="animate"
                 exit="exit"
               >
-                <Letter3D onComplete={() => goToScene(SCENES.SUSPENSE)} />
+                <Letter3D onComplete={() => goToScene(SCENES.CONFESSION)} />
               </motion.div>
             )}
 
@@ -1210,6 +1211,9 @@ function MainApp() {
                             "I promise to keep choosing you, Saranya, every single day."
                           </motion.div>
                         )}
+
+                        {/* Grand Finale - Spring-Coil Tree */}
+                        <SpringCoilFinale />
                       </motion.div>
                     )}
                   </AnimatePresence>

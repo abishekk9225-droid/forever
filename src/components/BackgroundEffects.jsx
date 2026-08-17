@@ -148,25 +148,34 @@ export default function BackgroundEffects() {
         this.reset(true);
       }
       reset(init = false) {
-        this.x = init ? Math.random() * canvas.width : (Math.random() < 0.5 ? -30 : canvas.width + 30);
-        this.y = Math.random() * canvas.height * 0.8;
-        this.size = Math.random() * 0.5 + 0.5; // Scale factor
-        this.speed = Math.random() * 0.8 + 0.6; // Speed of travel
-        
-        if (!init) {
-          if (this.x < 0) {
-            this.angle = (Math.random() - 0.5) * 0.5; // moving right
-          } else {
-            this.angle = Math.PI + (Math.random() - 0.5) * 0.5; // moving left
-          }
-        } else {
+        const { currentScene: scene } = settingsRef.current;
+        if (scene === SCENES.YES) {
+          this.x = canvas.width / 2 + (Math.random() - 0.5) * 60;
+          this.y = canvas.height / 2 + (Math.random() - 0.5) * 60;
+          this.size = Math.random() * 0.45 + 0.35; // slightly smaller for higher density
+          this.speed = Math.random() * 2.8 + 1.6; // faster flight for explosion outward
           this.angle = Math.random() * Math.PI * 2;
+        } else {
+          this.x = init ? Math.random() * canvas.width : (Math.random() < 0.5 ? -30 : canvas.width + 30);
+          this.y = Math.random() * canvas.height * 0.8;
+          this.size = Math.random() * 0.5 + 0.5; // Scale factor
+          this.speed = Math.random() * 0.8 + 0.6; // Speed of travel
+          
+          if (!init) {
+            if (this.x < 0) {
+              this.angle = (Math.random() - 0.5) * 0.5; // moving right
+            } else {
+              this.angle = Math.PI + (Math.random() - 0.5) * 0.5; // moving left
+            }
+          } else {
+            this.angle = Math.random() * Math.PI * 2;
+          }
         }
         
         const colors = ['#F472B6', '#38BDF8', '#A78BFA', '#FBBF24', '#34D399', '#FB7185'];
         this.color = colors[Math.floor(Math.random() * colors.length)];
         this.flapPhase = Math.random() * Math.PI * 2;
-        this.flapSpeed = Math.random() * 0.15 + 0.12;
+        this.flapSpeed = Math.random() * 0.18 + 0.14; // slightly faster wing flaps
         this.noiseOffset = Math.random() * 1000;
       }
       update() {
@@ -243,14 +252,25 @@ export default function BackgroundEffects() {
       }
     }
 
+    // Track last scene to trigger transition events
+    let lastScene = null;
+
     // Initialize Pools
     const starsList = Array.from({ length: 120 }, () => new Star());
     const firefliesList = Array.from({ length: 60 }, () => new Firefly());
-    const butterfliesList = Array.from({ length: 16 }, () => new Butterfly());
+    const butterfliesList = Array.from({ length: 160 }, () => new Butterfly());
 
     const updateAndDrawFrame = () => {
       time += 0.02;
       const { storyIntensity: intensity, isLowEnd: low, currentScene: scene } = settingsRef.current;
+
+      // Reset all butterflies to center to explode outward on YES scene transition
+      if (scene === SCENES.YES && lastScene !== SCENES.YES) {
+        for (let i = 0; i < butterfliesList.length; i++) {
+          butterfliesList[i].reset(true);
+        }
+      }
+      lastScene = scene;
 
       // Parallax offsets (scroll/mouse coordinate mappings)
       const pX = (mousePos.x / window.innerWidth - 0.5) * 0.25;
@@ -282,9 +302,9 @@ export default function BackgroundEffects() {
       }
 
       // 2b. Draw Butterflies (active across all scenes, count based on performance)
-      const targetButterflies = low ? 5 : 11;
-      const celebrationMultiplier = scene === SCENES.YES ? 1.5 : 1.0;
-      const activeButterfliesCount = Math.floor(targetButterflies * celebrationMultiplier);
+      const activeButterfliesCount = scene === SCENES.YES
+        ? (low ? 50 : 140)
+        : (low ? 5 : 11);
 
       for (let i = 0; i < activeButterfliesCount; i++) {
         butterfliesList[i].update();

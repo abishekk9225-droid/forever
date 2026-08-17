@@ -93,23 +93,9 @@ Are you ready?`;
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.55, ease: 'easeOut' }}
-            className="w-full flex flex-col items-center relative"
+            className="w-full flex flex-col items-center"
           >
-            {/* Left emerging spring-coil branch */}
-            <div className="absolute -left-16 top-1/4 -translate-y-1/2 z-0 pointer-events-none">
-              <svg viewBox="0 0 200 200" className="coil">
-                <path className="coil-track" d="M 100,100 A 5,5 0 0,1 110,100 A 10,10 0 0,1 90,100 A 15,15 0 0,1 120,100 A 20,20 0 0,1 80,100 A 25,25 0 0,1 130,100 A 30,30 0 0,1 70,100 A 35,35 0 0,1 140,100 A 40,40 0 0,1 60,100" />
-              </svg>
-            </div>
-            
-            {/* Right emerging spring-coil branch */}
-            <div className="absolute -right-16 top-1/4 -translate-y-1/2 z-0 pointer-events-none scale-x-[-1]">
-              <svg viewBox="0 0 200 200" className="coil">
-                <path className="coil-track" d="M 100,100 A 5,5 0 0,1 110,100 A 10,10 0 0,1 90,100 A 15,15 0 0,1 120,100 A 20,20 0 0,1 80,100 A 25,25 0 0,1 130,100 A 30,30 0 0,1 70,100 A 35,35 0 0,1 140,100 A 40,40 0 0,1 60,100" />
-              </svg>
-            </div>
-
-            <div className="w-full bg-[#160d21] border border-rose-500/20 rounded-3xl p-1 relative shadow-paper overflow-hidden flex flex-col pointer-events-auto z-10">
+            <div className="w-full bg-[#160d21] border border-rose-500/20 rounded-3xl p-1 relative shadow-paper overflow-hidden flex flex-col pointer-events-auto">
               <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-rose-500 via-purple-600 to-rose-500" />
               
               {/* Envelope inside header */}
@@ -120,7 +106,7 @@ Are you ready?`;
                 </div>
                 <span className="text-[10px] text-gray-400 font-sans font-medium">From Abishek</span>
               </div>
-
+ 
               {/* Scrollable Letter Body */}
               <div className="max-h-[310px] overflow-y-auto px-6 md:px-8 py-6 text-left scrollbar-thin">
                 <p 
@@ -133,15 +119,15 @@ Are you ready?`;
                   {letterText}
                 </p>
               </div>
-
+ 
               {/* Action Button */}
               <div className="p-4 border-t border-white/5 bg-white/2 flex justify-center">
                 <button
                   id="btn-letter-continue"
                   onClick={onComplete}
-                  className="btn-primary"
+                  className="btn-primary !px-8 !py-3.5 !text-sm !font-bold tracking-widest uppercase bg-gradient-to-r from-rose-500/20 to-amber-500/20 border-amber-300/40 text-amber-200 hover:border-amber-300 shadow-[0_0_25px_rgba(253,224,139,0.3)]"
                 >
-                  Continue →
+                  PROCEED / CONTINUE 💖
                 </button>
               </div>
             </div>

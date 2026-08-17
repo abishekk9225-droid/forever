@@ -16,6 +16,68 @@ import EasterEggs from './components/EasterEggs';
 import ErrorBoundary from './components/ErrorBoundary';
 import HeartBurst from './components/HeartBurst';
 
+function DairyMilkBar() {
+  return (
+    <svg viewBox="0 0 80 140" className="w-full h-full drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]">
+      <defs>
+        <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#4a1275" />
+          <stop offset="50%" stopColor="#2c0054" />
+          <stop offset="100%" stopColor="#1a0036" />
+        </linearGradient>
+        <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#ffe259" />
+          <stop offset="100%" stopColor="#ffa751" />
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="76" height="136" rx="6" fill="url(#purpleGrad)" stroke="#ffd700" strokeWidth="1.5" />
+      <path d="M2,2 L10,8 L18,2 L26,8 L34,2 L42,8 L50,2 L58,8 L66,2 L74,8 L78,2" fill="none" stroke="#ffd700" strokeWidth="1" />
+      <path d="M2,138 L10,132 L18,138 L26,132 L34,138 L42,132 L50,138 L58,132 L66,138 L74,132 L78,138" fill="none" stroke="#ffd700" strokeWidth="1" />
+      
+      <text x="40" y="32" fill="#ffffff" fontSize="9" fontFamily="'Georgia', serif" fontStyle="italic" textAnchor="middle" fontWeight="bold">
+        Cadbury
+      </text>
+      
+      <text x="40" y="52" fill="url(#goldGrad)" fontSize="9" fontFamily="'Impact', 'Arial Black', sans-serif" letterSpacing="0.5" textAnchor="middle" fontWeight="black">
+        Dairy Milk
+      </text>
+      
+      <g transform="translate(28, 62) scale(0.65)" stroke="#ffffff" fill="none" strokeWidth="1.5">
+        <path d="M5,5 L8,25 Q12,28 16,25 L19,5 Z" fill="#ffffff" opacity="0.8" />
+        <path d="M12,2 C15,0 20,4 23,8" />
+        <path d="M25,5 L28,25 Q32,28 36,25 L39,5 Z" fill="#ffffff" opacity="0.8" />
+      </g>
+
+      <g transform="translate(12, 85)" fill="#542c16" stroke="#33180b" strokeWidth="1">
+        <rect x="0" y="0" width="25" height="18" rx="2" fill="#3a1b0d" />
+        <rect x="31" y="0" width="25" height="18" rx="2" fill="#3a1b0d" />
+        <rect x="0" y="24" width="25" height="18" rx="2" fill="#3a1b0d" />
+        <rect x="31" y="24" width="25" height="18" rx="2" fill="#3a1b0d" />
+        <path d="M2,2 L10,2" stroke="#6b3a1a" strokeWidth="1" />
+        <path d="M33,2 L41,2" stroke="#6b3a1a" strokeWidth="1" />
+      </g>
+    </svg>
+  );
+}
+
+function IndividualChocolate() {
+  return (
+    <svg viewBox="0 0 50 40" className="w-full h-full drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+      <defs>
+        <linearGradient id="wrapperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#63148a" />
+          <stop offset="100%" stopColor="#2c004a" />
+        </linearGradient>
+      </defs>
+      <path d="M5,20 C10,12 12,12 18,17 C15,20 15,20 18,23 C12,28 10,28 5,20 Z" fill="url(#wrapperGrad)" stroke="#ffd700" strokeWidth="0.75" />
+      <path d="M45,20 C40,12 38,12 32,17 C35,20 35,20 32,23 C38,28 40,28 45,20 Z" fill="url(#wrapperGrad)" stroke="#ffd700" strokeWidth="0.75" />
+      <ellipse cx="25" cy="20" rx="11" ry="8" fill="url(#wrapperGrad)" stroke="#ffd700" strokeWidth="1" />
+      <rect x="17" y="15" width="2" height="10" fill="#ffd700" rx="0.5" />
+      <rect x="31" y="15" width="2" height="10" fill="#ffd700" rx="0.5" />
+    </svg>
+  );
+}
+
 function MainApp() {
   const { currentScene, goToScene, storyIntensity, isMobile, isLowEnd } = useScene();
 
@@ -29,7 +91,6 @@ function MainApp() {
   // Confession states (Scene 10)
   const [confessionStep, setConfessionStep] = useState(0); // 0: black screen / heartbeat, 1: Saranya, 2: I LOVE YOU, 3: Will you be mine / buttons
   const [confessionClicked, setConfessionClicked] = useState(false);
-  const [yesButtonWorked, setYesButtonWorked] = useState(false);
 
   // Custom Message Box (Scene 11 final afterglow)
   const [finalMsg, setFinalMsg] = useState('');
@@ -84,7 +145,6 @@ function MainApp() {
     if (currentScene === SCENES.CONFESSION) {
       setConfessionStep(0);
       setConfessionClicked(false);
-      setYesButtonWorked(false);
       if (window.setHeartbeatActive) window.setHeartbeatActive(true);
 
       const timers = [
@@ -99,18 +159,101 @@ function MainApp() {
     }
   }, [currentScene]);
 
-  // 4. Scene 11a YES Celebration transitions
-  const [showCelebrationSkip, setShowCelebrationSkip] = useState(false);
+  // 4. Scene 11a YES Celebration timeline and orchestrator
+  const [heartAnimate, setHeartAnimate] = useState({ scale: 0, opacity: 0 });
+  const [arrowAnimate, setArrowAnimate] = useState({ x: '60vw', y: '-60vh', opacity: 0 });
+  const [impactFlash, setImpactFlash] = useState(false);
+  const [showGiftBox, setShowGiftBox] = useState(false);
+  const [isLidShaking, setIsLidShaking] = useState(false);
+  const [isLidOpen, setIsLidOpen] = useState(false);
+  const [chocolatesOut, setChocolatesOut] = useState(false);
+  const [showILoveYou, setShowILoveYou] = useState(false);
+  const [showRoseHeart, setShowRoseHeart] = useState(false);
+  const [showFinalMessage, setShowFinalMessage] = useState(false);
+
   useEffect(() => {
     if (currentScene === SCENES.YES) {
-      setShowCelebrationSkip(false);
-      const skipTimer = setTimeout(() => setShowCelebrationSkip(true), 4000);
-      const finalTimer = setTimeout(() => goToScene('scene11_final'), 12500);
+      setHeartAnimate({ scale: 0, opacity: 0 });
+      setArrowAnimate({ x: '60vw', y: '-60vh', opacity: 0 });
+      setImpactFlash(false);
+      setShowGiftBox(false);
+      setIsLidShaking(false);
+      setIsLidOpen(false);
+      setChocolatesOut(false);
+      setShowILoveYou(false);
+      setShowRoseHeart(false);
+      setShowFinalMessage(false);
 
-      return () => {
-        clearTimeout(skipTimer);
-        clearTimeout(finalTimer);
-      };
+      const timers = [
+        // 0.7s: Glowing classic heart fades in
+        setTimeout(() => {
+          setHeartAnimate({ scale: 1.0, opacity: 1, transition: { duration: 0.45, ease: 'easeOut' } });
+        }, 700),
+
+        // 1.0s: Golden fletched arrow starts diagonal travel from top-right
+        setTimeout(() => {
+          setArrowAnimate({ 
+            x: 0, 
+            y: 0, 
+            opacity: 1, 
+            transition: { duration: 1.2, ease: 'linear' } 
+          });
+        }, 1000),
+
+        // 1.5s: Heart gentle pre-impact pulse
+        setTimeout(() => {
+          setHeartAnimate({ scale: [1, 1.06, 1], transition: { duration: 0.7 } });
+        }, 1500),
+
+        // 2.2s: IMPACT! full screen flash, heart expansion, camera shake
+        setTimeout(() => {
+          setImpactFlash(true);
+          setHeartAnimate({ scale: [1.4, 1.0, 1.06, 1.0], transition: { duration: 0.6, ease: 'easeOut' } });
+          setArrowAnimate({ x: 0, y: 0, opacity: 1 }); // Embedded in the heart
+        }, 2200),
+
+        // 2.8s: Heart loop pulse
+        setTimeout(() => {
+          setHeartAnimate({ 
+            scale: [1, 1.06, 1], 
+            transition: { duration: 1.4, repeat: Infinity, ease: 'easeInOut' } 
+          });
+        }, 2800),
+
+        // 3.5s: Closed gift box bottom + lid fades in and starts shaking
+        setTimeout(() => {
+          setShowGiftBox(true);
+          setIsLidShaking(true);
+        }, 3500),
+
+        // 4.5s: Lid opens naturally
+        setTimeout(() => {
+          setIsLidShaking(false);
+          setIsLidOpen(true);
+        }, 4500),
+
+        // 4.8s: Chocolates pop out and scatter
+        setTimeout(() => {
+          setChocolatesOut(true);
+        }, 4800),
+
+        // 7.0s: Cinematic 'I LOVE YOU' reveal starts
+        setTimeout(() => {
+          setShowILoveYou(true);
+        }, 7000),
+
+        // 10.2s: Luminous rose heart fades in underneath 'I LOVE YOU'
+        setTimeout(() => {
+          setShowRoseHeart(true);
+        }, 10200),
+
+        // 11.0s: Final message area fades in
+        setTimeout(() => {
+          setShowFinalMessage(true);
+        }, 11000)
+      ];
+
+      return () => timers.forEach(clearTimeout);
     }
   }, [currentScene]);
 
@@ -125,11 +268,6 @@ function MainApp() {
     <div className={`relative min-h-screen flex flex-col justify-between overflow-x-hidden transition-colors duration-1000 select-none ${
       currentScene === SCENES.SUSPENSE || currentScene === SCENES.CONFESSION ? 'bg-[#030005]' : 'bg-[#05020a]'
     }`}>
-      {yesButtonWorked && (
-        <div className="fixed top-24 left-0 right-0 text-center z-50 text-2xl font-bold text-rose-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] pointer-events-none select-none animate-pulse">
-          YES BUTTON WORKED
-        </div>
-      )}
       {/* Reusable Canvas Heart Burst System */}
       <ErrorBoundary>
         <HeartBurst />
@@ -542,7 +680,6 @@ function MainApp() {
                           disabled={confessionClicked}
                           onClick={() => {
                             setConfessionClicked(true);
-                            setYesButtonWorked(true);
                             if (window.triggerYesSoundDesign) window.triggerYesSoundDesign();
                             goToScene(SCENES.YES);
                           }}
@@ -561,14 +698,8 @@ function MainApp() {
 
             {/* SCENE 11a: YES Celebration overlay with DOM Heart, Arrow, Flash, and Typography */}
             {currentScene === SCENES.YES && (
-              <motion.div
-                key="scene_yes"
-                variants={pageVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                className="fixed inset-0 flex flex-col items-center justify-between z-40 pointer-events-none select-none py-12 px-6"
-              >
+              <div className="fixed inset-0 flex flex-col items-center justify-between z-40 pointer-events-none select-none py-10 px-6">
+                
                 {/* 1. ELEGANT CELEBRATION TITLE (Top) */}
                 <div className="text-center space-y-2 mt-8 z-45">
                   <motion.h2
@@ -593,14 +724,13 @@ function MainApp() {
                   </motion.p>
                 </div>
 
-                {/* 2. HUGE CENTER GLOWING REAL HEART & ARROW (Center) */}
-                <div className="relative flex-grow flex items-center justify-center w-full min-h-[300px]">
-                  {/* Heart wrapper */}
+                {/* 2. CENTER ZONE: HUGE GLOWING REAL HEART & ARROW AND "I LOVE YOU" REVEAL */}
+                <div className="relative flex-grow flex items-center justify-center w-full min-h-[340px] max-w-4xl">
+                  {/* Big Glowing Heart */}
                   <motion.div
                     animate={heartAnimate}
-                    className="relative flex items-center justify-center z-40"
+                    className="absolute flex items-center justify-center z-30"
                   >
-                    {/* Glowing Heart SVG */}
                     <svg
                       viewBox="0 0 100 100"
                       className="w-36 h-36 md:w-52 md:h-52 text-rose-500 fill-rose-500 filter drop-shadow-[0_0_35px_rgba(244,63,94,0.7)] drop-shadow-[0_0_12px_rgba(255,255,255,0.45)]"
@@ -609,22 +739,115 @@ function MainApp() {
                     </svg>
                   </motion.div>
 
-                  {/* Embedded Golden Arrow wrapper (moves to (0,0) center of parent which is center of heart!) */}
+                  {/* Embedded Golden Arrow */}
                   <motion.div
                     animate={arrowAnimate}
-                    className="absolute flex items-center justify-center z-45"
+                    className="absolute flex items-center justify-center z-35"
                   >
-                    {/* Arrow tip is centered at 0, 0 of the SVG wrapper, arrow shaft extends top-right */}
                     <svg viewBox="-20 -20 180 180" className="w-24 h-24 md:w-36 md:h-36 text-yellow-300 drop-shadow-[0_0_12px_rgba(253,224,71,0.9)]">
-                      {/* Golden Arrow shaft */}
                       <line x1="120" y1="-120" x2="0" y2="0" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" />
-                      {/* Elegant Arrowhead */}
                       <polygon points="0,0 22,-5 5,-22" fill="currentColor" />
-                      {/* Fletching */}
                       <path d="M120,-120 L135,-115 L140,-130 L125,-135 Z" fill="currentColor" />
                       <path d="M115,-115 L130,-110 L135,-125 L120,-130 Z" fill="currentColor" />
                     </svg>
                   </motion.div>
+
+                  {/* cinematic "I LOVE YOU" text reveal block overlaying on center */}
+                  {showILoveYou && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center z-45">
+                      <div className="flex gap-4 md:gap-6 items-center justify-center text-5xl md:text-7xl font-playfair font-black tracking-wide drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)]">
+                        {/* Word "I" (moves left -> center) */}
+                        <motion.span
+                          initial={{ x: '-50vw', opacity: 0 }}
+                          animate={{ 
+                            x: 0, 
+                            opacity: 1,
+                            textShadow: [
+                              "0 0 8px rgba(255,255,255,0)",
+                              "0 0 16px rgba(255,246,230,0.6)",
+                              "0 0 10px rgba(255,246,230,0.3)"
+                            ]
+                          }}
+                          transition={{ 
+                            duration: 1.2, 
+                            ease: [0.25, 0.1, 0.25, 1.0],
+                            times: [0, 0.9, 1.0]
+                          }}
+                          className="text-[#fff6e6] inline-block"
+                        >
+                          I
+                        </motion.span>
+
+                        {/* Word "LOVE" (descends above -> center) */}
+                        <motion.span
+                          initial={{ y: '-30vh', opacity: 0 }}
+                          animate={{ 
+                            y: 0, 
+                            opacity: 1,
+                            textShadow: [
+                              "0 0 8px rgba(244,63,94,0)",
+                              "0 0 20px rgba(240,139,152,0.7)",
+                              "0 0 12px rgba(240,139,152,0.4)"
+                            ]
+                          }}
+                          transition={{ 
+                            duration: 1.2, 
+                            ease: [0.25, 0.1, 0.25, 1.0]
+                          }}
+                          className="text-[#f08b98] font-serif italic inline-block"
+                        >
+                          LOVE
+                        </motion.span>
+
+                        {/* Word "YOU" (moves right -> center) */}
+                        <motion.span
+                          initial={{ x: '50vw', opacity: 0 }}
+                          animate={{ 
+                            x: 0, 
+                            opacity: 1,
+                            textShadow: [
+                              "0 0 8px rgba(255,255,255,0)",
+                              "0 0 16px rgba(255,246,230,0.6)",
+                              "0 0 10px rgba(255,246,230,0.3)"
+                            ]
+                          }}
+                          transition={{ 
+                            duration: 1.2, 
+                            ease: [0.25, 0.1, 0.25, 1.0],
+                            times: [0, 0.9, 1.0]
+                          }}
+                          className="text-[#fff6e6] inline-block"
+                        >
+                          YOU
+                        </motion.span>
+                      </div>
+
+                      {/* Small elegant ROSE/PINK heart directly underneath (fades in at 10.2s) */}
+                      {showRoseHeart && (
+                        <motion.div
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ 
+                            scale: [0, 1.2, 1.0], 
+                            opacity: 1
+                          }}
+                          transition={{ 
+                            duration: 0.6, 
+                            ease: 'easeOut'
+                          }}
+                          className="mt-6 flex justify-center items-center"
+                        >
+                          <motion.svg
+                            animate={{ scale: [1, 1.08, 1] }}
+                            transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+                            viewBox="0 0 100 100"
+                            className="w-8 h-8 text-rose-400 fill-rose-400 filter drop-shadow-[0_0_10px_rgba(244,63,94,0.65)]"
+                          >
+                            <path d="M 50, 90 C 25, 75 5, 55 5, 35 C 5, 17 18, 5 35, 5 C 44, 5 50, 10 50, 10 C 50, 10 56, 5 65, 5 C 82, 5 95, 17 95, 35 C 95, 55 75, 75 50, 90 Z" />
+                          </motion.svg>
+                        </motion.div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* 3. IMPACT FLASH (Z-50) */}
@@ -787,7 +1010,7 @@ function MainApp() {
                     )}
                   </AnimatePresence>
                 </div>
-              </motion.div>
+              </div>
             )}
 
             {/* SCENE 11b: NO response card */}

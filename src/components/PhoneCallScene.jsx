@@ -88,38 +88,48 @@ export default function PhoneCallScene({ onComplete }) {
     <div className="w-full max-w-sm mx-auto p-6 md:p-8 rounded-3xl glass-panel relative overflow-hidden flex flex-col justify-between min-h-[380px] shadow-2xl border border-white/5">
       {callState === 'ringing' ? (
         <div className="flex flex-col items-center justify-between flex-grow text-center">
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <span className="text-[10px] uppercase tracking-widest text-rose-400 font-bold animate-pulse">
-              Incoming Call
+              Incoming Connection
             </span>
-            <h3 className="text-xl md:text-2xl font-playfair font-semibold text-white">
+            <h3 className="text-xl md:text-2xl font-playfair font-semibold text-white tracking-wide">
               Saranya 🌸
             </h3>
-            <p className="text-[11px] text-gray-500">Connecting from the heart...</p>
+            <p className="text-[11px] text-gray-500 font-medium">Connecting from the heart...</p>
           </div>
 
-          {/* Ringing waves */}
-          <div className="relative w-24 h-24 my-8 flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full bg-rose-500/10 animate-ping" />
-            <div className="absolute inset-4 rounded-full bg-rose-500/20 animate-pulse" />
-            <div className="w-16 h-16 rounded-full bg-rose-500/20 border border-rose-500/35 flex items-center justify-center text-rose-400">
-              <Phone size={24} className="animate-bounce" />
+          {/* Ringing concentric waves and Avatar Portrait */}
+          <div className="relative w-28 h-28 my-6 flex items-center justify-center pointer-events-none">
+            {/* Concentric expanding ripples */}
+            <div className="absolute inset-0 rounded-full border border-rose-500/20 animate-ping-slow" />
+            <div className="absolute inset-2 rounded-full border border-rose-500/30 animate-ping-medium" />
+            <div className="absolute inset-4 rounded-full border border-rose-500/40 animate-ping-fast" />
+            
+            {/* Pulsing Avatar Portrait */}
+            <div className="relative w-20 h-20 rounded-full bg-gradient-to-tr from-[#1b0a1d] to-[#3a0c28] border-2 border-rose-400 flex flex-col items-center justify-center text-rose-200 shadow-[0_0_24px_rgba(244,114,182,0.35)] animate-pulse">
+              <span className="text-2xl font-playfair font-black tracking-widest text-[#fffbe6]">S</span>
+              <span className="text-[8px] tracking-widest uppercase font-sans font-bold mt-0.5 text-rose-300">Saranya</span>
             </div>
           </div>
 
           {/* Call actions */}
-          <div className="flex gap-8 justify-center w-full">
+          <div className="flex gap-8 justify-center w-full pointer-events-auto">
+            {/* Decline Button (Obsidian Glass styling) */}
             <button
               onClick={handleDecline}
-              className="w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+              className="w-12 h-12 rounded-full bg-red-950/40 hover:bg-red-600 border border-red-500/30 text-red-200 hover:text-white flex items-center justify-center shadow-lg active:scale-95 hover:scale-105 transition-all duration-300"
+              aria-label="Decline Call"
             >
-              <PhoneOff size={18} />
+              <PhoneOff size={16} />
             </button>
+            
+            {/* Accept Button (Emerald Glow styling) */}
             <button
               onClick={handleAnswer}
-              className="w-12 h-12 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform animate-pulse"
+              className="w-12 h-12 rounded-full bg-emerald-950/40 hover:bg-emerald-500 border border-emerald-500/30 text-emerald-200 hover:text-white flex items-center justify-center shadow-lg active:scale-95 hover:scale-105 transition-all duration-300 animate-pulse"
+              aria-label="Answer Call"
             >
-              <Phone size={18} />
+              <Phone size={16} />
             </button>
           </div>
         </div>
@@ -157,11 +167,7 @@ export default function PhoneCallScene({ onComplete }) {
             <button
               onClick={onComplete}
               disabled={!isFinished}
-              className={`px-8 py-2.5 rounded-full text-xs font-semibold tracking-wider transition-all duration-300 ${
-                isFinished
-                  ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white hover:scale-105 active:scale-95 shadow-md shadow-rose-500/10'
-                  : 'bg-white/5 text-gray-500 cursor-not-allowed'
-              }`}
+              className="btn-primary disabled:bg-white/5 disabled:text-gray-500 disabled:border-white/5 disabled:scale-100 disabled:pointer-events-none disabled:shadow-none pointer-events-auto"
             >
               Continue →
             </button>

@@ -170,6 +170,7 @@ function MainApp() {
   const [showILoveYou, setShowILoveYou] = useState(false);
   const [showRoseHeart, setShowRoseHeart] = useState(false);
   const [showFinalMessage, setShowFinalMessage] = useState(false);
+  const [shimmerActive, setShimmerActive] = useState(false);
 
   useEffect(() => {
     if (currentScene === SCENES.YES) {
@@ -183,6 +184,7 @@ function MainApp() {
       setShowILoveYou(false);
       setShowRoseHeart(false);
       setShowFinalMessage(false);
+      setShimmerActive(false);
 
       const timers = [
         // 0.7s: Glowing classic heart fades in
@@ -241,6 +243,11 @@ function MainApp() {
         setTimeout(() => {
           setShowILoveYou(true);
         }, 7000),
+
+        // 9.1s: Trigger golden shimmer sweep across settled text
+        setTimeout(() => {
+          setShimmerActive(true);
+        }, 9100),
 
         // 9.5s: Luminous rose heart fades in underneath 'I LOVE YOU'
         setTimeout(() => {
@@ -342,7 +349,7 @@ function MainApp() {
                     <div className="pt-6">
                       <button
                         onClick={startAwakenSequence}
-                        className="px-8 py-3 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white text-xs font-semibold tracking-wider hover:scale-105 active:scale-95 transition-all shadow-md shadow-rose-500/10 pointer-events-auto"
+                        className="btn-primary pointer-events-auto"
                       >
                         Enter Our Garden
                       </button>
@@ -415,7 +422,7 @@ function MainApp() {
                   <div className="flex gap-4 justify-center pointer-events-auto">
                     <button
                       onClick={() => goToScene(SCENES.GATECHECK_STOP)}
-                      className="px-6 py-2.5 rounded-full border border-white/10 hover:border-rose-500/30 bg-white/2 hover:bg-rose-500/10 text-rose-300 font-medium text-xs transition-all duration-300 active:scale-95 flex-1"
+                      className="btn-secondary flex-1"
                     >
                       Yes
                     </button>
@@ -424,7 +431,7 @@ function MainApp() {
                         if (window.playRomanticChime) window.playRomanticChime();
                         goToScene(SCENES.CALL);
                       }}
-                      className="px-6 py-2.5 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 text-white font-medium text-xs shadow-md hover:scale-105 active:scale-95 transition-all flex-1"
+                      className="btn-primary flex-1"
                     >
                       No
                     </button>
@@ -458,7 +465,7 @@ function MainApp() {
                       if (window.playRomanticChime) window.playRomanticChime();
                       goToScene(SCENES.INTRO);
                     }}
-                    className="px-8 py-2 rounded-full border border-white/10 text-white/80 hover:text-white text-xs font-medium flex items-center gap-1.5 mx-auto active:scale-95 transition-all"
+                    className="btn-secondary mx-auto"
                   >
                     Go Back
                   </button>
@@ -558,7 +565,7 @@ function MainApp() {
                   {buildStep >= 6 && (
                     <button
                       onClick={() => goToScene(SCENES.LETTER)}
-                      className="px-8 py-2 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 text-white text-xs font-semibold hover:scale-105 active:scale-95 transition-all shadow-md pointer-events-auto"
+                      className="btn-primary"
                     >
                       Continue
                     </button>
@@ -607,7 +614,7 @@ function MainApp() {
                 <div className="pt-4">
                   <button
                     onClick={() => goToScene(SCENES.CONFESSION)}
-                    className="px-8 py-2.5 rounded-full bg-rose-500/10 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-xs font-medium hover:scale-105 active:scale-95 transition-all pointer-events-auto"
+                    className="btn-secondary hover:border-rose-500/30 hover:bg-rose-500/10"
                   >
                     Yes...
                   </button>
@@ -670,8 +677,8 @@ function MainApp() {
                             if (window.triggerNoSoundDesign) window.triggerNoSoundDesign();
                             goToScene(SCENES.LET_ME_THINK);
                           }}
-                          className={`px-6 py-2.5 rounded-full border border-white/10 text-rose-300 text-xs font-semibold flex-1 transition-all active:scale-95 ${
-                            confessionClicked ? 'opacity-40 cursor-not-allowed' : 'hover:border-rose-500/20 bg-white/2 hover:bg-rose-500/5'
+                          className={`btn-secondary flex-1 font-semibold text-xs py-2 min-h-[44px] ${
+                            confessionClicked ? 'opacity-40 cursor-not-allowed' : ''
                           }`}
                         >
                           LET ME THINK 💔
@@ -683,8 +690,8 @@ function MainApp() {
                             if (window.triggerYesSoundDesign) window.triggerYesSoundDesign();
                             goToScene(SCENES.YES);
                           }}
-                          className={`px-6 py-2.5 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 text-white text-xs font-semibold flex-1 transition-all shadow-md shadow-rose-500/10 ${
-                            confessionClicked ? 'opacity-40 cursor-not-allowed' : 'hover:scale-105 active:scale-95'
+                          className={`btn-primary flex-1 font-semibold text-xs py-2 min-h-[44px] ${
+                            confessionClicked ? 'opacity-40 cursor-not-allowed' : ''
                           }`}
                         >
                           YES ❤️
@@ -760,7 +767,7 @@ function MainApp() {
                           filter: [
                             "brightness(1) drop-shadow(0 0 0px rgba(240,139,152,0))",
                             "brightness(1) drop-shadow(0 0 0px rgba(240,139,152,0))",
-                            "brightness(1.22) drop-shadow(0 0 14px rgba(240,139,152,0.45))",
+                            "brightness(1.22) drop-shadow(0 0 14px rgba(253,224,139,0.55))",
                             "brightness(1) drop-shadow(0 0 0px rgba(240,139,152,0))"
                           ]
                         }}
@@ -770,7 +777,9 @@ function MainApp() {
                           duration: 0.8,
                           ease: "easeOut"
                         }}
-                        className="flex gap-4 md:gap-6 items-center justify-center text-5xl md:text-7xl font-playfair font-black tracking-wide drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)]"
+                        className={`relative flex gap-4 md:gap-6 items-center justify-center text-5xl md:text-7xl font-playfair font-black tracking-wide drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)] ${
+                          shimmerActive ? 'animate-breathing-glow' : ''
+                        }`}
                       >
                         {/* Word "I" (moves left -> center at 7.0s) */}
                         <motion.span
@@ -778,14 +787,14 @@ function MainApp() {
                           animate={{ 
                             x: 0, 
                             opacity: 1,
-                            textShadow: "0 0 10px rgba(255,246,230,0.25)"
+                            textShadow: "0 0 12px rgba(253,224,139,0.45)"
                           }}
                           transition={{ 
                             delay: 0, 
                             duration: 0.7, 
                             ease: [0.25, 0.1, 0.25, 1.0]
                           }}
-                          className="text-[#fffbe6] inline-block"
+                          className={`text-gold-luxury inline-block ${shimmerActive ? 'shimmer-sweep' : ''}`}
                         >
                           I
                         </motion.span>
@@ -796,7 +805,7 @@ function MainApp() {
                           animate={{ 
                             y: 0, 
                             opacity: 1,
-                            textShadow: "0 0 14px rgba(240,139,152,0.4)"
+                            textShadow: "0 0 16px rgba(240,139,152,0.45)"
                           }}
                           transition={{ 
                             delay: 0.7, 
@@ -814,17 +823,33 @@ function MainApp() {
                           animate={{ 
                             x: 0, 
                             opacity: 1,
-                            textShadow: "0 0 10px rgba(255,246,230,0.25)"
+                            textShadow: "0 0 12px rgba(253,224,139,0.45)"
                           }}
                           transition={{ 
                             delay: 1.4, 
                             duration: 0.7, 
                             ease: [0.25, 0.1, 0.25, 1.0]
                           }}
-                          className="text-[#fffbe6] inline-block"
+                          className={`text-gold-luxury inline-block ${shimmerActive ? 'shimmer-sweep' : ''}`}
                         >
                           YOU
                         </motion.span>
+
+                        {/* Twinkling fine jewelry stars overlay at key apexes */}
+                        {shimmerActive && (
+                          <div className="absolute inset-0 pointer-events-none z-10 overflow-visible select-none">
+                            {/* Sparkle 1: Top-Left of I */}
+                            <span className="absolute left-[8%] top-[15%] text-yellow-300 font-bold text-xs md:text-sm animate-sparkle-twinkle" style={{ animationDelay: '0s' }}>✦</span>
+                            {/* Sparkle 2: Apex of V */}
+                            <span className="absolute left-[45%] top-[72%] text-rose-300 font-bold text-sm md:text-base animate-sparkle-twinkle" style={{ animationDelay: '0.4s' }}>✦</span>
+                            {/* Sparkle 3: Top-Right of E */}
+                            <span className="absolute left-[58%] top-[20%] text-yellow-200 font-bold text-xs md:text-sm animate-sparkle-twinkle" style={{ animationDelay: '0.8s' }}>✦</span>
+                            {/* Sparkle 4: Left tip of Y */}
+                            <span className="absolute left-[70%] top-[25%] text-yellow-300 font-bold text-sm md:text-base animate-sparkle-twinkle" style={{ animationDelay: '0.2s' }}>✦</span>
+                            {/* Sparkle 5: Right tip of U */}
+                            <span className="absolute right-[6%] top-[25%] text-rose-200 font-bold text-xs md:text-sm animate-sparkle-twinkle" style={{ animationDelay: '0.6s' }}>✦</span>
+                          </div>
+                        )}
                       </motion.div>
 
                       {/* Small elegant classic ROSE/PINK heart directly underneath (fades in at 9.5s) */}
@@ -944,27 +969,44 @@ function MainApp() {
                           </motion.div>
                         </div>
 
+                        {/* Floor reflection/shadow under the box */}
+                        <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-40 h-3 bg-black/60 rounded-full filter blur-md z-10 pointer-events-none" />
+
                         {/* Box Lid */}
                         <motion.div
                           animate={isLidOpen ? { y: -110, x: -70, rotate: -32, opacity: 0.25 } : (isLidShaking ? { x: [-2, 2, -2, 2, 0], y: [-1, 1, -1, 1, 0] } : {})}
                           transition={isLidOpen ? { duration: 0.8, ease: 'easeOut' } : { repeat: Infinity, duration: 0.4 }}
                           className="absolute bottom-[36px] w-[172px] h-6 z-25 origin-bottom-left"
                         >
-                          <svg viewBox="0 0 170 24" className="w-full h-full">
-                            <rect x="0" y="0" width="170" height="20" rx="3" fill="#310052" stroke="#ffa500" strokeWidth="1.5" />
-                            <rect x="75" y="0" width="20" height="20" fill="#ffa500" />
-                            <rect x="0" y="20" width="170" height="4" fill="#200038" />
+                          <svg viewBox="0 0 170 24" className="w-full h-full drop-shadow-[0_4px_6px_rgba(0,0,0,0.5)]">
+                            <defs>
+                              <radialGradient id="boxVelvet" cx="50%" cy="40%" r="60%">
+                                <stop offset="0%" stopColor="#4a156e" />
+                                <stop offset="75%" stopColor="#220138" />
+                                <stop offset="100%" stopColor="#0f001b" />
+                              </radialGradient>
+                              <linearGradient id="goldSpec" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#ffe699" />
+                                <stop offset="35%" stopColor="#dca838" />
+                                <stop offset="50%" stopColor="#ffffff" />
+                                <stop offset="65%" stopColor="#dca838" />
+                                <stop offset="100%" stopColor="#8d6411" />
+                              </linearGradient>
+                            </defs>
+                            <rect x="0" y="0" width="170" height="20" rx="3" fill="url(#boxVelvet)" stroke="url(#goldSpec)" strokeWidth="1.5" />
+                            <rect x="75" y="0" width="20" height="20" fill="url(#goldSpec)" />
+                            <rect x="0" y="20" width="170" height="4" fill="#140024" />
                           </svg>
                         </motion.div>
 
                         {/* Box Body (Front Face) */}
                         <div className="absolute bottom-0 w-36 h-18 z-20">
-                          <svg viewBox="0 0 140 80" className="w-full h-full">
-                            <rect x="0" y="0" width="140" height="80" rx="5" fill="#2c004a" stroke="#ffa500" strokeWidth="2" />
-                            <rect x="60" y="0" width="20" height="80" fill="#ffa500" />
-                            <rect x="0" y="30" width="140" height="20" fill="#ffa500" />
-                            <circle cx="70" cy="40" r="12" fill="#ffea75" stroke="#ffa500" strokeWidth="1" />
-                            <path d="M66,40 L74,40 M70,36 L70,44" stroke="#2c004a" strokeWidth="1.5" />
+                          <svg viewBox="0 0 140 80" className="w-full h-full drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)]">
+                            <rect x="0" y="0" width="140" height="80" rx="5" fill="url(#boxVelvet)" stroke="url(#goldSpec)" strokeWidth="2" />
+                            <rect x="60" y="0" width="20" height="80" fill="url(#goldSpec)" />
+                            <rect x="0" y="30" width="140" height="20" fill="url(#goldSpec)" />
+                            <circle cx="70" cy="40" r="12" fill="#fff5cc" stroke="url(#goldSpec)" strokeWidth="1.5" />
+                            <path d="M66,40 L74,40 M70,36 L70,44" stroke="#25023d" strokeWidth="2.0" strokeLinecap="round" />
                           </svg>
                         </div>
                       </motion.div>
@@ -1060,13 +1102,13 @@ function MainApp() {
                   <div className="flex flex-col gap-3 justify-center pt-4 pointer-events-auto max-w-[200px] mx-auto">
                     <button
                       onClick={() => goToScene(SCENES.LETTER)}
-                      className="px-6 py-2.5 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 text-white text-xs font-semibold hover:scale-105 active:scale-95 transition-all shadow-md"
+                      className="btn-primary"
                     >
                       Read it again ❤️
                     </button>
                     <button
                       onClick={() => goToScene(SCENES.NO)}
-                      className="px-6 py-2.5 rounded-full border border-white/10 bg-white/2 text-rose-300 text-xs font-medium hover:bg-white/5 transition-all"
+                      className="btn-secondary"
                     >
                       Give me some time
                     </button>
@@ -1099,7 +1141,7 @@ function MainApp() {
                     onClick={() => {
                       window.location.reload();
                     }}
-                    className="px-8 py-2 rounded-full border border-white/10 text-white/80 hover:text-white text-xs font-medium flex items-center gap-1.5 mx-auto active:scale-95 transition-all"
+                    className="btn-secondary mx-auto flex items-center gap-1.5"
                   >
                     <RefreshCw size={12} />
                     Restart Journey

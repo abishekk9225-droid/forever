@@ -637,12 +637,27 @@ export default function AudioPlayer() {
   return (
     <button
       onClick={toggleMute}
-      className="fixed top-4 right-4 p-3.5 rounded-full bg-white/2 hover:bg-white/8 border border-white/10 text-white/80 hover:text-white transition-all duration-300 flex items-center justify-center shadow-lg relative z-50 pointer-events-auto w-12 h-12"
+      className="fixed top-4 right-4 px-4 py-2.5 rounded-full bg-[#0f172a]/65 backdrop-blur-xl border border-white/12 text-white/80 hover:text-white transition-all duration-300 flex items-center gap-2 shadow-lg relative z-50 pointer-events-auto min-h-[40px] hover:scale-[1.02] active:scale-[0.96] hover:shadow-rose-500/10"
       aria-label="Toggle Sound"
       aria-pressed={!muted}
       id="btn-audio-mute"
     >
-      {muted ? <VolumeX size={18} /> : <Volume2 size={18} className="animate-pulse text-rose-400" />}
+      {muted ? (
+        <>
+          <VolumeX size={15} className="text-gray-400" />
+          <span className="text-[10px] uppercase font-bold tracking-widest font-sans text-gray-500">Muted</span>
+        </>
+      ) : (
+        <>
+          <Volume2 size={15} className="text-rose-400 animate-pulse" />
+          <div className="flex items-center gap-0.5 h-3 overflow-hidden pointer-events-none">
+            <span className="w-[1.5px] h-3 bg-rose-400/90 rounded-full origin-bottom animate-wave-1" />
+            <span className="w-[1.5px] h-3 bg-rose-400/90 rounded-full origin-bottom animate-wave-2" />
+            <span className="w-[1.5px] h-3 bg-rose-400/90 rounded-full origin-bottom animate-wave-3" />
+            <span className="w-[1.5px] h-3 bg-rose-400/90 rounded-full origin-bottom animate-wave-4" />
+          </div>
+        </>
+      )}
     </button>
   );
 }

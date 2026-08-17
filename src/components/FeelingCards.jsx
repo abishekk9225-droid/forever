@@ -40,7 +40,14 @@ export default function FeelingCards({ onComplete }) {
   const showContinue = tappedItems.size >= 2;
 
   return (
-    <div className="relative w-full max-w-lg mx-auto h-[480px] select-none flex flex-col justify-between p-4">
+    <div className="relative w-full max-w-lg mx-auto h-[480px] select-none flex flex-col justify-between p-4" style={{ perspective: '800px' }}>
+      <style>{`
+        @keyframes floatArtifact {
+          0%, 100% { transform: translate3d(-50%, -50%, 0) translateY(-3px) rotateY(-8deg); }
+          50% { transform: translate3d(-50%, -50%, 12px) translateY(3px) rotateY(8deg); }
+        }
+      `}</style>
+
       {/* Title */}
       <div className="text-center z-10 space-y-1">
         <span className="text-[10px] uppercase tracking-widest text-rose-400 font-bold">
@@ -51,9 +58,9 @@ export default function FeelingCards({ onComplete }) {
         </p>
       </div>
 
-      {/* Floating Garden Objects Layer */}
-      <div className="relative flex-grow w-full my-4 border border-white/5 bg-white/2 rounded-3xl overflow-hidden shadow-inner">
-        {memoryItems.map((item) => {
+      {/* Floating Garden Objects Layer with 3D perspective */}
+      <div className="relative flex-grow w-full my-4 border border-white/5 bg-white/2 rounded-3xl overflow-hidden shadow-inner" style={{ transformStyle: 'preserve-3d' }}>
+        {memoryItems.map((item, idx) => {
           const Icon = item.icon;
           const isTapped = tappedItems.has(item.id);
 
@@ -61,19 +68,24 @@ export default function FeelingCards({ onComplete }) {
             <button
               key={item.id}
               onClick={(e) => handleTap(item, e)}
-              className="absolute p-3 rounded-full border bg-zinc-950/40 hover:bg-rose-500/10 active:scale-95 transition-all duration-300 pointer-events-auto"
+              className="absolute p-3.5 rounded-2xl border bg-[#0d0914]/65 hover:bg-rose-500/10 active:scale-95 pointer-events-auto transition-all duration-500 flex items-center justify-center group"
               style={{
                 left: item.x,
                 top: item.y,
-                transform: 'translate(-50%, -50%)',
-                borderColor: isTapped ? 'rgba(242, 133, 168, 0.45)' : 'rgba(255, 255, 255, 0.08)',
-                boxShadow: isTapped ? '0 0 16px rgba(242, 133, 168, 0.22)' : 'none'
+                borderColor: isTapped ? 'rgba(244, 114, 182, 0.45)' : 'rgba(255, 255, 255, 0.08)',
+                boxShadow: isTapped 
+                  ? '0 12px 24px rgba(244, 114, 182, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15)' 
+                  : '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+                filter: isTapped ? 'blur(0px)' : 'blur(0.5px)',
+                animation: `floatArtifact ${4 + idx * 0.6}s ease-in-out infinite`,
+                animationDelay: `${idx * 0.4}s`,
+                transformStyle: 'preserve-3d'
               }}
               aria-label={item.label}
             >
               <Icon
-                size={22}
-                className={isTapped ? 'text-rose-300 animate-pulse' : 'text-gray-400/80'}
+                size={20}
+                className={isTapped ? 'text-rose-300 animate-pulse' : 'text-gray-400/80 group-hover:text-rose-200 transition-colors'}
               />
             </button>
           );
@@ -133,7 +145,7 @@ export default function FeelingCards({ onComplete }) {
           {showContinue && (
             <button
               onClick={onComplete}
-              className="px-8 py-2.5 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white text-xs font-semibold hover:scale-105 active:scale-95 transition-all shadow-md shadow-rose-500/10 pointer-events-auto"
+              className="btn-primary pointer-events-auto"
             >
               Continue when ready →
             </button>

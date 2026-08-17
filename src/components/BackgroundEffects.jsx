@@ -93,7 +93,7 @@ export default function BackgroundEffects() {
       }
     }
 
-    // Dynamic Firefly Object Definition
+    // Dynamic Firefly Object Definition (Optimized as softly pulsating bioluminescent embers)
     class Firefly {
       constructor() {
         this.reset();
@@ -102,37 +102,37 @@ export default function BackgroundEffects() {
       reset() {
         this.x = Math.random() * canvas.width;
         this.y = canvas.height * 0.35 + Math.random() * canvas.height * 0.55;
-        this.size = Math.random() * 2.2 + 0.8;
-        this.vx = (Math.random() - 0.5) * 0.8;
-        this.vy = (Math.random() - 0.5) * 0.6;
+        this.size = Math.random() * 1.5 + 0.6; // Smaller, softer embers
+        this.vx = (Math.random() - 0.5) * 0.45; // Slower horizontal drift
+        this.vy = (Math.random() - 0.5) * 0.35; // Slower vertical drift
         this.phase = Math.random() * Math.PI * 2;
-        this.speed = Math.random() * 0.04 + 0.015;
+        this.speed = Math.random() * 0.02 + 0.01; // Slower pulsation frequency
       }
       update(targetX, targetY) {
         this.phase += this.speed;
         this.x += this.vx;
         this.y += this.vy;
 
-        // Drift slowly toward mouse/touch coordinates if nearby
+        // Ethereal slow attraction when cursor is within proximity
         if (targetX && targetY) {
           const dx = targetX - this.x;
           const dy = targetY - this.y;
           const dist = Math.hypot(dx, dy);
-          if (dist < 180) {
-            this.x += dx * 0.012;
-            this.y += dy * 0.012;
+          if (dist < 150) {
+            this.x += dx * 0.008;
+            this.y += dy * 0.008;
           }
         }
 
-        // Bound check
+        // Bound collision checks
         if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
         if (this.y < canvas.height * 0.25 || this.y > canvas.height - 30) this.vy *= -1;
       }
       draw() {
-        const glow = 0.25 + Math.abs(Math.sin(this.phase)) * 0.65;
-        ctx.fillStyle = '#ffea75';
-        ctx.shadowColor = '#ffe74c';
-        ctx.shadowBlur = this.size * 3.5;
+        const glow = 0.2 + Math.abs(Math.sin(this.phase)) * 0.7;
+        ctx.fillStyle = '#ffdf6d';
+        ctx.shadowColor = '#ffd338';
+        ctx.shadowBlur = this.size * 5.0; // Ethereal emission halo
         ctx.globalAlpha = glow;
 
         ctx.beginPath();
@@ -230,11 +230,19 @@ export default function BackgroundEffects() {
       ref={containerRef}
       className="fixed inset-0 w-full h-full -z-10 overflow-hidden pointer-events-none transition-colors duration-1000"
       style={{
-        background: `radial-gradient(circle at 50% 30%, 
-          rgba(${Math.round(8 + storyIntensity * 28)}, ${Math.round(6 + storyIntensity * 12)}, ${Math.round(18 + storyIntensity * 36)}, 1) 0%, 
-          #05020a 100%)`
+        background: `radial-gradient(circle at 50% 25%, 
+          rgba(${Math.round(12 + storyIntensity * 28)}, ${Math.round(18 + storyIntensity * 12)}, ${Math.round(48 + storyIntensity * 36)}, 0.4) 0%, 
+          #050814 65%, 
+          #02040a 100%)`
       }}
     >
+      {/* Cinematic Film-Grade Edge Vignette */}
+      <div className="absolute inset-0 w-full h-full pointer-events-none z-10"
+        style={{
+          background: 'radial-gradient(circle at 50% 50%, transparent 55%, rgba(2, 4, 10, 0.78) 100%)'
+        }}
+      />
+
       {/* Background Canvas for stars, fireflies, and water */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
 

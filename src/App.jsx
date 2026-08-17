@@ -17,6 +17,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import HeartBurst from './components/HeartBurst';
 import TextHeart3D from './components/TextHeart3D';
 import SpringCoilFinale from './components/SpringCoilFinale';
+import ButterflyExplosion from './components/ButterflyExplosion';
 
 function DairyMilkBar() {
   return (
@@ -864,7 +865,9 @@ function MainApp() {
             {/* SCENE 11a: YES Celebration overlay with DOM Heart, Arrow, Flash, and Typography */}
             {currentScene === SCENES.YES && (
               <div className="fixed inset-0 flex flex-col items-center justify-between z-40 pointer-events-none select-none py-10 px-6">
-                
+                {/* RENDER BUTTERFLIES IMMEDIATELY WHEN YES IS CLICKED */}
+                <ButterflyExplosion />
+
                 {/* 1. ELEGANT CELEBRATION TITLE (Top) */}
                 <div className="text-center space-y-2 mt-8 z-45">
                   <motion.h2
@@ -1212,8 +1215,10 @@ function MainApp() {
                           </motion.div>
                         )}
 
-                        {/* Grand Finale - Spring-Coil Tree */}
-                        <SpringCoilFinale />
+                        {/* RENDER THE SPRING-COIL TREE AT THE BOTTOM OF THE CELEBRATION */}
+                        <div className="w-full flex justify-center py-8 z-30">
+                          <SpringCoilFinale />
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>

@@ -635,26 +635,21 @@ export default function AudioPlayer() {
   }, [muted]);
 
   return (
-    <button
+    <button 
       onClick={toggleMute}
-      className="fixed top-4 right-4 px-4 py-2.5 rounded-full bg-[#0f172a]/65 backdrop-blur-xl border border-white/12 text-white/80 hover:text-white transition-all duration-300 flex items-center gap-2 shadow-lg relative z-50 pointer-events-auto min-h-[40px] hover:scale-[1.02] active:scale-[0.96] hover:shadow-rose-500/10"
-      aria-label="Toggle Sound"
-      aria-pressed={!muted}
+      aria-label={muted ? "Unmute audio" : "Mute audio"}
+      className="fixed top-5 right-5 z-50 flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-900/60 backdrop-blur-xl border border-white/15 text-slate-200 hover:border-amber-300/40 transition-all shadow-lg min-h-[44px] pointer-events-auto"
       id="btn-audio-mute"
     >
       {muted ? (
-        <>
-          <VolumeX size={15} className="text-gray-400" />
-          <span className="text-[10px] uppercase font-bold tracking-widest font-sans text-gray-500">Muted</span>
-        </>
+        <VolumeX className="w-4 h-4 text-slate-400"/>
       ) : (
         <>
-          <Volume2 size={15} className="text-rose-400 animate-pulse" />
-          <div className="flex items-center gap-0.5 h-3 overflow-hidden pointer-events-none">
-            <span className="w-[1.5px] h-3 bg-rose-400/90 rounded-full origin-bottom animate-wave-1" />
-            <span className="w-[1.5px] h-3 bg-rose-400/90 rounded-full origin-bottom animate-wave-2" />
-            <span className="w-[1.5px] h-3 bg-rose-400/90 rounded-full origin-bottom animate-wave-3" />
-            <span className="w-[1.5px] h-3 bg-rose-400/90 rounded-full origin-bottom animate-wave-4" />
+          <Volume2 className="w-4 h-4 text-amber-300 animate-pulse"/>
+          <div className="flex items-end gap-[3px] h-3.5 origin-bottom pointer-events-none">
+            <span className="w-[3px] bg-amber-300 rounded-full animate-[wave_0.8s_ease-in-out_infinite] h-full origin-bottom" />
+            <span className="w-[3px] bg-amber-300 rounded-full animate-[wave_1.1s_ease-in-out_infinite] h-2/3 origin-bottom" />
+            <span className="w-[3px] bg-amber-300 rounded-full animate-[wave_0.9s_ease-in-out_infinite] h-4/5 origin-bottom" />
           </div>
         </>
       )}

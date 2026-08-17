@@ -236,12 +236,9 @@ export default function BackgroundEffects() {
           #02040a 100%)`
       }}
     >
-      {/* Cinematic Film-Grade Edge Vignette */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none z-10"
-        style={{
-          background: 'radial-gradient(circle at 50% 50%, transparent 55%, rgba(2, 4, 10, 0.78) 100%)'
-        }}
-      />
+      {/* Cinematic Ambient Night Layer */}
+      <div className="fixed inset-0 pointer-events-none z-[1] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0b132b] via-[#050814] to-[#02040a] opacity-90" />
+      <div className="fixed inset-0 pointer-events-none z-[2] bg-[radial-gradient(circle_at_center,_transparent_45%,_rgba(2,4,10,0.85)_100%)]" />
 
       {/* Background Canvas for stars, fireflies, and water */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />

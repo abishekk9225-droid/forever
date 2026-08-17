@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, MailOpen } from 'lucide-react';
+import { Mail, MailOpen, Heart } from 'lucide-react';
 
 export default function Letter3D({ onComplete }) {
   const [isOpen, setIsOpen] = useState(false);

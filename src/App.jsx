@@ -323,7 +323,8 @@ function MainApp() {
       {/* MAIN VIEWPORT */}
       <main className="flex-grow flex items-center justify-center py-12 relative z-30 px-4">
         <div className="w-full max-w-lg mx-auto">
-          <AnimatePresence mode="wait">
+          <ErrorBoundary>
+            <AnimatePresence mode="wait">
             
             {/* SCENE 1: Intro opening */}
             {currentScene === SCENES.INTRO && (
@@ -762,12 +763,12 @@ function MainApp() {
                   {/* cinematic "I LOVE YOU" text reveal block overlaying on center */}
                   {showILoveYou && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center z-45">
-                      <motion.div
+                      <motion.h1
                         animate={{
                           filter: [
                             "brightness(1) drop-shadow(0 0 0px rgba(240,139,152,0))",
                             "brightness(1) drop-shadow(0 0 0px rgba(240,139,152,0))",
-                            "brightness(1.22) drop-shadow(0 0 14px rgba(253,224,139,0.55))",
+                            "brightness(1.22) drop-shadow(0 0 20px rgba(253,224,139,0.5))",
                             "brightness(1) drop-shadow(0 0 0px rgba(240,139,152,0))"
                           ]
                         }}
@@ -777,7 +778,7 @@ function MainApp() {
                           duration: 0.8,
                           ease: "easeOut"
                         }}
-                        className={`relative flex gap-4 md:gap-6 items-center justify-center text-5xl md:text-7xl font-playfair font-black tracking-wide drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)] ${
+                        className={`relative flex gap-4 md:gap-6 items-center justify-center text-4xl sm:text-6xl md:text-7xl font-bold tracking-wider text-center select-none font-['Playfair_Display',serif] ${
                           shimmerActive ? 'animate-breathing-glow' : ''
                         }`}
                       >
@@ -850,7 +851,7 @@ function MainApp() {
                             <span className="absolute right-[6%] top-[25%] text-rose-200 font-bold text-xs md:text-sm animate-sparkle-twinkle" style={{ animationDelay: '0.6s' }}>✦</span>
                           </div>
                         )}
-                      </motion.div>
+                      </motion.h1>
 
                       {/* Small elegant classic ROSE/PINK heart directly underneath (fades in at 9.5s) */}
                       {showRoseHeart && (
@@ -1150,6 +1151,7 @@ function MainApp() {
               </motion.div>
             )}
           </AnimatePresence>
+          </ErrorBoundary>
         </div>
       </main>
 

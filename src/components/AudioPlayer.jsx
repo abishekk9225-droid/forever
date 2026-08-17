@@ -444,22 +444,22 @@ export default function AudioPlayer() {
         osc.stop(t + 0.41);
       }, 1000);
 
-      // 1.5s: Arrow projectile whistle
+      // 1.0s: Arrow projectile whistle (matches visual travel from 1.0s to 2.2s)
       setTimeout(() => {
         const t = ctx.currentTime;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(150, t);
-        osc.frequency.exponentialRampToValueAtTime(750, t + 0.65);
+        osc.frequency.setValueAtTime(140, t);
+        osc.frequency.exponentialRampToValueAtTime(820, t + 1.2);
         gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.04, t + 0.1);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
+        gain.gain.linearRampToValueAtTime(0.04, t + 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(t);
-        osc.stop(t + 0.71);
-      }, 1500);
+        osc.stop(t + 1.21);
+      }, 1000);
 
       // 2.2s: Arrow impact boom + chimes
       setTimeout(() => {

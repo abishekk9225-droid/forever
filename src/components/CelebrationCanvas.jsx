@@ -6,6 +6,15 @@ export default function CelebrationCanvas() {
   const { isLowEnd, isMobile, currentScene } = useScene();
   const [showTypography, setShowTypography] = useState(false);
   const [showSubText, setShowSubText] = useState(false);
+  
+  // Track all timeouts for clean unmounting
+  const timeoutsRef = useRef([]);
+
+  const addSafeTimeout = (callback, delay) => {
+    const id = setTimeout(callback, delay);
+    timeoutsRef.current.push(id);
+    return id;
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -180,7 +189,7 @@ export default function CelebrationCanvas() {
       update() {
         this.x += this.vx;
         this.y += this.vy;
-        this.vy += 0.045; // gravity influence
+        this.vy += 0.045;
         this.alpha -= this.decay;
       }
       draw() {
@@ -201,7 +210,6 @@ export default function CelebrationCanvas() {
     const petals = Array.from({ length: isLowEnd ? 12 : 28 }, () => new Petal(Math.random() * canvas.height));
     const butterflies = [];
     const rockets = [];
-    let projectile = null; // initialized at 1.5s
     let impactTriggered = false;
 
     // Timeline Loop Runner
@@ -209,21 +217,19 @@ export default function CelebrationCanvas() {
       const elapsed = Date.now() - startTime; // milliseconds
 
       ctx.save();
-      // Apply Camera Shake on impact
-      if (shakeDuration > 0) {
+      // Apply Camera Shake on impact (2.2s to 2.4s)
+      if (elapsed >= 2200 && elapsed < 2400) {
         const shakeX = (Math.random() - 0.5) * 6;
         const shakeY = (Math.random() - 0.5) * 6;
         ctx.translate(shakeX, shakeY);
-        shakeDuration -= 16.6; // assuming 60fps
       }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // --- Stage 0: 0.0s to 1.0s (silence, do not draw heart yet) ---
+      // --- Stage 0: 0.0s to 0.7s (cinematic silence, no heart) ---
 
-      // --- Stage 1: 1.0s (show center glowing heart silhouette) ---
-      if (elapsed >= 1000) {
-        // Draw central glowing heart silhouette
+      // --- Stage 1: 0.7s onward (glowing center heart appears) ---
+      if (elapsed >= 700) {
         const pulse = 1.0 + Math.sin(elapsed * 0.007) * 0.05;
         const s = (isMobile ? 18 : 28) * pulse;
 
@@ -242,17 +248,16 @@ export default function CelebrationCanvas() {
         ctx.restore();
       }
 
-      // --- Stage 2: 1.5s to 2.2s (Arrow trajectory sweeps from top-right) ---
-      if (elapsed >= 1500 && elapsed < 2200) {
-        const progress = (elapsed - 1500) / 700; // 0.0 to 1.0
+      // --- Stage 2: 1.0s to 2.2s (Arrow travels visibly toward the heart) ---
+      if (elapsed >= 1000 && elapsed < 2200) {
+        const progress = (elapsed - 1000) / 1200; // 0.0 to 1.0 (1.2s travel time)
 
-        // Projectile trajectory coordinates
         const startX = canvas.width + 40;
         const startY = -40;
         const currentX = startX + (CX - startX) * progress;
         const currentY = startY + (CY - startY) * progress;
 
-        // Draw arrow shaft/trail
+        // Draw visible arrow shaft
         ctx.strokeStyle = 'rgba(255, 234, 117, 0.8)';
         ctx.lineWidth = 3.5;
         ctx.beginPath();
@@ -270,13 +275,12 @@ export default function CelebrationCanvas() {
         ctx.shadowBlur = 0;
       }
 
-      // --- Stage 3: 2.2s (Impact events trigger) ---
+      // --- Stage 3: 2.2s (Impact) ---
       if (elapsed >= 2200 && !impactTriggered) {
         impactTriggered = true;
-        shakeDuration = 220; // 220ms shake
         impactGlow = 1.0;
 
-        // Trigger massive center heartburst
+        // 2.2s: Massive HeartBurst
         if (window.triggerHeartBurst) {
           window.triggerHeartBurst(CX, CY, isLowEnd ? 90 : 180, {
             speed: 2.8,
@@ -284,27 +288,30 @@ export default function CelebrationCanvas() {
           });
         }
 
-        // Populate butterflies
-        const bCount = isLowEnd ? 4 : 8;
-        for (let i = 0; i < bCount; i++) {
-          butterflies.push(new Butterfly());
-        }
+        // 2.3s: Radial light overlay state (handled via impactGlow decrement)
+        // 2.5s: Populate butterflies + fireflies
+        addSafeTimeout(() => {
+          const bCount = isLowEnd ? 4 : 8;
+          for (let i = 0; i < bCount; i++) {
+            butterflies.push(new Butterfly());
+          }
+        }, 300);
 
-        // Show Text typography overlays
-        setTimeout(() => setShowTypography(true), 800);
-        setTimeout(() => setShowSubText(true), 2400);
+        // 3.0s+: Show Text overlays
+        addSafeTimeout(() => setShowTypography(true), 800);
+        addSafeTimeout(() => setShowSubText(true), 2400);
 
-        // Staggered launch bottom corner fireworks over 8-12 seconds
-        const fireworksTimeline = [200, 900, 1600, 2400, 3300, 4400, 5600, 7000, 8500];
+        // 2.5s: Staggered bottom corner fireworks launch over 8-12 seconds
+        const fireworksTimeline = [300, 1000, 1800, 2700, 3700, 4800, 6000, 7500, 9000];
         fireworksTimeline.forEach((delay) => {
-          setTimeout(() => {
+          addSafeTimeout(() => {
             const side = Math.random() > 0.5 ? 'left' : 'right';
             rockets.push(new FireworkRocket(side));
           }, delay);
         });
       }
 
-      // Render impact flash pulse overlay
+      // Render radial glow flash pulse
       if (impactGlow > 0) {
         const rad = (1.0 - impactGlow) * (isMobile ? 180 : 360);
         const grad = ctx.createRadialGradient(CX, CY, 0, CX, CY, rad);
@@ -317,21 +324,18 @@ export default function CelebrationCanvas() {
         impactGlow = Math.max(0, impactGlow - 0.025);
       }
 
-      // Render Active elements after impact
+      // Render active celebration layers
       if (impactTriggered) {
-        // Render falling petals
         petals.forEach(p => {
           p.update();
           p.draw();
         });
 
-        // Render butterflies
         butterflies.forEach(b => {
           b.update();
           b.draw();
         });
 
-        // Render rockets
         rockets.forEach(r => {
           r.update();
           r.draw();
@@ -350,11 +354,19 @@ export default function CelebrationCanvas() {
     };
   }, [isLowEnd, isMobile]);
 
+  // Cleanup all timeouts on unmount
+  useEffect(() => {
+    return () => {
+      timeoutsRef.current.forEach(clearTimeout);
+      timeoutsRef.current = [];
+    };
+  }, []);
+
   return (
     <div className="absolute inset-0 w-full h-full z-15 pointer-events-none select-none">
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
 
-      {/* Typography Overlay centered belowCY */}
+      {/* Typography Overlay */}
       <div className="absolute inset-x-0 bottom-1/4 flex flex-col items-center text-center space-y-4 px-6 z-25">
         <AnimatePresence>
           {showTypography && (

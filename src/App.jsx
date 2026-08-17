@@ -28,6 +28,7 @@ function MainApp() {
 
   // Confession states (Scene 10)
   const [confessionStep, setConfessionStep] = useState(0); // 0: black screen / heartbeat, 1: Saranya, 2: I LOVE YOU, 3: Will you be mine / buttons
+  const [confessionClicked, setConfessionClicked] = useState(false);
 
   // Custom Message Box (Scene 11 final afterglow)
   const [finalMsg, setFinalMsg] = useState('');
@@ -81,6 +82,7 @@ function MainApp() {
   useEffect(() => {
     if (currentScene === SCENES.CONFESSION) {
       setConfessionStep(0);
+      setConfessionClicked(false);
       if (window.setHeartbeatActive) window.setHeartbeatActive(true);
 
       const timers = [
@@ -517,20 +519,28 @@ function MainApp() {
                       </p>
                       <div className="flex gap-4 justify-center pointer-events-auto max-w-xs mx-auto">
                         <button
+                          disabled={confessionClicked}
                           onClick={() => {
+                            setConfessionClicked(true);
                             if (window.triggerNoSoundDesign) window.triggerNoSoundDesign();
                             goToScene(SCENES.LET_ME_THINK);
                           }}
-                          className="px-6 py-2.5 rounded-full border border-white/10 hover:border-rose-500/20 bg-white/2 hover:bg-rose-500/5 text-rose-300 text-xs font-semibold flex-1 transition-all active:scale-95"
+                          className={`px-6 py-2.5 rounded-full border border-white/10 text-rose-300 text-xs font-semibold flex-1 transition-all active:scale-95 ${
+                            confessionClicked ? 'opacity-40 cursor-not-allowed' : 'hover:border-rose-500/20 bg-white/2 hover:bg-rose-500/5'
+                          }`}
                         >
                           LET ME THINK 💔
                         </button>
                         <button
+                          disabled={confessionClicked}
                           onClick={() => {
+                            setConfessionClicked(true);
                             if (window.triggerYesSoundDesign) window.triggerYesSoundDesign();
                             goToScene(SCENES.YES);
                           }}
-                          className="px-6 py-2.5 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 text-white text-xs font-semibold flex-1 transition-all hover:scale-105 active:scale-95 shadow-md shadow-rose-500/10"
+                          className={`px-6 py-2.5 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 text-white text-xs font-semibold flex-1 transition-all shadow-md shadow-rose-500/10 ${
+                            confessionClicked ? 'opacity-40 cursor-not-allowed' : 'hover:scale-105 active:scale-95'
+                          }`}
                         >
                           YES ❤️
                         </button>

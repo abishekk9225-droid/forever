@@ -91,6 +91,8 @@ function MainApp() {
   // Confession states (Scene 10)
   const [confessionStep, setConfessionStep] = useState(0); // 0: black screen / heartbeat, 1: Saranya, 2: I LOVE YOU, 3: Will you be mine / buttons
   const [confessionClicked, setConfessionClicked] = useState(false);
+  const [noBtnPos, setNoBtnPos] = useState({ x: 0, y: 0 });
+  const [isEvading, setIsEvading] = useState(false);
 
   // Custom Message Box (Scene 11 final afterglow)
   const [finalMsg, setFinalMsg] = useState('');
@@ -145,6 +147,8 @@ function MainApp() {
     if (currentScene === SCENES.CONFESSION) {
       setConfessionStep(0);
       setConfessionClicked(false);
+      setNoBtnPos({ x: 0, y: 0 });
+      setIsEvading(false);
       if (window.setHeartbeatActive) window.setHeartbeatActive(true);
 
       const timers = [
@@ -263,6 +267,20 @@ function MainApp() {
       return () => timers.forEach(clearTimeout);
     }
   }, [currentScene]);
+
+  const handleDodge = () => {
+    setIsEvading(true);
+    
+    // Calculate safe boundary limits avoiding screen edges
+    const maxRangeX = typeof window !== 'undefined' ? Math.min(window.innerWidth * 0.35, 160) : 120;
+    const maxRangeY = typeof window !== 'undefined' ? Math.min(window.innerHeight * 0.25, 120) : 90;
+
+    // Generate random displacement with alternate polarities
+    const randomX = (Math.random() - 0.5) * maxRangeX * 2;
+    const randomY = (Math.random() - 0.5) * maxRangeY * 2;
+
+    setNoBtnPos({ x: randomX, y: randomY });
+  };
 
   const handleMessageSubmit = (e) => {
     e.preventDefault();
@@ -648,13 +666,55 @@ function MainApp() {
 
                   <AnimatePresence>
                     {confessionStep >= 2 && (
-                      <motion.h2
-                        initial={{ opacity: 0, scale: 0.9, filter: 'blur(4px)' }}
-                        animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                        className="text-4xl md:text-6xl font-playfair font-black text-rose-100 tracking-wider drop-shadow-lg"
-                      >
-                        I LOVE YOU.
-                      </motion.h2>
+                      <div className="relative flex gap-3 sm:gap-4 md:gap-6 items-center justify-center my-6 select-none font-['Playfair_Display',serif]">
+                        {/* "I" - Left Entrance */}
+                        <motion.span
+                          initial={{ opacity: 0, x: -80, filter: "blur(8px)" }}
+                          animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                          transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                          className="text-4xl sm:text-6xl md:text-7xl font-bold bg-gradient-to-b from-[#FFFDF0] via-[#FDE08B] to-[#DFAC38] bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(253,224,139,0.5)]"
+                        >
+                          I
+                        </motion.span>
+
+                        {/* "LOVE" - Top Entrance */}
+                        <motion.span
+                          initial={{ opacity: 0, y: -60, filter: "blur(8px)" }}
+                          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                          transition={{ duration: 0.8, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                          className="text-4xl sm:text-6xl md:text-7xl font-bold bg-gradient-to-b from-[#FFFDF0] via-[#FDE08B] to-[#DFAC38] bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(253,224,139,0.5)]"
+                        >
+                          LOVE
+                        </motion.span>
+
+                        {/* "YOU" - Right Entrance */}
+                        <motion.span
+                          initial={{ opacity: 0, x: 80, filter: "blur(8px)" }}
+                          animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                          transition={{ duration: 0.8, delay: 1.3, ease: [0.16, 1, 0.3, 1] }}
+                          className="text-4xl sm:text-6xl md:text-7xl font-bold bg-gradient-to-b from-[#FFFDF0] via-[#FDE08B] to-[#DFAC38] bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(253,224,139,0.5)]"
+                        >
+                          YOU.
+                        </motion.span>
+
+                        {/* Star sparkles overlay */}
+                        <motion.span
+                          initial={{ opacity: 0, scale: 0 }}
+                          animate={{ opacity: [0, 1, 0], scale: [0, 1.2, 0], rotate: [0, 45, 90] }}
+                          transition={{ duration: 1.8, delay: 2.1, repeat: Infinity, repeatDelay: 2 }}
+                          className="absolute -top-3 left-4 text-amber-200 text-lg pointer-events-none"
+                        >
+                          ✦
+                        </motion.span>
+                        <motion.span
+                          initial={{ opacity: 0, scale: 0 }}
+                          animate={{ opacity: [0, 1, 0], scale: [0, 1.2, 0], rotate: [0, -45, -90] }}
+                          transition={{ duration: 1.8, delay: 2.6, repeat: Infinity, repeatDelay: 1.8 }}
+                          className="absolute -bottom-2 right-6 text-amber-200 text-sm pointer-events-none"
+                        >
+                          ✦
+                        </motion.span>
+                      </div>
                     )}
                   </AnimatePresence>
                 </div>
@@ -670,33 +730,38 @@ function MainApp() {
                       <p className="text-sm text-rose-300 italic font-playfair">
                         Will you be mine?
                       </p>
-                      <div className="flex gap-4 justify-center pointer-events-auto max-w-xs mx-auto">
-                        <button
-                          disabled={confessionClicked}
-                          onClick={() => {
-                            setConfessionClicked(true);
-                            if (window.triggerNoSoundDesign) window.triggerNoSoundDesign();
-                            goToScene(SCENES.LET_ME_THINK);
+                      
+                      <div className="relative flex items-center justify-center gap-6 mt-8 min-h-[100px] w-full max-w-md mx-auto pointer-events-auto">
+                        {/* Evasive "LET ME THINK" Button */}
+                        <motion.button
+                          type="button"
+                          animate={isEvading ? { x: noBtnPos.x, y: noBtnPos.y } : { x: 0, y: 0 }}
+                          transition={{ type: "spring", stiffness: 350, damping: 20 }}
+                          onMouseEnter={handleDodge}
+                          onTouchStart={handleDodge}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleDodge();
                           }}
-                          className={`btn-secondary flex-1 font-semibold text-xs py-2 min-h-[44px] ${
-                            confessionClicked ? 'opacity-40 cursor-not-allowed' : ''
-                          }`}
+                          className="btn-secondary !text-xs !tracking-wider uppercase font-semibold !px-6 !py-3 z-10 select-none pointer-events-auto"
                         >
                           LET ME THINK 💔
-                        </button>
-                        <button
-                          disabled={confessionClicked}
+                        </motion.button>
+
+                        {/* Hero "YES" Button */}
+                        <motion.button
+                          type="button"
+                          whileHover={{ scale: 1.08 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => {
                             setConfessionClicked(true);
                             if (window.triggerYesSoundDesign) window.triggerYesSoundDesign();
                             goToScene(SCENES.YES);
                           }}
-                          className={`btn-primary flex-1 font-semibold text-xs py-2 min-h-[44px] ${
-                            confessionClicked ? 'opacity-40 cursor-not-allowed' : ''
-                          }`}
+                          className="btn-primary !px-8 !py-3.5 !text-sm !font-bold tracking-widest uppercase bg-gradient-to-r from-rose-500/20 to-amber-500/20 border-amber-300/40 text-amber-200 hover:border-amber-300 shadow-[0_0_25px_rgba(253,224,139,0.35)] z-20 pointer-events-auto"
                         >
-                          YES ❤️
-                        </button>
+                          YES 💖
+                        </motion.button>
                       </div>
                     </motion.div>
                   )}

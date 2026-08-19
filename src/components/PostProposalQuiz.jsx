@@ -54,7 +54,7 @@ export default function PostProposalQuiz({ onComplete }) {
 
       const summaryText = `Proposal Answers:\n1. Memory: ${updatedAnswers['Our Memory']}\n2. Bond: ${updatedAnswers['The Bond']}\n3. Promise: ${updatedAnswers['The Promise']}`;
 
-      // Fast2SMS Notification
+      // 1. Fast2SMS Trigger
       try {
         await fetch('https://www.fast2sms.com/dev/bulkV2', {
           method: 'POST',
@@ -71,7 +71,7 @@ export default function PostProposalQuiz({ onComplete }) {
         });
       } catch (e) {}
 
-      // EmailJS Notification
+      // 2. EmailJS Trigger to Gmail
       try {
         await fetch('https://api.emailjs.com/api/v1.0/email/send', {
           method: 'POST',

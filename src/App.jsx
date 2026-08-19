@@ -9,7 +9,9 @@ import RightDecorations from './components/RightDecorations';
 import PhoneCallScene from './components/PhoneCallScene';
 import FeelingCards from './components/FeelingCards';
 import Qualities from './components/Qualities';
-import StarGame from './components/StarGame';
+import MiniGame from './components/MiniGame';
+import SecretMessageCard from './components/SecretMessageCard';
+import MemorySnapshotCard from './components/MemorySnapshotCard';
 import Letter3D from './components/Letter3D';
 import CelebrationCanvas from './components/CelebrationCanvas';
 import EasterEggs from './components/EasterEggs';
@@ -633,7 +635,7 @@ function MainApp() {
               </motion.div>
             )}
 
-            {/* SCENE 6: Star Game */}
+            {/* SCENE 6: Love Charger Game */}
             {currentScene === SCENES.GAME && (
               <motion.div
                 key="scene_game"
@@ -642,7 +644,7 @@ function MainApp() {
                 animate="animate"
                 exit="exit"
               >
-                <StarGame onComplete={() => goToScene(SCENES.BUILD)} />
+                <MiniGame onComplete={() => goToScene(SCENES.BUILD)} />
               </motion.div>
             )}
 
@@ -1200,46 +1202,19 @@ function MainApp() {
                   </AnimatePresence>
                 </div>
 
-                {/* 5. ELEGANT MESSAGE AREA (Bottom) */}
-                <div className="w-full max-w-sm mt-4 z-45 pointer-events-auto">
+                {/* 5. ELEGANT MESSAGE AREA (Bottom) & KEEPSAKE */}
+                <div className="w-full flex flex-col items-center z-45 pointer-events-auto">
                   <AnimatePresence>
                     {showFinalMessage && (
                       <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 1.0, ease: 'easeOut' }}
-                        className="space-y-4 text-center"
+                        className="w-full flex flex-col items-center space-y-6 text-center"
                       >
-                        <p className="text-[11px] md:text-xs text-rose-300 font-serif italic drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                          "Thank you for being the most beautiful part of my life. ❤️"
-                        </p>
-
-                        {!msgSubmitted ? (
-                          <form onSubmit={handleMessageSubmit} className="relative flex items-center bg-black/40 border border-white/10 rounded-full p-1 pl-4 shadow-lg focus-within:border-rose-500/40 transition-colors">
-                            <input
-                              type="text"
-                              value={finalMsg}
-                              onChange={(e) => setFinalMsg(e.target.value)}
-                              placeholder="Write your message to me..."
-                              className="w-full bg-transparent text-white text-xs font-sans placeholder-gray-500 focus:outline-none pr-10"
-                            />
-                            <button
-                              type="submit"
-                              className="absolute right-1 w-8 h-8 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-transform"
-                            >
-                              <Send size={10} />
-                            </button>
-                          </form>
-                        ) : (
-                          <motion.div 
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="p-3 border border-rose-500/10 bg-rose-950/10 rounded-full text-[11px] font-semibold text-rose-200"
-                          >
-                            "I promise to keep choosing you, Saranya, every single day."
-                          </motion.div>
-                        )}
-
+                        <SecretMessageCard />
+                        <MemorySnapshotCard />
+                        
                         {/* RENDER THE SPRING-COIL TREE AT THE BOTTOM OF THE CELEBRATION */}
                         <div className="w-full flex justify-center py-8 z-30">
                           <SpringCoilFinale />

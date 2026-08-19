@@ -18,7 +18,7 @@ import HeartBurst from './components/HeartBurst';
 import TextHeart3D from './components/TextHeart3D';
 import SpringCoilFinale from './components/SpringCoilFinale';
 import ButterflyExplosion from './components/ButterflyExplosion';
-import AdminLoginGate from './components/AdminLoginGate';
+import AdminSecurityGate from './components/AdminSecurityGate';
 import PostProposalQuiz from './components/PostProposalQuiz';
 
 function DairyMilkBar() {
@@ -327,7 +327,7 @@ function MainApp() {
   };
 
   if (!isAdminLoggedIn) {
-    return <AdminLoginGate onLoginSuccess={() => setIsAdminLoggedIn(true)} />;
+    return <AdminSecurityGate onUnlocked={() => setIsAdminLoggedIn(true)} />;
   }
 
   return (

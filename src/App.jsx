@@ -95,7 +95,7 @@ function MainApp() {
               </h2>
               <div className="space-y-3 text-left">
                 <div className="p-4 rounded-2xl bg-white/[0.04] border border-rose-400/20 text-rose-100 text-sm">
-                  ✨ <strong>உன்னோட குழந்தை சிரிப்பு:</strong> என் மொத்த கவலையையும் மறக்க வைக்கும் மேஜிக்!
+                  ✨ <strong>உன்னோட குழந்தைத் தனம்:</strong> என்னை எப்பவுமே சிரிக்க வச்சு ரசிக்க வைக்கிற ஒரு தனி அழகு! 🥰
                 </div>
                 <div className="p-4 rounded-2xl bg-white/[0.04] border border-rose-400/20 text-rose-100 text-sm">
                   🥰 <strong>உன் அன்பும் அக்கறையும்:</strong> எனக்குக் கிடைத்த மிக அழகான வரம்.

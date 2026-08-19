@@ -8,7 +8,7 @@ export default function PromiseEntryGate({ onProceed }) {
   const [noPos, setNoPos] = useState({ x: 0, y: 0 });
   const [dodgeCount, setDodgeCount] = useState(0);
 
-  // Countdown timer logic for Screen 2
+  // 60-Second Countdown logic
   useEffect(() => {
     if (step !== 2) return;
     if (timeLeft <= 0) {
@@ -42,7 +42,6 @@ export default function PromiseEntryGate({ onProceed }) {
             exit={{ opacity: 0, scale: 0.92, y: -20 }}
             className="p-8 sm:p-10 rounded-3xl backdrop-blur-3xl bg-zinc-950/85 border border-rose-500/30 shadow-[0_0_50px_rgba(244,114,182,0.25)] text-center relative overflow-hidden"
           >
-            <div className="absolute inset-0 bg-rose-500/5 pointer-events-none rounded-3xl blur-2xl" />
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
               <Ticket className="w-8 h-8 animate-pulse"/>
             </div>
@@ -66,7 +65,7 @@ export default function PromiseEntryGate({ onProceed }) {
           </motion.div>
         )}
 
-        {/* SCREEN 2: 1:00 MINUTE THINKING TIMER */}
+        {/* SCREEN 2: 1:00 MINUTE THINKING TIMER WITH MODERN PROMISE LINE */}
         {step === 2 && (
           <motion.div
             key="screen-2"
@@ -96,8 +95,9 @@ export default function PromiseEntryGate({ onProceed }) {
               </span>
             </div>
 
-            <p className="text-rose-200/80 text-xs sm:text-sm font-serif italic mb-6">
-              "Enna irundhalum un kooda irukka poren nu fix panniko... ❤️"
+            {/* Modernized Romantic Promise Quote */}
+            <p className="text-rose-200/90 text-sm sm:text-base font-serif italic mb-6 leading-relaxed">
+              "Yedhu nadandhalum, endha situation-la yum naan un kooda thaan iruppen... promise! 🤍✨"
             </p>
 
             <button
@@ -109,7 +109,7 @@ export default function PromiseEntryGate({ onProceed }) {
           </motion.div>
         )}
 
-        {/* SCREEN 3: FINAL DECISION GATE WITH RUNAWAY NO */}
+        {/* SCREEN 3: FINAL DECISION GATE WITH RUNAWAY NO BUTTON */}
         {step === 3 && (
           <motion.div
             key="screen-3"

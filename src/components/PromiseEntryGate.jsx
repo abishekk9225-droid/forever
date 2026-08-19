@@ -221,17 +221,18 @@ export default function PromiseEntryGate({ onProceed }) {
               Indha Ulagathulaye... 🌍✨
             </h3>
             <p className="text-rose-200/90 text-sm sm:text-base font-serif italic mb-8 leading-relaxed">
-              "Un Amma, Appa, Ma'am thavira unakku romba pudicha innoru aalu naan thaan-na mattum 'YES' click pannu! 😜❤️"
+              "Un Amma, Appa, Ma'am thavira unakku romba pudicha innoru person yaarunu sollu... Ok-na 'YES' click pannu! 😜❤️"
             </p>
 
             <div className="flex items-center justify-center gap-5 relative min-h-[90px] w-full">
+              {/* YES BUTTON */}
               <motion.button
                 whileHover={{ scale: 1.06 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setStep(4)}
-                className="py-3.5 px-8 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-medium text-sm tracking-wider shadow-[0_0_30px_rgba(244,114,182,0.5)] transition cursor-pointer z-10"
+                className="py-3.5 px-10 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-semibold text-base tracking-wider shadow-[0_0_30px_rgba(244,114,182,0.5)] transition cursor-pointer z-10"
               >
-                Adhu Eppavume Neethan! 💖
+                YES 💖
               </motion.button>
 
               <motion.button

@@ -20,6 +20,7 @@ import MiniGame from './components/MiniGame';
 import AudioPlayer from './components/AudioPlayer';
 
 import PromiseEntryGate from './components/PromiseEntryGate';
+import SuspenseProposalFlow from './components/SuspenseProposalFlow';
 
 // Climax components
 import PostProposalQuiz from './components/PostProposalQuiz';
@@ -148,31 +149,7 @@ function MainApp() {
 
           {/* 5. CONFESSION ("WILL YOU BE MINE FOREVER?") */}
           {currentScene === SCENES.CONFESSION && (
-            <motion.div
-              key="confession"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="w-full text-center p-8 sm:p-10 rounded-3xl bg-zinc-950/85 backdrop-blur-2xl border border-rose-500/30 shadow-[0_0_50px_rgba(244,114,182,0.25)]"
-            >
-              <Heart className="w-12 h-12 text-rose-500 fill-rose-500 mx-auto mb-4 animate-bounce"/>
-              <h2 className="text-3xl sm:text-4xl font-serif text-white mb-3">
-                Saranya, Will You Be Mine Forever? 💍
-              </h2>
-              <p className="text-rose-200/80 text-sm sm:text-base font-serif italic mb-8">
-                "என் ஆயுள் முழுக்க உன் கரம் பிடித்து வாழ ஆசை... எனக்காக சம்மதமா? ❤️"
-              </p>
-
-              <div className="flex items-center justify-center gap-6 relative min-h-[90px] w-full">
-                <button
-                  onClick={handleProposalYes}
-                  className="py-4 px-10 rounded-3xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:scale-110 active:scale-95 text-white font-bold text-lg tracking-wider shadow-[0_0_40px_rgba(244,114,182,0.6)] animate-pulse transition cursor-pointer z-10"
-                >
-                  YES, Forever! 💖
-                </button>
-                <RunawayNoButton />
-              </div>
-            </motion.div>
+            <SuspenseProposalFlow onYesAccepted={() => setCurrentScene(SCENES.QUIZ)} />
           )}
 
           {/* 6. POST-PROPOSAL 3 QUESTIONS */}

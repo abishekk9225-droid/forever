@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useScene, SCENES } from '../context/SceneProvider';
 
+const isAccepted = (s) => s === SCENES.QUIZ || s === SCENES.CERTIFICATE || s === SCENES.FINALE;
+
 export default function BackgroundEffects() {
   const { currentScene, storyIntensity, isLowEnd, isMobile } = useScene();
   const canvasRef = useRef(null);
@@ -149,7 +151,7 @@ export default function BackgroundEffects() {
       }
       reset(init = false) {
         const { currentScene: scene } = settingsRef.current;
-        if (scene === SCENES.YES) {
+        if (isAccepted(scene)) {
           this.x = canvas.width / 2 + (Math.random() - 0.5) * 60;
           this.y = canvas.height / 2 + (Math.random() - 0.5) * 60;
           this.size = Math.random() * 0.45 + 0.35; // slightly smaller for higher density
@@ -320,7 +322,7 @@ export default function BackgroundEffects() {
       const { storyIntensity: intensity, isLowEnd: low, currentScene: scene } = settingsRef.current;
 
       // Reset all celebration butterflies to center to explode outward on YES scene transition
-      if (scene === SCENES.YES && lastScene !== SCENES.YES) {
+      if (isAccepted(scene) && !isAccepted(lastScene)) {
         for (let i = 0; i < celebrationButterfliesList.length; i++) {
           const b = celebrationButterfliesList[i];
           b.x = canvas.width / 2;
@@ -351,10 +353,10 @@ export default function BackgroundEffects() {
       }
 
       // 2. Draw Fireflies (only spawn after Scene 2, count scales with intensity)
-      if (scene !== SCENES.INTRO && scene !== SCENES.GATECHECK) {
+      if (scene !== SCENES.GATE) {
         const targetFireflies = low ? 16 : 38;
         // Spikes on YES celebration
-        const celebrationMultiplier = scene === SCENES.YES ? 1.6 : 1.0;
+        const celebrationMultiplier = isAccepted(scene) ? 1.6 : 1.0;
         const activeFirefliesCount = Math.floor(targetFireflies * intensity * celebrationMultiplier);
 
         for (let i = 0; i < activeFirefliesCount; i++) {
@@ -364,7 +366,7 @@ export default function BackgroundEffects() {
       }
 
       // 2b. Draw Butterflies (active across all scenes, count based on performance)
-      if (scene === SCENES.YES) {
+      if (isAccepted(scene)) {
         const activeCelebrationCount = low ? 50 : 80;
         for (let i = 0; i < activeCelebrationCount; i++) {
           celebrationButterfliesList[i].update(canvas.width, canvas.height);

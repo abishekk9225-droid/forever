@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { useScene, SCENES } from '../context/SceneProvider';
 
+const isAccepted = (s) => s === SCENES.QUIZ || s === SCENES.CERTIFICATE || s === SCENES.FINALE;
+
 export default function LeftDecorations() {
   const { currentScene } = useScene();
   const birdControls = useAnimation();
@@ -14,7 +16,7 @@ export default function LeftDecorations() {
     let blinkInterval;
     let tiltTimeout;
 
-    if (currentScene !== SCENES.YES) {
+    if (!isAccepted(currentScene)) {
       birdControls.set({ x: 0, y: 0, scale: 1, rotate: 0, opacity: 1 });
       wingControls.set({ rotate: 0 });
       headControls.set({ rotate: 0 });
@@ -22,7 +24,7 @@ export default function LeftDecorations() {
     }
 
     try {
-      if (currentScene === SCENES.YES) {
+      if (isAccepted(currentScene)) {
         birdControls.start({
           x: [0, 150, 350, 750],
           y: [0, -60, -180, -220],
@@ -35,10 +37,6 @@ export default function LeftDecorations() {
           rotate: [0, -40, 40, -40, 0],
           transition: { repeat: Infinity, duration: 0.22, ease: 'linear', delay: 2.5 }
         });
-      } else if (currentScene === SCENES.NO || currentScene === SCENES.LET_ME_THINK) {
-        headControls.start({ rotate: -15, y: 2, transition: { duration: 1.0 } });
-        wingControls.start({ rotate: 12, transition: { duration: 1.0 } });
-        tailControls.start({ rotate: -10, transition: { duration: 1.0 } });
       } else {
         // Active loops
         birdControls.start({
@@ -84,24 +82,13 @@ export default function LeftDecorations() {
   let scale = 1.0;
   let birdOpacity = 1.0;
 
-  if (currentScene === SCENES.INTRO) {
-    branchOpacity = 0.2; // faint branch silhouette
+  if (currentScene === SCENES.GATE) {
+    branchOpacity = 0.25; // faint branch silhouette
     scale = 0.75;
     birdOpacity = 0.25; // visible at low intensity
-  } else if (currentScene === SCENES.GATECHECK) {
-    branchOpacity = 0.45;
-    scale = 0.85;
-    birdOpacity = 0.45;
-  } else if (currentScene === SCENES.SUSPENSE) {
-    branchOpacity = 0.12;
-    scale = 0.85;
-    birdOpacity = 0.0;
   } else if (currentScene === SCENES.CONFESSION) {
     branchOpacity = 0.0;
     birdOpacity = 0.0;
-  } else if (currentScene === SCENES.NO || currentScene === SCENES.LET_ME_THINK) {
-    branchOpacity = 0.35;
-    birdOpacity = 0.4; // quiet drooping bird
   }
 
   return (

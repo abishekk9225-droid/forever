@@ -3,41 +3,29 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const SceneContext = createContext(null);
 
 export const SCENES = {
-  INTRO: 'intro',
-  GATECHECK: 'gatecheck',
-  CALL: 'call',
-  MEMORIES: 'memories',
-  QUALITIES: 'qualities',
-  GAME: 'game',
-  BUILD: 'build',
-  LETTER: 'letter',
-  SUSPENSE: 'suspense',
-  CONFESSION: 'confession',
-  YES: 'yes',
-  NO: 'no',
-  LET_ME_THINK: 'let_me_think',
-  GATECHECK_STOP: 'gatecheck_stop'
+  GATE: 'GATE',
+  MEMORIES: 'MEMORIES',
+  GAME: 'GAME',
+  LETTER: 'LETTER',
+  CONFESSION: 'CONFESSION',
+  QUIZ: 'QUIZ',
+  CERTIFICATE: 'CERTIFICATE',
+  FINALE: 'FINALE',
 };
 
 const INTENSITY_MAP = {
-  [SCENES.INTRO]: 0.0,
-  [SCENES.GATECHECK]: 0.1,
-  [SCENES.CALL]: 0.2,
-  [SCENES.MEMORIES]: 0.35,
-  [SCENES.QUALITIES]: 0.5,
+  [SCENES.GATE]: 0.1,
+  [SCENES.MEMORIES]: 0.45,
   [SCENES.GAME]: 0.6,
-  [SCENES.BUILD]: 0.7,
   [SCENES.LETTER]: 0.75,
-  [SCENES.SUSPENSE]: 0.1, // Dims to focus
-  [SCENES.CONFESSION]: 0.05, // Black screen target
-  [SCENES.YES]: 1.0, // Maximum intensity
-  [SCENES.NO]: 0.2, // Wilting/dimmed
-  [SCENES.LET_ME_THINK]: 0.2,
-  [SCENES.GATECHECK_STOP]: 0.1
+  [SCENES.CONFESSION]: 0.05,
+  [SCENES.QUIZ]: 1.0,
+  [SCENES.CERTIFICATE]: 1.0,
+  [SCENES.FINALE]: 1.0,
 };
 
 export function SceneProvider({ children }) {
-  const [currentScene, setCurrentScene] = useState(SCENES.INTRO);
+  const [currentScene, setCurrentScene] = useState(SCENES.GATE);
   const [historyStack, setHistoryStack] = useState([]);
   const [muted, setMuted] = useState(true);
   const [isMobile, setIsMobile] = useState(false);

@@ -2,6 +2,8 @@ import React from 'react';
 import { useScene, SCENES } from '../context/SceneProvider';
 import Mascot from './Mascot';
 
+const isAccepted = (s) => s === SCENES.QUIZ || s === SCENES.CERTIFICATE || s === SCENES.FINALE;
+
 export default function RightDecorations() {
   const { currentScene, storyIntensity } = useScene();
 
@@ -11,30 +13,15 @@ export default function RightDecorations() {
   let mascotOpacity = 1.0;
   let lanternGlowOpacity = 0.45;
 
-  if (currentScene === SCENES.INTRO) {
-    vineOpacity = 0.2; // faint silhouette
+  if (currentScene === SCENES.GATE) {
+    vineOpacity = 0.25; // faint silhouette
     vineScale = 0.75;
     mascotOpacity = 0.25; // visible at low intensity
     lanternGlowOpacity = 0.1; // faint flicker
-  } else if (currentScene === SCENES.GATECHECK) {
-    vineOpacity = 0.45;
-    vineScale = 0.85;
-    mascotOpacity = 0.45;
-    lanternGlowOpacity = 0.2;
-  } else if (currentScene === SCENES.SUSPENSE) {
-    vineOpacity = 0.15;
-    vineScale = 0.85;
-    mascotOpacity = 0.25; // dims but stays visible
-    lanternGlowOpacity = 0.05;
   } else if (currentScene === SCENES.CONFESSION) {
     vineOpacity = 0.0; // complete dark suspense
     mascotOpacity = 0.0;
     lanternGlowOpacity = 0.0;
-  } else if (currentScene === SCENES.NO || currentScene === SCENES.LET_ME_THINK) {
-    vineOpacity = 0.35;
-    vineScale = 0.9;
-    mascotOpacity = 0.75; // sad mascot visible
-    lanternGlowOpacity = 0.1;
   } else {
     // Other scenes get full intensity
     vineOpacity = 1.0;
@@ -48,26 +35,22 @@ export default function RightDecorations() {
 
   React.useEffect(() => {
     let timer;
-    if (currentScene === SCENES.YES) {
+    if (isAccepted(currentScene)) {
       setDelayedState('nervous'); // Keep nervous/shy during suspense
       timer = setTimeout(() => {
         setDelayedState('celebrating'); // Happy celebrating on impact
       }, 2500);
     } else {
-      if (currentScene === SCENES.GATECHECK || currentScene === SCENES.CALL) {
+      if (currentScene === SCENES.GATE) {
         setDelayedState('curious');
       } else if (currentScene === SCENES.MEMORIES) {
         setDelayedState('excited');
-      } else if (currentScene === SCENES.QUALITIES || currentScene === SCENES.LETTER) {
+      } else if (currentScene === SCENES.LETTER) {
         setDelayedState('shy');
       } else if (currentScene === SCENES.GAME) {
         setDelayedState('excited');
-      } else if (currentScene === SCENES.BUILD || currentScene === SCENES.SUSPENSE) {
-        setDelayedState('nervous');
       } else if (currentScene === SCENES.CONFESSION) {
         setDelayedState('excited');
-      } else if (currentScene === SCENES.NO || currentScene === SCENES.LET_ME_THINK) {
-        setDelayedState('sad');
       } else {
         setDelayedState('idle');
       }

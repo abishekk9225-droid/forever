@@ -90,8 +90,6 @@ export default function PostProposalQuiz({ onComplete }) {
           })
         });
       } catch (e) {}
-
-      if (onComplete) onComplete();
     }
   };
 
@@ -161,6 +159,14 @@ export default function PostProposalQuiz({ onComplete }) {
             >
               <MessageCircle className="w-5 h-5"/>
               <span>Send to Abishek on WhatsApp 💬</span>
+            </button>
+
+            <button
+              onClick={onComplete}
+              className="mt-2 w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-medium text-sm tracking-wider flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(244,114,182,0.4)] transition duration-300 cursor-pointer"
+            >
+              <span>Next: View Your Certificate of Forever 📜</span>
+              <ArrowRight className="w-4 h-4"/>
             </button>
           </motion.div>
         )}

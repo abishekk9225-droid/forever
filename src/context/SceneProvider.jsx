@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const SceneContext = createContext(null);
 
 export const SCENES = {
-  GATE: 'GATE',
+  INTRO: 'INTRO',
   MEMORIES: 'MEMORIES',
   GAME: 'GAME',
   LETTER: 'LETTER',
@@ -14,7 +14,7 @@ export const SCENES = {
 };
 
 const INTENSITY_MAP = {
-  [SCENES.GATE]: 0.1,
+  [SCENES.INTRO]: 0.1,
   [SCENES.MEMORIES]: 0.45,
   [SCENES.GAME]: 0.6,
   [SCENES.LETTER]: 0.75,
@@ -25,7 +25,7 @@ const INTENSITY_MAP = {
 };
 
 export function SceneProvider({ children }) {
-  const [currentScene, setCurrentScene] = useState(SCENES.GATE);
+  const [currentScene, setCurrentScene] = useState(SCENES.INTRO);
   const [historyStack, setHistoryStack] = useState([]);
   const [muted, setMuted] = useState(true);
   const [isMobile, setIsMobile] = useState(false);

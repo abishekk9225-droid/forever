@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart } from 'lucide-react';
+import { Heart, Sparkles, ArrowRight } from 'lucide-react';
 import { SceneProvider, useScene, SCENES } from './context/SceneProvider';
 
 // Visual canvases and companion components
@@ -19,9 +19,6 @@ import InteractiveLoveLetter from './components/InteractiveLoveLetter';
 import MiniGame from './components/MiniGame';
 import AudioPlayer from './components/AudioPlayer';
 
-// Qualities component for Memories
-import Qualities from './components/Qualities';
-
 // Climax components
 import PostProposalQuiz from './components/PostProposalQuiz';
 import CertificateOfForever from './components/CertificateOfForever';
@@ -33,21 +30,22 @@ function MainApp() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const { currentScene, goToScene: setCurrentScene } = useScene();
 
-  // 1. Initial Passcode Check
+  // 1. Password Protection Gate
   if (!isUnlocked) {
     return <AdminSecurityGate onUnlocked={() => setIsUnlocked(true)} />;
   }
 
-  // 2. Climax Audio Trigger on YES
   const handleProposalYes = () => {
     if (typeof window.triggerClimaxAudio === 'function') {
-      window.triggerClimaxAudio(); // Jumps directly to 219s
+      window.triggerClimaxAudio(); // Jump to 219s audio peak
     }
     setCurrentScene(SCENES.QUIZ);
   };
 
   return (
-    <div className="relative min-h-screen bg-[#05020a] text-white overflow-hidden selection:bg-rose-500/20 selection:text-white select-none">
+    <main className="relative w-full min-h-screen overflow-hidden bg-[#05020a] text-white select-none flex items-center justify-center font-sans">
+      <AudioPlayer />
+      
       {/* Reusable Canvas Heart Burst System */}
       <ErrorBoundary>
         <HeartBurst />
@@ -57,19 +55,6 @@ function MainApp() {
       <ErrorBoundary>
         <BackgroundEffects />
       </ErrorBoundary>
-
-      {/* Global Mute Toggle and Header */}
-      <header className="fixed top-0 inset-x-0 z-50 p-4 md:p-6 flex items-center justify-between pointer-events-none">
-        <div className="flex items-center gap-1">
-          <Heart size={14} className="text-rose-500 fill-rose-500 animate-pulse" />
-          <span className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-rose-300 font-sans">
-            For Saranya ❤️
-          </span>
-        </div>
-        <div className="pointer-events-auto">
-          <AudioPlayer />
-        </div>
-      </header>
 
       {/* Left Bird & Right Mascot Companions */}
       <ErrorBoundary>
@@ -84,134 +69,173 @@ function MainApp() {
         <EasterEggs />
       </ErrorBoundary>
 
-      {/* MAIN VIEWPORT */}
-      <main className="relative z-30 w-full min-h-screen flex items-center justify-center py-12 px-4">
+      <div className="relative z-30 w-full max-w-xl px-4 py-8 flex flex-col items-center">
         <AnimatePresence mode="wait">
-          {/* SCENE 1: MEMORIES / QUALITIES */}
+          {/* 1. INTRO SCENE WITH BEAUTIFUL LINES */}
+          {currentScene === SCENES.INTRO && (
+            <motion.div
+              key="intro"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="w-full text-center p-8 sm:p-10 rounded-3xl bg-zinc-950/80 backdrop-blur-2xl border border-rose-500/30 shadow-[0_0_50px_rgba(244,114,182,0.2)]"
+            >
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-rose-400">
+                <Heart className="w-8 h-8 fill-rose-400 animate-pulse"/>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-serif text-white mb-3">
+                Hey Saranya ❤️
+              </h1>
+              <p className="text-rose-200/90 text-sm sm:text-base font-serif italic mb-6 leading-relaxed">
+                "உன் சிரிப்பில் என் உலகம் தொடங்குது... உன்னோட இந்த பயணத்தில் என் இதயம் வாழுது ✨"
+              </p>
+              <button
+                onClick={() => setCurrentScene(SCENES.MEMORIES)}
+                className="py-3.5 px-8 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:scale-105 active:scale-95 text-white font-medium text-sm shadow-[0_0_25px_rgba(244,114,182,0.4)] transition cursor-pointer flex items-center justify-center gap-2 mx-auto"
+              >
+                <span>Let's Walk Down Memory Lane</span>
+                <ArrowRight className="w-4 h-4"/>
+              </button>
+            </motion.div>
+          )}
+
+          {/* 2. MEMORIES & QUALITIES SCENE */}
           {currentScene === SCENES.MEMORIES && (
             <motion.div
               key="memories"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.5 }}
-              className="w-full max-w-lg px-4 flex flex-col items-center"
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full text-center p-8 rounded-3xl bg-zinc-950/80 backdrop-blur-2xl border border-rose-500/30 shadow-[0_0_50px_rgba(244,114,182,0.2)] space-y-5"
             >
-              <Qualities onComplete={() => setCurrentScene(SCENES.GAME)} />
+              <span className="text-xs font-mono uppercase tracking-[0.25em] text-rose-400">
+                Our Beautiful Memories
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-serif text-white">
+                Why You Are So Special To Me 💖
+              </h2>
+              <div className="space-y-3 text-left">
+                <div className="p-4 rounded-2xl bg-white/[0.04] border border-rose-400/20 text-rose-100 text-sm">
+                  ✨ <strong>உன்னோட குழந்தை சிரிப்பு:</strong> என் மொத்த கவலையையும் மறக்க வைக்கும் மேஜிக்!
+                </div>
+                <div className="p-4 rounded-2xl bg-white/[0.04] border border-rose-400/20 text-rose-100 text-sm">
+                  🥰 <strong>உன் அன்பும் அக்கறையும்:</strong> எனக்குக் கிடைத்த மிக அழகான வரம்.
+                </div>
+                <div className="p-4 rounded-2xl bg-white/[0.04] border border-rose-400/20 text-rose-100 text-sm">
+                  💫 <strong>உன் அமைதி:</strong> என் வாழ்க்கையின் மிக அழகான நிம்மதி.
+                </div>
+              </div>
+              <button
+                onClick={() => setCurrentScene(SCENES.GAME)}
+                className="w-full mt-4 py-3.5 px-8 rounded-2xl bg-gradient-to-r from-rose-500 to-purple-600 hover:scale-105 active:scale-95 text-white font-medium text-sm shadow-lg transition cursor-pointer"
+              >
+                Let's Play Our Mini-Game ⚡
+              </button>
             </motion.div>
           )}
 
-          {/* SCENE 2: LOVE CHARGER 100% MINI-GAME */}
+          {/* 3. LOVE CHARGER 100% MINI-GAME */}
           {currentScene === SCENES.GAME && (
             <motion.div
               key="game"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.5 }}
-              className="w-full max-w-md px-4 flex flex-col items-center"
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full"
             >
               <MiniGame onComplete={() => setCurrentScene(SCENES.LETTER)} />
             </motion.div>
           )}
 
-          {/* SCENE 3: LIVE LOVE CLOCK & LOVE LETTER */}
+          {/* 4. LIVE LOVE CLOCK & LOVE LETTER SCENE */}
           {currentScene === SCENES.LETTER && (
             <motion.div
               key="letter"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.5 }}
-              className="w-full max-w-lg px-4 flex flex-col items-center space-y-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="w-full space-y-6 flex flex-col items-center"
             >
               <LiveLoveClock />
               <InteractiveLoveLetter />
               <button
                 onClick={() => setCurrentScene(SCENES.CONFESSION)}
-                className="py-3 px-8 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-600 text-white font-medium shadow-lg hover:scale-105 active:scale-95 transition cursor-pointer"
+                className="py-3.5 px-8 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:scale-105 active:scale-95 text-white font-medium text-sm shadow-[0_0_25px_rgba(244,114,182,0.4)] transition cursor-pointer"
               >
                 Read Abishek's Final Question 💖
               </button>
             </motion.div>
           )}
 
-          {/* SCENE 4: CONFESSION ("I LOVE YOU" + RUNAWAY NO BUTTON) */}
+          {/* 5. CONFESSION ("WILL YOU BE MINE FOREVER?") */}
           {currentScene === SCENES.CONFESSION && (
             <motion.div
               key="confession"
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.5 }}
-              className="w-full max-w-lg px-4 text-center flex flex-col items-center"
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="w-full text-center p-8 sm:p-10 rounded-3xl bg-zinc-950/85 backdrop-blur-2xl border border-rose-500/30 shadow-[0_0_50px_rgba(244,114,182,0.25)]"
             >
-              <h2 className="text-3xl sm:text-4xl font-serif text-white mb-3 drop-shadow-[0_0_20px_rgba(244,114,182,0.4)]">
+              <Heart className="w-12 h-12 text-rose-500 fill-rose-500 mx-auto mb-4 animate-bounce"/>
+              <h2 className="text-3xl sm:text-4xl font-serif text-white mb-3">
                 Saranya, Will You Be Mine Forever? 💍
               </h2>
-              <p className="text-rose-200/80 text-sm mb-8 font-light italic">
-                "Every beat of my heart belongs to you, today and for all tomorrows."
+              <p className="text-rose-200/80 text-sm sm:text-base font-serif italic mb-8">
+                "என் ஆயுள் முழுக்க உன் கரம் பிடித்து வாழ ஆசை... எனக்காக சம்மதமா? ❤️"
               </p>
 
               <div className="flex items-center justify-center gap-6 relative min-h-[90px] w-full">
                 <button
                   onClick={handleProposalYes}
-                  className="py-4 px-10 rounded-3xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 text-white font-semibold text-lg tracking-wider shadow-[0_0_35px_rgba(244,114,182,0.6)] animate-pulse hover:scale-105 active:scale-95 transition cursor-pointer"
+                  className="py-4 px-10 rounded-3xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:scale-110 active:scale-95 text-white font-bold text-lg tracking-wider shadow-[0_0_40px_rgba(244,114,182,0.6)] animate-pulse transition cursor-pointer z-10"
                 >
                   YES, Forever! 💖
                 </button>
-
-                {/* Runaway No Button */}
                 <RunawayNoButton />
               </div>
             </motion.div>
           )}
 
-          {/* SCENE 5: POST-PROPOSAL 3 QUESTIONS */}
+          {/* 6. POST-PROPOSAL 3 QUESTIONS */}
           {currentScene === SCENES.QUIZ && (
             <motion.div
               key="quiz"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.5 }}
-              className="w-full max-w-xl px-4 flex flex-col items-center"
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full"
             >
               <PostProposalQuiz onComplete={() => setCurrentScene(SCENES.CERTIFICATE)} />
             </motion.div>
           )}
 
-          {/* SCENE 6: LUXURY CERTIFICATE OF FOREVER */}
+          {/* 7. CERTIFICATE OF FOREVER */}
           {currentScene === SCENES.CERTIFICATE && (
             <motion.div
               key="certificate"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.5 }}
-              className="w-full max-w-2xl px-4 flex flex-col items-center max-h-screen overflow-y-auto py-6 scrollbar-thin"
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full flex flex-col items-center"
             >
-              {/* Confetti & Butterflies Explosion overlay */}
               <ButterflyExplosion />
               <CertificateOfForever />
               <button
                 onClick={() => setCurrentScene(SCENES.FINALE)}
-                className="mt-4 mb-6 py-3 px-8 rounded-2xl bg-gradient-to-r from-purple-500 to-rose-500 text-white font-medium shadow-lg hover:scale-105 active:scale-95 transition cursor-pointer"
+                className="mt-4 mb-6 py-3.5 px-8 rounded-2xl bg-gradient-to-r from-purple-500 via-rose-500 to-pink-500 hover:scale-105 active:scale-95 text-white font-medium text-sm shadow-lg transition cursor-pointer"
               >
-                Leave a Note for Abishek 💌
+                Leave a Note & Final Surprise 💌
               </button>
             </motion.div>
           )}
 
-          {/* SCENE 7: SECRET MESSAGE & SPRING COIL FINALE */}
+          {/* 8. FINALE SCENE */}
           {currentScene === SCENES.FINALE && (
             <motion.div
               key="finale"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.5 }}
-              className="w-full max-w-md px-4 flex flex-col items-center max-h-screen overflow-y-auto py-6 scrollbar-thin"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full space-y-6 flex flex-col items-center"
             >
               <SecretMessageCard />
               <MemorySnapshotCard />
@@ -219,8 +243,8 @@ function MainApp() {
             </motion.div>
           )}
         </AnimatePresence>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
 

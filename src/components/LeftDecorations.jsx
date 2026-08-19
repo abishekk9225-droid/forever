@@ -82,7 +82,7 @@ export default function LeftDecorations() {
   let scale = 1.0;
   let birdOpacity = 1.0;
 
-  if (currentScene === SCENES.GATE) {
+  if (currentScene === SCENES.INTRO) {
     branchOpacity = 0.25; // faint branch silhouette
     scale = 0.75;
     birdOpacity = 0.25; // visible at low intensity

@@ -19,6 +19,8 @@ import InteractiveLoveLetter from './components/InteractiveLoveLetter';
 import MiniGame from './components/MiniGame';
 import AudioPlayer from './components/AudioPlayer';
 
+import PromiseEntryGate from './components/PromiseEntryGate';
+
 // Climax components
 import PostProposalQuiz from './components/PostProposalQuiz';
 import CertificateOfForever from './components/CertificateOfForever';
@@ -73,30 +75,7 @@ function MainApp() {
         <AnimatePresence mode="wait">
           {/* 1. INTRO SCENE WITH BEAUTIFUL LINES */}
           {currentScene === SCENES.INTRO && (
-            <motion.div
-              key="intro"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="w-full text-center p-8 sm:p-10 rounded-3xl bg-zinc-950/80 backdrop-blur-2xl border border-rose-500/30 shadow-[0_0_50px_rgba(244,114,182,0.2)]"
-            >
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-rose-400">
-                <Heart className="w-8 h-8 fill-rose-400 animate-pulse"/>
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-serif text-white mb-3">
-                Hey Saranya ❤️
-              </h1>
-              <p className="text-rose-200/90 text-sm sm:text-base font-serif italic mb-6 leading-relaxed">
-                "உன் சிரிப்பில் என் உலகம் தொடங்குது... உன்னோட இந்த பயணத்தில் என் இதயம் வாழுது ✨"
-              </p>
-              <button
-                onClick={() => setCurrentScene(SCENES.MEMORIES)}
-                className="py-3.5 px-8 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:scale-105 active:scale-95 text-white font-medium text-sm shadow-[0_0_25px_rgba(244,114,182,0.4)] transition cursor-pointer flex items-center justify-center gap-2 mx-auto"
-              >
-                <span>Let's Walk Down Memory Lane</span>
-                <ArrowRight className="w-4 h-4"/>
-              </button>
-            </motion.div>
+            <PromiseEntryGate onProceed={() => setCurrentScene(SCENES.MEMORIES)} />
           )}
 
           {/* 2. MEMORIES & QUALITIES SCENE */}

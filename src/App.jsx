@@ -86,6 +86,7 @@ function IndividualChocolate() {
 function MainApp() {
   const { currentScene, goToScene, storyIntensity, isMobile, isLowEnd } = useScene();
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [noAttempts, setNoAttempts] = useState(0);
 
   // Disclaimer / Gate states
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
@@ -307,6 +308,7 @@ function MainApp() {
 
   const handleDodge = () => {
     setIsEvading(true);
+    setNoAttempts((prev) => prev + 1);
     
     // Calculate safe boundary limits avoiding screen edges
     const maxRangeX = typeof window !== 'undefined' ? Math.min(window.innerWidth * 0.35, 160) : 120;
@@ -832,23 +834,7 @@ function MainApp() {
                       </p>
                       
                       <div className="relative flex items-center justify-center gap-6 mt-8 min-h-[100px] w-full max-w-md mx-auto pointer-events-auto">
-                        {/* Evasive "LET ME THINK" Button */}
-                        <motion.button
-                          type="button"
-                          animate={isEvading ? { x: noBtnPos.x, y: noBtnPos.y } : { x: 0, y: 0 }}
-                          transition={{ type: "spring", stiffness: 350, damping: 20 }}
-                          onMouseEnter={handleDodge}
-                          onTouchStart={handleDodge}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleDodge();
-                          }}
-                          className="btn-secondary !text-xs !tracking-wider uppercase font-semibold !px-6 !py-3 z-10 select-none pointer-events-auto"
-                        >
-                          LET ME THINK 💔
-                        </motion.button>
-
-                        {/* Hero "YES" Button */}
+                        {/* YES BUTTON */}
                         <motion.button
                           type="button"
                           whileHover={{ scale: 1.08 }}
@@ -861,11 +847,37 @@ function MainApp() {
                             }
                             goToScene(SCENES.YES);
                           }}
-                          className="btn-primary !px-8 !py-3.5 !text-sm !font-bold tracking-widest uppercase bg-gradient-to-r from-rose-500/20 to-amber-500/20 border-amber-300/40 text-amber-200 hover:border-amber-300 shadow-[0_0_25px_rgba(253,224,139,0.35)] z-20 pointer-events-auto"
+                          className="py-4 px-10 rounded-3xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-semibold text-lg tracking-wider shadow-[0_0_35px_rgba(244,114,182,0.6)] animate-pulse cursor-pointer z-20 pointer-events-auto"
                         >
-                          YES 💖
+                          YES, Forever! 💖
+                        </motion.button>
+
+                        {/* RUNAWAY NO BUTTON */}
+                        <motion.button
+                          type="button"
+                          animate={isEvading ? { x: noBtnPos.x, y: noBtnPos.y } : { x: 0, y: 0 }}
+                          transition={{ type: "spring", stiffness: 350, damping: 20 }}
+                          onMouseEnter={handleDodge}
+                          onTouchStart={handleDodge}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleDodge();
+                          }}
+                          className="py-3 px-6 rounded-2xl bg-zinc-900/80 border border-white/20 text-white/50 text-sm hover:text-white/80 transition-colors cursor-pointer select-none z-10 pointer-events-auto"
+                        >
+                          No 😢
                         </motion.button>
                       </div>
+
+                      {noAttempts > 0 && (
+                        <motion.p
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="text-xs text-rose-300/80 italic mt-4"
+                        >
+                          {noAttempts > 2 ? "No escapes! Only 'YES' is allowed 😜❤️" : "Oops! You can't touch this button 🙈"}
+                        </motion.p>
+                      )}
                     </motion.div>
                   )}
                 </div>

@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Lock, KeyRound, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Lock, KeyRound, ChevronRight, HelpCircle, Sparkles } from 'lucide-react';
 
-// Secret Master Word
 const SECRET_WORD = 'ALWAYS';
 
 export default function AdminSecurityGate({ onUnlocked }) {
   const [passcode, setPasscode] = useState('');
   const [error, setError] = useState(false);
+  const [showHint, setShowHint] = useState(false);
 
   const handleUnlock = (e) => {
     e.preventDefault();
     if (passcode.trim().toUpperCase() === SECRET_WORD) {
       setError(false);
-      // Unlock audio on initial user interaction
       if (typeof window.unlockAudio === 'function') {
         window.unlockAudio();
       }
@@ -25,7 +24,6 @@ export default function AdminSecurityGate({ onUnlocked }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#05020a]/95 backdrop-blur-3xl px-4">
-      {/* Background Ambient Glow */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-rose-500/10 rounded-full blur-[100px] pointer-events-none" />
 
       <motion.div
@@ -41,11 +39,11 @@ export default function AdminSecurityGate({ onUnlocked }) {
         <h2 className="text-2xl sm:text-3xl font-serif text-white mb-2 tracking-wide">
           A Secret For You ❤️
         </h2>
-        <p className="text-xs sm:text-sm text-rose-200/70 mb-8 font-light">
+        <p className="text-xs sm:text-sm text-rose-200/70 mb-6 font-light">
           Enter the secret word to unlock our special world
         </p>
 
-        <form onSubmit={handleUnlock} className="space-y-5">
+        <form onSubmit={handleUnlock} className="space-y-4">
           <div className="relative">
             <input
               type="text"
@@ -68,7 +66,7 @@ export default function AdminSecurityGate({ onUnlocked }) {
               animate={{ opacity: 1, y: 0 }}
               className="text-rose-400 text-xs"
             >
-              Incorrect secret word. Please try again!
+              Incorrect secret word. Need a hint below? 😉
             </motion.p>
           )}
 
@@ -80,6 +78,32 @@ export default function AdminSecurityGate({ onUnlocked }) {
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform"/>
           </button>
         </form>
+
+        {/* Cute Hint Trigger */}
+        <div className="mt-6 pt-4 border-t border-white/10 flex flex-col items-center">
+          <button
+            type="button"
+            onClick={() => setShowHint(!showHint)}
+            className="text-xs text-rose-300/80 hover:text-rose-200 flex items-center gap-1.5 transition cursor-pointer"
+          >
+            <HelpCircle className="w-3.5 h-3.5"/>
+            <span>{showHint ? "Hide Hint" : "Need a Hint? 💡"}</span>
+          </button>
+
+          <AnimatePresence>
+            {showHint && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-400/20 text-rose-200 text-xs italic"
+              >
+                <Sparkles className="w-3.5 h-3.5 inline mr-1 text-rose-400"/>
+                "Forever and _____? (6 Letters) ✨"
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.div>
     </div>
   );

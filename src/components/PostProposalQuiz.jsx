@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Sparkles, Send, CheckCircle2, ArrowRight, Stars } from 'lucide-react';
+import { Heart, Stars, ArrowRight, CheckCircle2, MessageCircle } from 'lucide-react';
 
 const ADMIN_PHONE = '6380404055';
 const FAST2SMS_API_KEY = 'tOA5S8nMw6IXZRiUzEcNBb93a7xuh2qTYeVsjLgyfQCkWmDl4dTOpwGi2XmRsMJIV5Be4hFk1PaHWfAU';
@@ -14,8 +14,8 @@ const QUESTIONS = [
     category: "Our Memory",
     question: "நாம முதல் முதலா பேசி சிரிச்ச அந்த தருணம் உனக்கு இன்னும் ஞாபகம் இருக்கா?",
     options: [
-      { text: "எப்பவுமே என் மனசுல பத்திரமா இருக்கு ❤️", tag: "Memory: Forever in Heart" },
-      { text: "மறக்கவே முடியாத ஒரு மேஜிக் ✨", tag: "Memory: Unforgettable Magic" }
+      { text: "எப்பவுமே என் மனசுல பத்திரமா இருக்கு ❤️" },
+      { text: "மறக்கவே முடியாத ஒரு மேஜிக் ✨" }
     ]
   },
   {
@@ -23,8 +23,8 @@ const QUESTIONS = [
     category: "The Bond",
     question: "என்கிட்ட உனக்கு ரொம்ப பிடிச்ச ஒரு விஷயம் எது?",
     options: [
-      { text: "உன்னோட இந்த அன்பும் அக்கறையும் 🥰", tag: "Bond: Love & Care" },
-      { text: "உன்னோட சிரிப்பும் குழந்தை மனசும் ✨", tag: "Bond: Smile & Childish Heart" }
+      { text: "உன்னோட இந்த அன்பும் அக்கறையும் 🥰" },
+      { text: "உன்னோட சிரிப்பும் குழந்தை மனசும் ✨" }
     ]
   },
   {
@@ -32,8 +32,8 @@ const QUESTIONS = [
     category: "The Promise",
     question: "வாழ்க்கையோட கடைசி வரைக்கும் இந்த கையை விடாம கூடவே இருப்பியா?",
     options: [
-      { text: "எந்த ஜென்மமானாலும் உன் கூடத்தான் 💍", tag: "Promise: Every Lifetime" },
-      { text: "Forever & Always with you ❤️", tag: "Promise: Forever & Always" }
+      { text: "எந்த ஜென்மமானாலும் உன் கூடத்தான் 💍" },
+      { text: "Forever & Always with you ❤️" }
     ]
   }
 ];
@@ -41,7 +41,6 @@ const QUESTIONS = [
 export default function PostProposalQuiz({ onComplete }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [isDelivering, setIsDelivering] = useState(false);
   const [completed, setCompleted] = useState(false);
 
   const handleSelectOption = async (option) => {
@@ -51,13 +50,11 @@ export default function PostProposalQuiz({ onComplete }) {
     if (currentIndex < QUESTIONS.length - 1) {
       setCurrentIndex((prev) => prev + 1);
     } else {
-      // All 3 answered -> Transmit to Phone & Email
       setCompleted(true);
-      setIsDelivering(true);
 
-      const summaryText = `Saranya Proposal Answers:\nQ1: ${updatedAnswers['Our Memory']}\nQ2: ${updatedAnswers['The Bond']}\nQ3: ${updatedAnswers['The Promise']}`;
+      const summaryText = `Proposal Answers:\n1. Memory: ${updatedAnswers['Our Memory']}\n2. Bond: ${updatedAnswers['The Bond']}\n3. Promise: ${updatedAnswers['The Promise']}`;
 
-      // 1. Send Fast2SMS notification
+      // Fast2SMS Notification
       try {
         await fetch('https://www.fast2sms.com/dev/bulkV2', {
           method: 'POST',
@@ -72,11 +69,9 @@ export default function PostProposalQuiz({ onComplete }) {
             numbers: ADMIN_PHONE,
           }),
         });
-      } catch (err) {
-        console.warn("SMS notification error:", err);
-      }
+      } catch (e) {}
 
-      // 2. Send EmailJS notification
+      // EmailJS Notification
       try {
         await fetch('https://api.emailjs.com/api/v1.0/email/send', {
           method: 'POST',
@@ -94,13 +89,17 @@ export default function PostProposalQuiz({ onComplete }) {
             }
           })
         });
-      } catch (err) {
-        console.warn("Email notification error:", err);
-      } finally {
-        setIsDelivering(false);
-        if (onComplete) onComplete();
-      }
+      } catch (e) {}
+
+      if (onComplete) onComplete();
     }
+  };
+
+  const openWhatsApp = () => {
+    const text = encodeURIComponent(
+      `Hey Abishek! ❤️ I said YES to Forever! 💍✨\n\nHere are my answers:\n1. ${answers['Our Memory'] || ''}\n2. ${answers['The Bond'] || ''}\n3. ${answers['The Promise'] || ''}\n\nForever & Always with you! 💖`
+    );
+    window.open(`https://wa.me/91${ADMIN_PHONE}?text=${text}`, '_blank');
   };
 
   return (
@@ -108,17 +107,12 @@ export default function PostProposalQuiz({ onComplete }) {
       <AnimatePresence mode="wait">
         {!completed ? (
           <motion.div
-            key={`quiz-card-${currentIndex}`}
+            key={`quiz-${currentIndex}`}
             initial={{ opacity: 0, scale: 0.95, y: 25 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -25 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
             className="p-8 sm:p-10 rounded-3xl backdrop-blur-3xl bg-zinc-950/85 border border-rose-500/30 shadow-[0_0_50px_rgba(244,114,182,0.25)] relative overflow-hidden"
           >
-            {/* Ambient Lighting */}
-            <div className="absolute -top-16 -right-16 w-44 h-44 bg-rose-500/15 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-16 -left-16 w-44 h-44 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
-
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-mono uppercase tracking-[0.25em] text-rose-400/90 flex items-center gap-1.5">
                 <Stars className="w-3.5 h-3.5 text-rose-400"/>
@@ -153,13 +147,21 @@ export default function PostProposalQuiz({ onComplete }) {
             key="quiz-success"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-8 rounded-3xl bg-zinc-950/85 border border-rose-400/30 text-center shadow-[0_0_40px_rgba(244,114,182,0.25)]"
+            className="p-8 rounded-3xl bg-zinc-950/85 border border-rose-400/30 text-center shadow-[0_0_40px_rgba(244,114,182,0.25)] space-y-4"
           >
-            <CheckCircle2 className="w-14 h-14 text-emerald-400 mx-auto mb-3 drop-shadow-[0_0_15px_rgba(52,211,153,0.6)] animate-bounce"/>
-            <h4 className="text-2xl font-serif text-white mb-1">Your Love is Sealed ❤️</h4>
+            <CheckCircle2 className="w-14 h-14 text-emerald-400 mx-auto drop-shadow-[0_0_15px_rgba(52,211,153,0.6)] animate-bounce"/>
+            <h4 className="text-2xl font-serif text-white">Your Love is Sealed ❤️</h4>
             <p className="text-rose-200/70 text-xs sm:text-sm">
               Your sweet answers have been delivered straight to Abishek.
             </p>
+
+            <button
+              onClick={openWhatsApp}
+              className="mt-4 w-full py-3.5 px-6 rounded-2xl bg-[#25D366]/90 hover:bg-[#25D366] text-white font-medium text-sm tracking-wide flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,211,102,0.4)] transition cursor-pointer"
+            >
+              <MessageCircle className="w-5 h-5"/>
+              <span>Send to Abishek on WhatsApp 💬</span>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

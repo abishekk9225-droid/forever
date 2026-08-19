@@ -18,6 +18,8 @@ import HeartBurst from './components/HeartBurst';
 import TextHeart3D from './components/TextHeart3D';
 import SpringCoilFinale from './components/SpringCoilFinale';
 import ButterflyExplosion from './components/ButterflyExplosion';
+import AdminLoginGate from './components/AdminLoginGate';
+import PostProposalQuiz from './components/PostProposalQuiz';
 
 function DairyMilkBar() {
   return (
@@ -83,6 +85,7 @@ function IndividualChocolate() {
 
 function MainApp() {
   const { currentScene, goToScene, storyIntensity, isMobile, isLowEnd } = useScene();
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
   // Disclaimer / Gate states
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
@@ -322,6 +325,10 @@ function MainApp() {
     setMsgSubmitted(true);
     if (window.playRomanticChime) window.playRomanticChime();
   };
+
+  if (!isAdminLoggedIn) {
+    return <AdminLoginGate onLoginSuccess={() => setIsAdminLoggedIn(true)} />;
+  }
 
   return (
     <div className={`relative min-h-screen flex flex-col justify-between overflow-x-hidden transition-colors duration-1000 select-none ${
@@ -849,6 +856,9 @@ function MainApp() {
                           onClick={() => {
                             setConfessionClicked(true);
                             if (window.triggerYesSoundDesign) window.triggerYesSoundDesign();
+                            if (typeof window.triggerClimaxAudio === 'function') {
+                              window.triggerClimaxAudio();
+                            }
                             goToScene(SCENES.YES);
                           }}
                           className="btn-primary !px-8 !py-3.5 !text-sm !font-bold tracking-widest uppercase bg-gradient-to-r from-rose-500/20 to-amber-500/20 border-amber-300/40 text-amber-200 hover:border-amber-300 shadow-[0_0_25px_rgba(253,224,139,0.35)] z-20 pointer-events-auto"
@@ -864,12 +874,15 @@ function MainApp() {
 
             {/* SCENE 11a: YES Celebration overlay with DOM Heart, Arrow, Flash, and Typography */}
             {currentScene === SCENES.YES && (
-              <div className="fixed inset-0 flex flex-col items-center justify-between z-40 pointer-events-none select-none py-10 px-6">
+              <div className="fixed inset-0 overflow-y-auto z-40 bg-[#05020a]/90 backdrop-blur-3xl px-4 py-12 flex flex-col items-center space-y-8 scrollbar-thin pointer-events-auto">
                 {/* RENDER BUTTERFLIES IMMEDIATELY WHEN YES IS CLICKED */}
                 <ButterflyExplosion />
 
-                {/* 1. ELEGANT CELEBRATION TITLE (Top) */}
-                <div className="text-center space-y-2 mt-8 z-45">
+                {/* 1. THE 3 EMOTIONAL INTERACTIVE QUESTIONS */}
+                <PostProposalQuiz />
+
+                {/* 2. ELEGANT CELEBRATION TITLE (Top) */}
+                <div className="text-center space-y-2 mt-4 z-45">
                   <motion.h2
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}

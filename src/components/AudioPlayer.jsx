@@ -5,6 +5,7 @@ import { useScene } from '../context/SceneProvider';
 export default function AudioPlayer() {
   const { muted, toggleMute, currentScene } = useScene();
   const audioCtxRef = useRef(null);
+  const bgmRef = useRef(null);
 
   // Audio Node Refs
   const masterGainRef = useRef(null);
@@ -263,7 +264,7 @@ export default function AudioPlayer() {
     ambientMusicIntervalRef.current = setInterval(tick, 6000);
   };
 
-  // Initialize Web Audio API components
+  // Initialize Web Audio API components and BGM
   const unlockAudio = () => {
     if (audioCtxRef.current) return;
     try {
@@ -288,7 +289,7 @@ export default function AudioPlayer() {
       waterGainRef.current.connect(master);
 
       musicGainRef.current = ctx.createGain();
-      musicGainRef.current.gain.value = 0.12;
+      musicGainRef.current.gain.value = 0.0; // Silence procedural music chords to avoid clashing with BGM
       musicGainRef.connect(master);
 
       effectGainRef.current = ctx.createGain();
@@ -302,7 +303,17 @@ export default function AudioPlayer() {
       // Start procedural generation
       startWindNoise(ctx, windGainRef.current);
       startWaterNoise(ctx, waterGainRef.current);
-      startAmbientLoop();
+      // startAmbientLoop(); // Disabled to allow clean MP3 BGM playback
+
+      // Start background music MP3
+      if (!bgmRef.current) {
+        const audio = new Audio('/bgm.mp3.mp3');
+        audio.loop = true;
+        audio.volume = 0.45;
+        audio.muted = muted;
+        bgmRef.current = audio;
+        audio.play().catch(e => console.warn('BGM autoplay blocked or failed:', e));
+      }
 
       // Spatial birds chirp loop
       const runBirdChirps = () => {
@@ -333,6 +344,12 @@ export default function AudioPlayer() {
 
   // Handle muted sync
   useEffect(() => {
+    if (bgmRef.current) {
+      bgmRef.current.muted = muted;
+      if (!muted) {
+        bgmRef.current.play().catch(err => console.warn("Failed to play BGM on unmute:", err));
+      }
+    }
     if (audioCtxRef.current) {
       const targetGain = muted ? 0.0 : 0.45;
       const now = audioCtxRef.current.currentTime;
@@ -352,28 +369,24 @@ export default function AudioPlayer() {
     const now = ctx.currentTime;
 
     if (currentScene === 'intro') {
-      // Ambient wind/water low, no effects
       windGainRef.current.gain.linearRampToValueAtTime(0.015, now + 1.0);
       waterGainRef.current.gain.linearRampToValueAtTime(0.01, now + 1.0);
-      musicGainRef.current.gain.linearRampToValueAtTime(0.05, now + 1.0);
+      musicGainRef.current.gain.linearRampToValueAtTime(0.0, now + 1.0);
       effectGainRef.current.gain.linearRampToValueAtTime(0.0, now + 1.0);
     } else if (currentScene === 'suspense') {
-      // Quiet everything
       windGainRef.current.gain.linearRampToValueAtTime(0.005, now + 1.5);
       waterGainRef.current.gain.linearRampToValueAtTime(0.003, now + 1.5);
-      musicGainRef.current.gain.linearRampToValueAtTime(0.015, now + 1.5);
+      musicGainRef.current.gain.linearRampToValueAtTime(0.0, now + 1.5);
       effectGainRef.current.gain.linearRampToValueAtTime(0.0, now + 1.5);
     } else if (currentScene === 'confession') {
-      // Pure silence, prepare heartbeat thumps
       windGainRef.current.gain.linearRampToValueAtTime(0.0, now + 0.8);
       waterGainRef.current.gain.linearRampToValueAtTime(0.0, now + 0.8);
       musicGainRef.current.gain.linearRampToValueAtTime(0.0, now + 0.8);
       effectGainRef.current.gain.linearRampToValueAtTime(0.0, now + 0.8);
     } else {
-      // Restore standard gain settings
       windGainRef.current.gain.linearRampToValueAtTime(0.04, now + 1.0);
       waterGainRef.current.gain.linearRampToValueAtTime(0.03, now + 1.0);
-      musicGainRef.current.gain.linearRampToValueAtTime(0.12, now + 1.0);
+      musicGainRef.current.gain.linearRampToValueAtTime(0.0, now + 1.0);
       effectGainRef.current.gain.linearRampToValueAtTime(0.35, now + 1.0);
     }
   }, [currentScene, muted]);
@@ -383,6 +396,15 @@ export default function AudioPlayer() {
     window.unlockAudio = unlockAudio;
     window.playRomanticChime = playChimeSequence;
     window.triggerBirdChirp = playBirdChirp;
+
+    window.triggerClimaxAudio = () => {
+      console.log("[AudioEngine] Triggering Climax Audio: jumping BGM to 219s");
+      if (bgmRef.current) {
+        bgmRef.current.currentTime = 219;
+        bgmRef.current.muted = false;
+        bgmRef.current.play().catch(err => console.warn("Climax BGM play failed:", err));
+      }
+    };
 
     window.setHeartbeatActive = (active) => {
       if (heartbeatIntervalRef.current) {
@@ -397,20 +419,20 @@ export default function AudioPlayer() {
       }
     };
 
-    // Strict multi-second YES sound design sequence
+    // Strict YES sound design sequence (fireworks, boom, chime sequence)
     window.triggerYesSoundDesign = () => {
       const ctx = audioCtxRef.current;
       if (!ctx || muted) return;
 
       const now = ctx.currentTime;
 
-      // 0.0s: Mute background ambience and heartbeat
+      // Mute background ambience and heartbeat
       if (musicGainRef.current) musicGainRef.current.gain.setValueAtTime(0, now);
       if (windGainRef.current) windGainRef.current.gain.setValueAtTime(0, now);
       if (waterGainRef.current) waterGainRef.current.gain.setValueAtTime(0, now);
       if (heartbeatGainRef.current) heartbeatGainRef.current.gain.setValueAtTime(0, now);
 
-      // 0.5s: Single deep heartbeat thump
+      // Single deep heartbeat thump
       setTimeout(() => {
         const t = ctx.currentTime;
         const osc = ctx.createOscillator();
@@ -427,7 +449,7 @@ export default function AudioPlayer() {
         osc.stop(t + 0.26);
       }, 500);
 
-      // 1.0s: Rising chime swell tone
+      // Rising chime swell tone
       setTimeout(() => {
         const t = ctx.currentTime;
         const osc = ctx.createOscillator();
@@ -444,7 +466,7 @@ export default function AudioPlayer() {
         osc.stop(t + 0.41);
       }, 1000);
 
-      // 1.0s: Arrow projectile whistle (matches visual travel from 1.0s to 2.2s)
+      // Arrow projectile whistle
       setTimeout(() => {
         const t = ctx.currentTime;
         const osc = ctx.createOscillator();
@@ -461,10 +483,9 @@ export default function AudioPlayer() {
         osc.stop(t + 1.21);
       }, 1000);
 
-      // 2.2s: Arrow impact boom + chimes
+      // Arrow impact boom + chimes
       setTimeout(() => {
         const t = ctx.currentTime;
-        // Deep magical low impact thump (non-aggressive)
         const boom = ctx.createOscillator();
         const boomGain = ctx.createGain();
         boom.type = 'sine';
@@ -478,14 +499,11 @@ export default function AudioPlayer() {
         boom.start(t);
         boom.stop(t + 0.61);
 
-        // Chimes sweep on impact
         playChimeSequence();
         
-        // Staggered magical fireworks (boom, crackle, sparkle) launch simulation
         const launchFirework = (delaySec, freq) => {
           setTimeout(() => {
             const time = ctx.currentTime;
-            // soft whistle upward
             const wOsc = ctx.createOscillator();
             const wGain = ctx.createGain();
             wOsc.type = 'triangle';
@@ -499,7 +517,6 @@ export default function AudioPlayer() {
             wOsc.start(time);
             wOsc.stop(time + 0.26);
 
-            // soft sparkle pop
             setTimeout(() => {
               const popTime = ctx.currentTime;
               const pop = ctx.createOscillator();
@@ -515,7 +532,6 @@ export default function AudioPlayer() {
               pop.start(popTime);
               pop.stop(popTime + 0.41);
 
-              // tiny sparkle crackles
               for (let j = 0; j < 6; j++) {
                 const cTime = popTime + 0.08 + j * 0.04;
                 const cOsc = ctx.createOscillator();
@@ -534,7 +550,6 @@ export default function AudioPlayer() {
           }, delaySec * 1000);
         };
 
-        // Trigger staggered celebratory fireworks over 8-12 seconds
         launchFirework(0.2, 380);
         launchFirework(0.8, 420);
         launchFirework(1.5, 330);
@@ -546,10 +561,9 @@ export default function AudioPlayer() {
         launchFirework(8.5, 480);
       }, 2200);
 
-      // 4.6s: Gift Box opening sound (soft chimes sweep + low-pass sweep)
+      // Gift Box opening sound
       setTimeout(() => {
         const time = ctx.currentTime;
-        // Soft sweep upward for "reveal"
         const rOsc = ctx.createOscillator();
         const rGain = ctx.createGain();
         rOsc.type = 'triangle';
@@ -563,7 +577,6 @@ export default function AudioPlayer() {
         rOsc.start(time);
         rOsc.stop(time + 0.61);
 
-        // Sparkle chimes chord (A major chord notes ascending)
         const notes = [440, 554, 659, 880];
         notes.forEach((freq, idx) => {
           const tNote = time + idx * 0.08;
@@ -581,26 +594,22 @@ export default function AudioPlayer() {
         });
       }, 4600);
 
-      // Restore soft wind/water loops slowly at 10.5 seconds
+      // Restore soft wind/water loops slowly
       setTimeout(() => {
         const t = ctx.currentTime;
         if (windGainRef.current) windGainRef.current.gain.linearRampToValueAtTime(0.04, t + 2.0);
         if (waterGainRef.current) waterGainRef.current.gain.linearRampToValueAtTime(0.03, t + 2.0);
-        if (musicGainRef.current) musicGainRef.current.gain.linearRampToValueAtTime(0.12, t + 2.5);
       }, 10500);
     };
 
-    // Soft glass-like crack sound for NO response
     window.triggerNoSoundDesign = () => {
       const ctx = audioCtxRef.current;
       if (!ctx || muted) return;
       try {
         const now = ctx.currentTime;
 
-        // Decrease ambient wind/water volume instead of cutting hard
         if (windGainRef.current) windGainRef.current.gain.linearRampToValueAtTime(0.01, now + 1.5);
         if (waterGainRef.current) waterGainRef.current.gain.linearRampToValueAtTime(0.008, now + 1.5);
-        if (musicGainRef.current) musicGainRef.current.gain.linearRampToValueAtTime(0.02, now + 1.5);
 
         for (let i = 0; i < 4; i++) {
           const osc = ctx.createOscillator();
@@ -630,7 +639,12 @@ export default function AudioPlayer() {
       window.triggerYesSoundDesign = null;
       window.triggerNoSoundDesign = null;
       window.setHeartbeatActive = null;
+      window.triggerClimaxAudio = null;
       stopAllAudio();
+      if (bgmRef.current) {
+        bgmRef.current.pause();
+        bgmRef.current = null;
+      }
     };
   }, [muted]);
 

@@ -5,6 +5,7 @@ import {
   Ticket, Sparkles, Clock, Heart, ArrowRight, UserCheck, 
   Send, ShieldCheck, Smile, Flame 
 } from 'lucide-react';
+import ThinkingTime from './ThinkingTime';
 
 const ADMIN_PHONE = '6380404055';
 const FAST2SMS_API_KEY = 'tOA5S8nMw6IXZRiUzEcNBb93a7xuh2qTYeVsjLgyfQCkWmDl4dTOpwGi2XmRsMJIV5Be4hFk1PaHWfAU';
@@ -14,7 +15,6 @@ const PUBLIC_KEY = 'dGY_nInN-FHeWTw5q';
 
 export default function PromiseEntryGate({ onProceed }) {
   const [step, setStep] = useState(1); // 1: Pass, 2: Timer, 3: Truth Gate, 4: Name Guess, 5: Rating Slider
-  const [timeLeft, setTimeLeft] = useState(60);
   const [noPos, setNoPos] = useState({ x: 0, y: 0 });
   const [dodgeCount, setDodgeCount] = useState(0);
 
@@ -26,21 +26,6 @@ export default function PromiseEntryGate({ onProceed }) {
   // Step 5: Love Rating Slider
   const [rating, setRating] = useState(100);
   const [isSending, setIsSending] = useState(false);
-
-  // 60-Second Countdown Logic
-  useEffect(() => {
-    if (step !== 2) return;
-    if (timeLeft <= 0) {
-      setStep(3);
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [step, timeLeft]);
 
   // Runaway "No" button physics
   const dodgeNoButton = () => {
@@ -164,44 +149,10 @@ export default function PromiseEntryGate({ onProceed }) {
 
         {/* SCREEN 2: 1:00 MINUTE THINKING TIMER */}
         {step === 2 && (
-          <motion.div
-            key="screen-2"
-            initial={{ opacity: 0, scale: 0.92, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: -20 }}
-            className="p-8 sm:p-10 rounded-3xl backdrop-blur-3xl bg-zinc-950/85 border border-rose-500/30 shadow-[0_0_50px_rgba(244,114,182,0.25)] text-center relative"
-          >
-            <div className="flex items-center justify-center gap-2 mb-2 text-rose-400">
-              <Clock className="w-4 h-4 animate-spin" style={{ animationDuration: '6s' }}/>
-              <span className="text-xs font-mono uppercase tracking-[0.2em] text-rose-300">
-                Thinking Time
-              </span>
-            </div>
-
-            <h3 className="text-xl sm:text-2xl font-serif text-white mb-6">
-              Take a breath & Think... 💭
-            </h3>
-
-            <div className="w-36 h-36 mx-auto rounded-full bg-gradient-to-tr from-rose-500/20 to-purple-500/20 border-2 border-rose-400/40 flex flex-col items-center justify-center shadow-[0_0_30px_rgba(244,114,182,0.3)] mb-6">
-              <span className="text-3xl sm:text-4xl font-mono font-bold text-white tracking-widest">
-                00:{String(timeLeft).padStart(2, '0')}
-              </span>
-              <span className="text-[10px] font-mono uppercase text-rose-300/70 mt-1">
-                Seconds Left
-              </span>
-            </div>
-
-            <p className="text-rose-200/90 text-sm sm:text-base font-serif italic mb-6 leading-relaxed">
-              "Yedhu nadandhalum, endha situation-la yum naan un kooda thaan iruppen... promise! 🤍✨"
-            </p>
-
-            <button
-              onClick={() => setStep(3)}
-              className="text-xs text-rose-300/70 hover:text-white underline underline-offset-4 transition cursor-pointer"
-            >
-              Skip timer & enter now ⚡
-            </button>
-          </motion.div>
+          <ThinkingTime
+            onComplete={() => setStep(3)}
+            onRestart={() => setStep(1)}
+          />
         )}
 
         {/* SCREEN 3: TRUTH CHECK GATE */}

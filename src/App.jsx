@@ -30,7 +30,6 @@ import MemorySnapshotCard from './components/MemorySnapshotCard';
 import SpringCoilFinale from './components/SpringCoilFinale';
 import FingerprintLock from './components/FingerprintLock';
 import LoveSurveyQuestions from './components/LoveSurveyQuestions';
-import ThinkingTimeWithTimerChallenge from './components/ThinkingTimeWithTimerChallenge';
 
 function MainApp() {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -142,20 +141,12 @@ function MainApp() {
               <LiveLoveClock />
               <InteractiveLoveLetter />
               <button
-                onClick={() => setCurrentScene(SCENES.TIMER_CHALLENGE)}
+                onClick={() => setCurrentScene(SCENES.CONFESSION)}
                 className="py-3.5 px-8 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:scale-105 active:scale-95 text-white font-medium text-sm shadow-[0_0_25px_rgba(244,114,182,0.4)] transition cursor-pointer"
               >
                 Read Abishek's Final Question 💖
               </button>
             </motion.div>
-          )}
-
-          {/* TIMER CHALLENGE SCENE */}
-          {currentScene === SCENES.TIMER_CHALLENGE && (
-            <ThinkingTimeWithTimerChallenge
-              onComplete={() => setCurrentScene(SCENES.CONFESSION)}
-              onRestart={() => setCurrentScene(SCENES.INTRO)}
-            />
           )}
 
           {/* 5. CONFESSION ("WILL YOU BE MINE FOREVER?") */}

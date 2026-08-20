@@ -29,6 +29,7 @@ import SecretMessageCard from './components/SecretMessageCard';
 import MemorySnapshotCard from './components/MemorySnapshotCard';
 import SpringCoilFinale from './components/SpringCoilFinale';
 import FingerprintLock from './components/FingerprintLock';
+import LoveSurveyQuestions from './components/LoveSurveyQuestions';
 
 function MainApp() {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -155,7 +156,12 @@ function MainApp() {
 
           {/* FINGERPRINT LOCK GATE */}
           {currentScene === SCENES.LOCK_REVEAL && (
-            <FingerprintLock onComplete={() => setCurrentScene(SCENES.QUIZ)} />
+            <FingerprintLock onComplete={() => setCurrentScene(SCENES.LOVE_SURVEY)} />
+          )}
+
+          {/* LOVE SURVEY QUESTIONS */}
+          {currentScene === SCENES.LOVE_SURVEY && (
+            <LoveSurveyQuestions onComplete={() => setCurrentScene(SCENES.QUIZ)} />
           )}
 
           {/* 6. POST-PROPOSAL 3 QUESTIONS */}

@@ -29,6 +29,7 @@ import SecretMessageCard from './components/SecretMessageCard';
 import MemorySnapshotCard from './components/MemorySnapshotCard';
 import SpringCoilFinale from './components/SpringCoilFinale';
 import FingerprintLock from './components/FingerprintLock';
+import LetterInABottle from './components/LetterInABottle';
 
 function MainApp() {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -167,8 +168,13 @@ function MainApp() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="w-full"
             >
-              <PostProposalQuiz onComplete={() => setCurrentScene(SCENES.CERTIFICATE)} />
+              <PostProposalQuiz onComplete={() => setCurrentScene(SCENES.BOTTLE_REVEAL)} />
             </motion.div>
+          )}
+
+          {/* LETTER IN A BOTTLE */}
+          {currentScene === SCENES.BOTTLE_REVEAL && (
+            <LetterInABottle onComplete={() => setCurrentScene(SCENES.CERTIFICATE)} />
           )}
 
           {/* 7. CERTIFICATE OF FOREVER */}

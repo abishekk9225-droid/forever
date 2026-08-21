@@ -107,54 +107,39 @@ export default function ProposalConfession({ onAccept }) {
       {/* MAIN PROPOSAL CONTAINER */}
       <div className="relative z-20 flex flex-col items-center justify-center text-center max-w-xl">
 
-        {/* STAGGERED "I LOVE YOU" CINEMATIC HEADLINE */}
-        <div className="flex items-center justify-center gap-3 sm:gap-5 text-4xl sm:text-6xl md:text-7xl font-serif font-black tracking-wider mb-8">
+        {/* STRICT STAGGERED SEQUENTIAL "I LOVE YOU" */}
+        <div className="flex items-center justify-center gap-3 sm:gap-6 text-5xl sm:text-7xl md:text-8xl font-serif font-black tracking-wider mb-8 select-none">
           
-          {/* I (Left -> Right in Gold) */}
+          {/* 1. "I" (Left -> Center | Gold | Appears at 0.2s) */}
           <motion.span
-            initial={{ opacity: 0, x: -200 }}
+            initial={{ opacity: 0, x: -250 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            style={{
-              backgroundImage: 'linear-gradient(135deg, #FFE259, #FFA751)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(0 0 25px rgba(255, 226, 89, 0.85))'
-            }}
+            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-400 to-amber-600 drop-shadow-[0_0_30px_rgba(250,204,21,0.9)]"
           >
             I
           </motion.span>
 
-          {/* LOVE (Top -> Down in Rose) */}
+          {/* 2. "LOVE" (Top -> Center | Neon Rose | Appears at 1.2s) */}
           <motion.span
-            initial={{ opacity: 0, y: -200 }}
+            initial={{ opacity: 0, y: -250 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-            style={{
-              backgroundImage: 'linear-gradient(to right, #FF416C, #FF4B2B)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(0 0 35px rgba(255, 65, 108, 0.9))'
-            }}
-            className="px-2"
+            transition={{ duration: 0.7, delay: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-red-600 drop-shadow-[0_0_40px_rgba(244,63,94,1)]"
           >
             LOVE
           </motion.span>
 
-          {/* YOU (Right -> Left in Gold) */}
+          {/* 3. "YOU" (Right -> Center | Gold | Appears at 2.2s) */}
           <motion.span
-            initial={{ opacity: 0, x: 200 }}
+            initial={{ opacity: 0, x: 250 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 1.2, ease: "easeOut" }}
-            style={{
-              backgroundImage: 'linear-gradient(135deg, #FFE259, #FFA751)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(0 0 25px rgba(255, 226, 89, 0.85))'
-            }}
+            transition={{ duration: 0.7, delay: 2.2, ease: [0.22, 1, 0.36, 1] }}
+            className="text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-400 to-amber-600 drop-shadow-[0_0_30px_rgba(250,204,21,0.9)]"
           >
             YOU
           </motion.span>
+
         </div>
 
         {/* SUBTITLE */}

@@ -30,6 +30,7 @@ import MemorySnapshotCard from './components/MemorySnapshotCard';
 import SpringCoilFinale from './components/SpringCoilFinale';
 import FingerprintLock from './components/FingerprintLock';
 import LoveSurveyQuestions from './components/LoveSurveyQuestions';
+import CelebrationReveal from './components/CelebrationReveal';
 
 function MainApp() {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -151,7 +152,12 @@ function MainApp() {
 
           {/* 5. CONFESSION ("WILL YOU BE MINE FOREVER?") */}
           {currentScene === SCENES.CONFESSION && (
-            <SuspenseProposalFlow onYesAccepted={() => setCurrentScene(SCENES.LOCK_REVEAL)} />
+            <SuspenseProposalFlow onYesAccepted={() => setCurrentScene(SCENES.CELEBRATION)} />
+          )}
+
+          {/* CELEBRATION REVEAL */}
+          {currentScene === SCENES.CELEBRATION && (
+            <CelebrationReveal onComplete={() => setCurrentScene(SCENES.LOCK_REVEAL)} />
           )}
 
           {/* FINGERPRINT LOCK GATE */}

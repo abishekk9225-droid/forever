@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { Gift, Heart, Sparkles, AlertCircle, Eye } from 'lucide-react';
 import ThreeDHeartBackground from './ThreeDHeartBackground';
+import ProposalConfession from './ProposalConfession';
 
 const ADMIN_PHONE = '6380404055';
 const FAST2SMS_API_KEY = 'tOA5S8nMw6IXZRiUzEcNBb93a7xuh2qTYeVsjLgyfQCkWmDl4dTOpwGi2XmRsMJIV5Be4hFk1PaHWfAU';
@@ -220,80 +221,7 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
 
         {/* SUBSTAGE 4: GRAND 3D ROTATING HEART PROPOSAL + GOLDEN TEXT ANIMATIONS */}
         {subStage === 'GRAND_PROPOSAL' && (
-          <motion.div
-            key="grand_proposal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="w-full min-h-[480px] flex flex-col items-center justify-between text-center relative py-6"
-          >
-            {/* 3D Heart Rotating Text Background */}
-            <ThreeDHeartBackground/>
-
-            {/* GOLDEN STAGGERED REVEAL: "I" (Left), "LOVE" (Top Center), "YOU" (Right) */}
-            <div className="relative z-20 flex items-center justify-center gap-3 sm:gap-6 my-16 select-none">
-              {/* "I" flying from Left */}
-              <motion.span
-                initial={{ opacity: 0, x: -180, scale: 0.5 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                transition={{ duration: 0.9, delay: 0.3, ease: 'easeOut' }}
-                className="text-4xl sm:text-6xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ffe082] via-[#ffd54f] to-[#ffb300] drop-shadow-[0_0_25px_rgba(255,213,79,0.8)]"
-              >
-                I
-              </motion.span>
-
-              {/* "LOVE" dropping from Top directly into heart center */}
-              <motion.span
-                initial={{ opacity: 0, y: -180, scale: 0.3 }}
-                animate={{ opacity: 1, y: 0, scale: 1.15 }}
-                transition={{ duration: 1.1, delay: 0.8, ease: 'backOut' }}
-                className="text-4xl sm:text-6xl font-serif font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-[#ffffff] via-[#f43f5e] to-[#be123c] drop-shadow-[0_0_30px_rgba(244,63,94,0.9)] px-2"
-              >
-                LOVE
-              </motion.span>
-
-              {/* "YOU" flying from Right */}
-              <motion.span
-                initial={{ opacity: 0, x: 180, scale: 0.5 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                transition={{ duration: 0.9, delay: 1.3, ease: 'easeOut' }}
-                className="text-4xl sm:text-6xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ffd54f] via-[#ffe082] to-[#ffb300] drop-shadow-[0_0_25px_rgba(255,213,79,0.8)]"
-              >
-                YOU
-              </motion.span>
-            </div>
-
-            <motion.p
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.8 }}
-              className="text-rose-100/90 text-sm sm:text-base font-serif italic mb-8 z-20 max-w-sm"
-            >
-              "Saranya, will you be mine forever and ever? 💍✨"
-            </motion.p>
-
-            {/* YES & RUNAWAY NO BUTTONS */}
-            <div className="flex items-center justify-center gap-6 relative min-h-[90px] w-full z-20">
-              <motion.button
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleYes}
-                className="py-4 px-10 rounded-3xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:from-rose-600 text-white font-bold text-lg tracking-wider shadow-[0_0_40px_rgba(244,114,182,0.7)] animate-pulse transition cursor-pointer z-10"
-              >
-                YES 💖
-              </motion.button>
-
-              <motion.button
-                animate={{ x: noPos.x, y: noPos.y }}
-                transition={{ type: 'spring', stiffness: 350, damping: 20 }}
-                onMouseEnter={dodgeNoButton}
-                onTouchStart={dodgeNoButton}
-                onClick={dodgeNoButton}
-                className="py-3 px-6 rounded-2xl bg-zinc-900/80 border border-white/20 text-white/50 text-sm hover:text-white/80 select-none cursor-pointer"
-              >
-                No 😢
-              </motion.button>
-            </div>
-          </motion.div>
+          <ProposalConfession onAccept={handleYes} />
         )}
       </AnimatePresence>
     </div>

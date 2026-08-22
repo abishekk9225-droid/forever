@@ -22,7 +22,7 @@ export default function LoveSurveyQuestions({ onComplete }) {
     {
       id: 1,
       title: "Question 1 of 3 💖",
-      prompt: "Unakku enna romba pudichirukku? (Or ennai unakku evlavu pudikku?) ✨",
+      prompt: "Unaku enakula enna romba pudichirukku? 💖✨🌟",
       placeholder: "Type your heartfelt answer here...",
       key: "q1"
     },

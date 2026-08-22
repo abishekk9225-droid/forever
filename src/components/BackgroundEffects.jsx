@@ -353,7 +353,7 @@ export default function BackgroundEffects() {
       }
 
       // 2. Draw Fireflies (only spawn after Scene 2, count scales with intensity)
-      if (scene !== SCENES.INTRO) {
+      if (scene !== SCENES.INTRO && scene !== SCENES.ASK_DIALOGUE) {
         const targetFireflies = low ? 16 : 38;
         // Spikes on YES celebration
         const celebrationMultiplier = isAccepted(scene) ? 1.6 : 1.0;

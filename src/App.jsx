@@ -85,12 +85,12 @@ function MainApp() {
         <AnimatePresence mode="wait">
           {/* 1. INTRO SCENE WITH BEAUTIFUL LINES */}
           {currentScene === SCENES.INTRO && (
-            <PromiseEntryGate onProceed={() => setCurrentScene(SCENES.ASK_DIALOGUE)} />
+            <AskDialogueScene onNext={() => setCurrentScene(SCENES.ASK_DIALOGUE)} />
           )}
 
           {/* ASK DIALOGUE SCENE */}
           {currentScene === SCENES.ASK_DIALOGUE && (
-            <AskDialogueScene onNext={() => setCurrentScene(SCENES.MEMORIES)} />
+            <PromiseEntryGate onProceed={() => setCurrentScene(SCENES.MEMORIES)} />
           )}
 
           {/* 2. MEMORIES & QUALITIES SCENE */}

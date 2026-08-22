@@ -13,7 +13,7 @@ export default function RightDecorations() {
   let mascotOpacity = 1.0;
   let lanternGlowOpacity = 0.45;
 
-  if (currentScene === SCENES.INTRO) {
+  if (currentScene === SCENES.INTRO || currentScene === SCENES.ASK_DIALOGUE) {
     vineOpacity = 0.25; // faint silhouette
     vineScale = 0.75;
     mascotOpacity = 0.25; // visible at low intensity
@@ -41,7 +41,7 @@ export default function RightDecorations() {
         setDelayedState('celebrating'); // Happy celebrating on impact
       }, 2500);
     } else {
-      if (currentScene === SCENES.INTRO) {
+      if (currentScene === SCENES.INTRO || currentScene === SCENES.ASK_DIALOGUE) {
         setDelayedState('curious');
       } else if (currentScene === SCENES.MEMORIES) {
         setDelayedState('excited');

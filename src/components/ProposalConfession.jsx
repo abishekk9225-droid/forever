@@ -111,38 +111,38 @@ export default function ProposalConfession({ onAccept }) {
         <canvas ref={rightCanvasRef} className="w-40 h-40 sm:w-56 sm:h-56" />
       </div>
 
-      {/* MAIN PROPOSAL CONTAINER */}
-      <div className="relative z-20 flex flex-col items-center justify-center text-center max-w-xl">
+      {/* PROPOSAL CONTAINER WRAPPER - FULL VISIBILITY */}
+      <div className="relative z-20 w-full max-w-2xl mx-auto flex flex-col items-center justify-center text-center px-2 py-4 select-none">
 
         {/* STRICT STAGGERED SEQUENTIAL "I LOVE YOU" */}
-        <div className="flex items-center justify-center gap-3 sm:gap-6 text-5xl sm:text-7xl md:text-8xl font-serif font-black tracking-wider mb-8 select-none">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 md:gap-6 text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-serif font-black tracking-normal sm:tracking-wider mb-6 whitespace-nowrap overflow-visible">
           
-          {/* 1. "I" (Left -> Center | Gold | Appears at 0.2s) */}
+          {/* 1. "I" (Left -> In | Pure 24K Radiant Gold | Delay: 0.3s) */}
           <motion.span
-            initial={{ opacity: 0, x: -250 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-400 to-amber-600 drop-shadow-[0_0_30px_rgba(250,204,21,0.9)]"
+            initial={{ opacity: 0, x: -120, scale: 0.7 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_35px_rgba(250,204,21,1)]"
           >
             I
           </motion.span>
 
-          {/* 2. "LOVE" (Top -> Center | Neon Rose | Appears at 1.2s) */}
+          {/* 2. "LOVE" (Top -> In | Ruby Rose Neon | Delay: 1.4s) */}
           <motion.span
-            initial={{ opacity: 0, y: -250 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 1.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-red-600 drop-shadow-[0_0_40px_rgba(244,63,94,1)]"
+            initial={{ opacity: 0, y: -120, scale: 0.7 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, delay: 1.4, ease: [0.22, 1, 0.36, 1] }}
+            className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-red-600 drop-shadow-[0_0_40px_rgba(244,63,94,1)] mx-1"
           >
             LOVE
           </motion.span>
 
-          {/* 3. "YOU" (Right -> Center | Gold | Appears at 2.2s) */}
+          {/* 3. "YOU" (Right -> In | Pure 24K Radiant Gold | Delay: 2.5s) */}
           <motion.span
-            initial={{ opacity: 0, x: 250 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 2.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-400 to-amber-600 drop-shadow-[0_0_30px_rgba(250,204,21,0.9)]"
+            initial={{ opacity: 0, x: 120, scale: 0.7 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ duration: 0.8, delay: 2.5, ease: [0.22, 1, 0.36, 1] }}
+            className="text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_35px_rgba(250,204,21,1)]"
           >
             YOU
           </motion.span>
@@ -151,10 +151,10 @@ export default function ProposalConfession({ onAccept }) {
 
         {/* SUBTITLE */}
         <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.8 }}
-          className="text-rose-200 text-sm sm:text-lg font-serif italic mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 3.2 }}
+          className="text-sm sm:text-lg md:text-xl font-serif italic text-rose-100 drop-shadow-[0_0_15px_rgba(244,63,94,0.6)] mb-8 px-4"
         >
           "Saranya, will you be mine forever and ever? 💍✨"
         </motion.p>
@@ -163,7 +163,7 @@ export default function ProposalConfession({ onAccept }) {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 2.0 }}
+          transition={{ delay: 3.8 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 min-h-[90px] w-full"
         >
           {/* YES BUTTON */}

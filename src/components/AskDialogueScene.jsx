@@ -15,17 +15,17 @@ export default function AskDialogueScene({ onNext }) {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-4 bg-black/95 text-center select-none overflow-hidden z-30">
+    <div className="w-full max-w-md mx-auto px-4 z-30 relative">
       
       {/* Background Glow */}
-      <div className="absolute w-80 h-80 bg-rose-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
+      <div className="absolute w-80 h-80 bg-rose-500/10 rounded-full blur-3xl pointer-events-none animate-pulse -translate-x-1/2 left-1/2 top-1/2 -translate-y-1/2" />
 
       {/* Main Glass Box */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="max-w-xl w-full p-8 sm:p-10 rounded-3xl bg-zinc-950/90 border border-rose-500/30 shadow-[0_0_60px_rgba(244,63,94,0.2)] backdrop-blur-xl relative z-10 space-y-6"
+        className="w-full p-8 sm:p-10 rounded-3xl bg-zinc-950/90 border border-rose-500/30 shadow-[0_0_60px_rgba(244,63,94,0.2)] backdrop-blur-xl relative z-10 space-y-6"
       >
         
         {/* Top Icon Badge */}

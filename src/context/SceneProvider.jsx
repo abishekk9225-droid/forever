@@ -4,6 +4,7 @@ const SceneContext = createContext(null);
 
 export const SCENES = {
   INTRO: 'INTRO',
+  ASK_DIALOGUE: 'ASK_DIALOGUE',
   MEMORIES: 'MEMORIES',
   GAME: 'GAME',
   LETTER: 'LETTER',
@@ -20,6 +21,7 @@ export const SCENES = {
 
 const INTENSITY_MAP = {
   [SCENES.INTRO]: 0.1,
+  [SCENES.ASK_DIALOGUE]: 0.2,
   [SCENES.MEMORIES]: 0.45,
   [SCENES.GAME]: 0.6,
   [SCENES.LETTER]: 0.75,

@@ -34,6 +34,8 @@ import FingerprintLock from './components/FingerprintLock';
 import LoveSurveyQuestions from './components/LoveSurveyQuestions';
 import CelebrationReveal from './components/CelebrationReveal';
 import PromiseVault from './components/PromiseVault';
+import AskDialogueScene from './components/AskDialogueScene';
+
 
 
 function MainApp() {
@@ -83,7 +85,12 @@ function MainApp() {
         <AnimatePresence mode="wait">
           {/* 1. INTRO SCENE WITH BEAUTIFUL LINES */}
           {currentScene === SCENES.INTRO && (
-            <PromiseEntryGate onProceed={() => setCurrentScene(SCENES.MEMORIES)} />
+            <PromiseEntryGate onProceed={() => setCurrentScene(SCENES.ASK_DIALOGUE)} />
+          )}
+
+          {/* ASK DIALOGUE SCENE */}
+          {currentScene === SCENES.ASK_DIALOGUE && (
+            <AskDialogueScene onNext={() => setCurrentScene(SCENES.MEMORIES)} />
           )}
 
           {/* 2. MEMORIES & QUALITIES SCENE */}

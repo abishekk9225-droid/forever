@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Sparkles, ArrowRight } from 'lucide-react';
 import { SceneProvider, useScene, SCENES } from './context/SceneProvider';
+import { SoundProvider } from './context/SoundContext';
 
 // Visual canvases and companion components
 import BackgroundEffects from './components/BackgroundEffects';
@@ -247,7 +248,9 @@ export default function App() {
   return (
     <ErrorBoundary>
       <SceneProvider>
-        <MainApp />
+        <SoundProvider>
+          <MainApp />
+        </SoundProvider>
       </SceneProvider>
     </ErrorBoundary>
   );

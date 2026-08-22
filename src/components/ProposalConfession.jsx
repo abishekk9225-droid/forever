@@ -3,11 +3,18 @@ import { motion } from 'framer-motion';
 import * as THREE from 'three';
 import { Sparkles } from 'lucide-react';
 import ThreeDHeartBackground from './ThreeDHeartBackground';
+import { useSound } from '../context/SoundContext';
 
 export default function ProposalConfession({ onAccept }) {
+  const { playCelebrationTrack } = useSound();
   const leftCanvasRef = useRef(null);
   const rightCanvasRef = useRef(null);
   const [noPos, setNoPos] = useState({ x: 0, y: 0 });
+
+  const handleYes = () => {
+    playCelebrationTrack();
+    onAccept();
+  };
 
   // Background Three.js Particle Heart Generator
   useEffect(() => {
@@ -163,7 +170,7 @@ export default function ProposalConfession({ onAccept }) {
           <motion.button
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.95 }}
-            onClick={onAccept}
+            onClick={handleYes}
             className="px-10 py-4 rounded-3xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 text-white font-serif font-bold text-lg shadow-[0_0_35px_rgba(244,63,94,0.6)] flex items-center gap-2 cursor-pointer z-10"
           >
             <span>YES 💖</span>

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { useScene, SCENES } from '../context/SceneProvider';
 
-const isAccepted = (s) => s === SCENES.QUIZ || s === SCENES.CERTIFICATE || s === SCENES.FINALE;
+const isAccepted = (s) => s === SCENES.QUIZ || s === SCENES.PROMISE_VAULT || s === SCENES.CERTIFICATE || s === SCENES.FINALE;
 
 export default function LeftDecorations() {
   const { currentScene } = useScene();

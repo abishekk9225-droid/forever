@@ -2,7 +2,7 @@ import React from 'react';
 import { useScene, SCENES } from '../context/SceneProvider';
 import Mascot from './Mascot';
 
-const isAccepted = (s) => s === SCENES.QUIZ || s === SCENES.CERTIFICATE || s === SCENES.FINALE;
+const isAccepted = (s) => s === SCENES.QUIZ || s === SCENES.PROMISE_VAULT || s === SCENES.CERTIFICATE || s === SCENES.FINALE;
 
 export default function RightDecorations() {
   const { currentScene, storyIntensity } = useScene();

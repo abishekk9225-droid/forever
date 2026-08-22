@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useScene, SCENES } from '../context/SceneProvider';
 
-const isAccepted = (s) => s === SCENES.QUIZ || s === SCENES.CERTIFICATE || s === SCENES.FINALE;
+const isAccepted = (s) => s === SCENES.QUIZ || s === SCENES.PROMISE_VAULT || s === SCENES.CERTIFICATE || s === SCENES.FINALE;
 
 export default function BackgroundEffects() {
   const { currentScene, storyIntensity, isLowEnd, isMobile } = useScene();

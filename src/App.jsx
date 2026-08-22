@@ -33,6 +33,8 @@ import SpringCoilFinale from './components/SpringCoilFinale';
 import FingerprintLock from './components/FingerprintLock';
 import LoveSurveyQuestions from './components/LoveSurveyQuestions';
 import CelebrationReveal from './components/CelebrationReveal';
+import PromiseVault from './components/PromiseVault';
+
 
 function MainApp() {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -194,8 +196,13 @@ function MainApp() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="w-full"
             >
-              <PostProposalQuiz onComplete={() => setCurrentScene(SCENES.CERTIFICATE)} />
+              <PostProposalQuiz onComplete={() => setCurrentScene(SCENES.PROMISE_VAULT)} />
             </motion.div>
+          )}
+
+          {/* PROMISE VAULT */}
+          {currentScene === SCENES.PROMISE_VAULT && (
+            <PromiseVault onComplete={() => setCurrentScene(SCENES.CERTIFICATE)} />
           )}
 
           {/* 7. CERTIFICATE OF FOREVER */}

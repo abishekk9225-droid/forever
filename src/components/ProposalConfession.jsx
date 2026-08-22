@@ -96,7 +96,7 @@ export default function ProposalConfession({ onAccept }) {
   };
 
   return (
-    <div className="relative min-h-[550px] w-full flex flex-col items-center justify-center bg-black/40 overflow-hidden px-4 select-none rounded-3xl border border-rose-500/10">
+    <div className="relative min-h-[550px] w-full flex flex-col items-center justify-center bg-black/40 overflow-visible px-4 select-none rounded-3xl border border-rose-500/10">
 
       {/* CENTER 3D HEART PRESERVATION */}
       <ThreeDHeartBackground />
@@ -111,38 +111,37 @@ export default function ProposalConfession({ onAccept }) {
         <canvas ref={rightCanvasRef} className="w-40 h-40 sm:w-56 sm:h-56" />
       </div>
 
-      {/* PROPOSAL CONTAINER WRAPPER - FULL VISIBILITY */}
-      <div className="relative z-20 w-full max-w-2xl mx-auto flex flex-col items-center justify-center text-center px-2 py-4 select-none">
+      {/* WIDE EXPANDED PROPOSAL CARD CONTAINER */}
+      <div className="relative z-20 w-full max-w-4xl mx-auto flex flex-col items-center justify-center text-center px-4 py-6 select-none overflow-visible">
 
-        {/* STRICT STAGGERED SEQUENTIAL "I LOVE YOU" */}
-        <div className="flex items-center justify-center gap-2 sm:gap-4 md:gap-6 text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-serif font-black tracking-normal sm:tracking-wider mb-6 whitespace-nowrap overflow-visible">
-          
-          {/* 1. "I" (Left -> In | Pure 24K Radiant Gold | Delay: 0.3s) */}
+        <div className="flex items-center justify-center gap-4 sm:gap-8 md:gap-10 text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-serif font-black tracking-normal mb-6 whitespace-nowrap overflow-visible w-full">
+
+          {/* 1. "I" (Appears first at 0.2s | Radiant 24K Gold) */}
           <motion.span
-            initial={{ opacity: 0, x: -120, scale: 0.7 }}
+            initial={{ opacity: 0, x: -180, scale: 0.5 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_35px_rgba(250,204,21,1)]"
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_45px_rgba(250,204,21,1)]"
           >
             I
           </motion.span>
 
-          {/* 2. "LOVE" (Top -> In | Ruby Rose Neon | Delay: 1.4s) */}
+          {/* 2. "LOVE" (Appears second at 1.5s | Neon Rose) */}
           <motion.span
-            initial={{ opacity: 0, y: -120, scale: 0.7 }}
+            initial={{ opacity: 0, y: -180, scale: 0.5 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8, delay: 1.4, ease: [0.22, 1, 0.36, 1] }}
-            className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-red-600 drop-shadow-[0_0_40px_rgba(244,63,94,1)] mx-1"
+            transition={{ duration: 0.8, delay: 1.5, ease: [0.22, 1, 0.36, 1] }}
+            className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-red-600 drop-shadow-[0_0_50px_rgba(244,63,94,1)]"
           >
             LOVE
           </motion.span>
 
-          {/* 3. "YOU" (Right -> In | Pure 24K Radiant Gold | Delay: 2.5s) */}
+          {/* 3. "YOU" (Appears last at 2.8s | Radiant 24K Gold) */}
           <motion.span
-            initial={{ opacity: 0, x: 120, scale: 0.7 }}
+            initial={{ opacity: 0, x: 180, scale: 0.5 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.8, delay: 2.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_35px_rgba(250,204,21,1)]"
+            transition={{ duration: 0.8, delay: 2.8, ease: [0.22, 1, 0.36, 1] }}
+            className="text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_45px_rgba(250,204,21,1)]"
           >
             YOU
           </motion.span>
@@ -153,8 +152,8 @@ export default function ProposalConfession({ onAccept }) {
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 3.2 }}
-          className="text-sm sm:text-lg md:text-xl font-serif italic text-rose-100 drop-shadow-[0_0_15px_rgba(244,63,94,0.6)] mb-8 px-4"
+          transition={{ duration: 0.6, delay: 3.8 }}
+          className="text-base sm:text-xl md:text-2xl font-serif italic text-rose-100 drop-shadow-[0_0_20px_rgba(244,63,94,0.7)] mb-8 px-4"
         >
           "Saranya, will you be mine forever and ever? 💍✨"
         </motion.p>
@@ -163,7 +162,7 @@ export default function ProposalConfession({ onAccept }) {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 3.8 }}
+          transition={{ delay: 4.4 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 min-h-[90px] w-full"
         >
           {/* YES BUTTON */}

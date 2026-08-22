@@ -22,6 +22,7 @@ import AudioPlayer from './components/AudioPlayer';
 
 import PromiseEntryGate from './components/PromiseEntryGate';
 import SuspenseProposalFlow from './components/SuspenseProposalFlow';
+import WarmthMeltScene from './components/WarmthMeltScene';
 
 // Climax components
 import PostProposalQuiz from './components/PostProposalQuiz';
@@ -143,11 +144,24 @@ function MainApp() {
               <LiveLoveClock />
               <InteractiveLoveLetter />
               <button
-                onClick={() => setCurrentScene(SCENES.CONFESSION)}
+                onClick={() => setCurrentScene(SCENES.MELT)}
                 className="py-3.5 px-8 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:scale-105 active:scale-95 text-white font-medium text-sm shadow-[0_0_25px_rgba(244,114,182,0.4)] transition cursor-pointer"
               >
                 Read Abishek's Final Question 💖
               </button>
+            </motion.div>
+          )}
+
+          {/* 4.5. WARMTH OF MY HEART (FROZEN HEART MELT INTERACTION) */}
+          {currentScene === SCENES.MELT && (
+            <motion.div
+              key="melt"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full"
+            >
+              <WarmthMeltScene onComplete={() => setCurrentScene(SCENES.CONFESSION)} />
             </motion.div>
           )}
 

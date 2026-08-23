@@ -22,6 +22,15 @@ export default function ProposalConfession({ onNext, onAccept }) {
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-4 bg-black text-center select-none overflow-hidden z-30">
       
+      {/* Responsive SVG ClipPath Definition for Heart Shape */}
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          <clipPath id="heart-clip" clipPathUnits="objectBoundingBox">
+            <path d="M 0.5, 0.28 C 0.5, 0.28, 0.62, 0.05, 0.81, 0.05 C 0.93, 0.05, 1, 0.18, 1, 0.33 C 1, 0.55, 0.78, 0.78, 0.5, 0.95 C 0.22, 0.78, 0, 0.55, 0, 0.33 C 0, 0.18, 0.07, 0.05, 0.19, 0.05 C 0.38, 0.05, 0.5, 0.28, 0.5, 0.28 Z" />
+          </clipPath>
+        </defs>
+      </svg>
+
       {/* CINEMATIC GLOW BACKGROUND */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <motion.div
@@ -34,34 +43,30 @@ export default function ProposalConfession({ onNext, onAccept }) {
       {/* MAIN CONTAINER */}
       <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center text-center px-4 py-4 relative z-25">
 
-        {/* CENTER HEART CONTAINER WITH "I LOVE YOU" TEXT REVOLVING / GLOWING AROUND */}
-        <div className="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center my-4">
+        {/* CENTER HEART SHAPE CONTAINER FOR mem-02.jpg */}
+        <div className="relative w-52 h-52 sm:w-64 sm:h-64 flex items-center justify-center my-4">
           
-          {/* Simulated Heart Orbit / Glowing Text Ring Effect */}
-          <motion.div
-            animate={{ rotate: [0, 360] }}
-            transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
-            className="absolute inset-0 rounded-full border border-rose-500/30 border-dashed pointer-events-none"
-          />
-
           {/* Glowing Outer Heart Aura */}
           <motion.div
             animate={{ scale: [1, 1.08, 1] }}
             transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-            className="absolute inset-4 rounded-full bg-gradient-to-tr from-rose-600/40 via-pink-500/30 to-amber-400/30 blur-2xl"
+            className="absolute inset-0 bg-gradient-to-tr from-rose-600/50 via-pink-500/40 to-amber-400/40 blur-2xl rounded-full"
           />
 
-          {/* CENTER PHOTO FRAME INSIDE THE HEART */}
+          {/* EXACT HEART SHAPE MASK FOR THE PHOTO */}
           <motion.div
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="relative w-44 h-44 sm:w-56 sm:h-56 rounded-full p-2 bg-gradient-to-tr from-amber-300 via-rose-500 to-pink-500 shadow-[0_0_60px_rgba(244,63,94,0.8)] overflow-hidden z-10"
+            className="relative w-48 h-48 sm:w-60 sm:h-60 flex items-center justify-center z-10 filter drop-shadow-[0_0_25px_rgba(244,63,94,0.8)] overflow-hidden"
+            style={{
+              clipPath: "url(#heart-clip)"
+            }}
           >
             <img 
               src={photoHeart} 
               alt="Our Special Memory" 
-              className="w-full h-full object-cover rounded-full" 
+              className="w-full h-full object-cover" 
             />
           </motion.div>
         </div>

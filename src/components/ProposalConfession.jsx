@@ -2,13 +2,15 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useSound } from '../context/SoundContext';
 
-// Secure memory photo for the center heart
 import photoHeart from '../assets/mem-02.jpg';
 
 export default function ProposalConfession({ onNext, onAccept }) {
   const { playCelebrationTrack } = useSound();
 
   const handleYes = () => {
+    if (typeof playCelebrationTrack === 'function') {
+      playCelebrationTrack();
+    }
     if (typeof onAccept === 'function') {
       onAccept();
     } else if (typeof onNext === 'function') {
@@ -31,31 +33,43 @@ export default function ProposalConfession({ onNext, onAccept }) {
       {/* CINEMATIC GLOW BACKGROUND */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <motion.div
-          animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.35, 0.15] }}
+          animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0.4, 0.2] }}
           transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-          className="w-[350px] h-[350px] sm:w-[600px] sm:h-[600px] rounded-full bg-gradient-to-tr from-rose-600/30 via-pink-500/20 to-amber-400/20 blur-[120px]"
+          className="w-[400px] h-[400px] sm:w-[650px] sm:h-[650px] rounded-full bg-gradient-to-tr from-rose-600/30 via-pink-500/20 to-amber-400/20 blur-[140px]"
         />
       </div>
 
       {/* MAIN CONTAINER */}
       <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center text-center px-4 py-4 relative z-25">
 
-        {/* CENTER HEART SHAPE CONTAINER FOR mem-02.jpg */}
-        <div className="relative w-52 h-52 sm:w-64 sm:h-64 flex items-center justify-center my-4">
+        {/* INSTAGRAM REEL STYLE ROTATING HEART ANIMATION CONTAINER WITH MEM-02 AT CENTER */}
+        <div className="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center my-2">
           
-          {/* Glowing Outer Heart Aura */}
+          {/* Rotating Text/Particle Heart Ring simulating the Reel Animation */}
           <motion.div
-            animate={{ scale: [1, 1.08, 1] }}
+            animate={{ rotate: [0, 360] }}
+            transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
+            className="absolute inset-0 rounded-full border border-rose-500/40 border-dashed pointer-events-none flex items-center justify-center"
+          >
+            <div className="absolute -top-3 text-xs sm:text-sm font-mono text-rose-300/60">I love you</div>
+            <div className="absolute -bottom-3 text-xs sm:text-sm font-mono text-rose-300/60">I love you</div>
+            <div className="absolute -left-3 text-xs sm:text-sm font-mono text-rose-300/60 rotate-90">I love you</div>
+            <div className="absolute -right-3 text-xs sm:text-sm font-mono text-rose-300/60 -rotate-90">I love you</div>
+          </motion.div>
+
+          {/* Glowing Aura */}
+          <motion.div
+            animate={{ scale: [1, 1.1, 1] }}
             transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-            className="absolute inset-0 bg-gradient-to-tr from-rose-600/50 via-pink-500/40 to-amber-400/40 blur-2xl rounded-full"
+            className="absolute inset-4 rounded-full bg-gradient-to-tr from-rose-600/50 via-pink-500/40 to-amber-400/30 blur-2xl"
           />
 
-          {/* EXACT HEART SHAPE MASK FOR THE PHOTO */}
+          {/* CENTER PHOTO FRAME WITH HEART SHAPE MASK */}
           <motion.div
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="relative w-48 h-48 sm:w-60 sm:h-60 flex items-center justify-center z-10 filter drop-shadow-[0_0_25px_rgba(244,63,94,0.8)] overflow-hidden"
+            className="relative w-48 h-48 sm:w-60 sm:h-60 flex items-center justify-center z-10 shadow-[0_0_60px_rgba(244,63,94,0.9)]"
             style={{
               clipPath: "url(#heart-clip)"
             }}
@@ -71,7 +85,6 @@ export default function ProposalConfession({ onNext, onAccept }) {
         {/* "I LOVE YOU" TEXT SECTION WITH STAGGERED TIMING */}
         <div className="flex items-center justify-center gap-3 sm:gap-5 my-3 w-full">
           
-          {/* 1. "I" appears first */}
           <motion.span
             initial={{ opacity: 0, y: 20, scale: 0.5 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -81,7 +94,6 @@ export default function ProposalConfession({ onNext, onAccept }) {
             I
           </motion.span>
 
-          {/* 2. "LOVE" appears second */}
           <motion.span
             initial={{ opacity: 0, y: 20, scale: 0.5 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -91,7 +103,6 @@ export default function ProposalConfession({ onNext, onAccept }) {
             LOVE
           </motion.span>
 
-          {/* 3. "YOU" appears third */}
           <motion.span
             initial={{ opacity: 0, y: 20, scale: 0.5 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}

@@ -9,9 +9,6 @@ export default function ProposalConfession({ onNext, onAccept }) {
   const { playCelebrationTrack } = useSound();
 
   const handleYes = () => {
-    if (typeof playCelebrationTrack === 'function') {
-      playCelebrationTrack();
-    }
     if (typeof onAccept === 'function') {
       onAccept();
     } else if (typeof onNext === 'function') {

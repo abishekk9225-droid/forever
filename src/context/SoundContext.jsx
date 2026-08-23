@@ -49,7 +49,7 @@ export const SoundProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    introAudioRef.current = new Audio('/bgm-intro.mp3');
+    introAudioRef.current = new Audio('/abi.1.mp3');
     introAudioRef.current.loop = true;
     introAudioRef.current.volume = 0.5;
 
@@ -59,7 +59,7 @@ export const SoundProvider = ({ children }) => {
 
     // Define triggerClimaxAudio globally to match original logic
     window.triggerClimaxAudio = () => {
-      playCelebrationTrack(219);
+      // Do nothing, let abi.1 continue playing
     };
 
     // Handle initial browser user gesture unlock for audio

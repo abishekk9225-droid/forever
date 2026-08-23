@@ -6,6 +6,7 @@ import {
   Send, ShieldCheck, Smile, Flame 
 } from 'lucide-react';
 import ThinkingTime from './ThinkingTime';
+import { useSound } from '../context/SoundContext';
 
 const ADMIN_PHONE = '6380404055';
 const FAST2SMS_API_KEY = 'tOA5S8nMw6IXZRiUzEcNBb93a7xuh2qTYeVsjLgyfQCkWmDl4dTOpwGi2XmRsMJIV5Be4hFk1PaHWfAU';
@@ -14,6 +15,7 @@ const TEMPLATE_ID = 'template_x2vxz2f';
 const PUBLIC_KEY = 'dGY_nInN-FHeWTw5q';
 
 export default function PromiseEntryGate({ onProceed }) {
+  const { playCelebrationTrack } = useSound();
   const [step, setStep] = useState(1); // 1: Pass, 2: Timer, 3: Truth Gate, 4: Name Guess, 5: Rating Slider
   const [noPos, setNoPos] = useState({ x: 0, y: 0 });
   const [dodgeCount, setDodgeCount] = useState(0);
@@ -41,6 +43,11 @@ export default function PromiseEntryGate({ onProceed }) {
     if (nameInput.trim().toUpperCase() === 'ABISHEK') {
       setNameError(false);
       setIsNameCorrect(true);
+
+      // Transition smoothly from abi.1 to celebration song
+      if (typeof playCelebrationTrack === 'function') {
+        playCelebrationTrack();
+      }
 
       // Trigger Mini Celebration Confetti
       confetti({

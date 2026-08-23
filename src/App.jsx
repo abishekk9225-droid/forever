@@ -35,14 +35,21 @@ import LoveSurveyQuestions from './components/LoveSurveyQuestions';
 import CelebrationReveal from './components/CelebrationReveal';
 import PromiseVault from './components/PromiseVault';
 import AskDialogueScene from './components/AskDialogueScene';
+import HeartbeatIntro from './components/HeartbeatIntro';
 
 
 
 function MainApp() {
+  const [showHeartbeat, setShowHeartbeat] = useState(true);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const { currentScene, goToScene: setCurrentScene } = useScene();
 
-  // 1. Password Protection Gate
+  // 1. Heartbeat ECG Entry Scene
+  if (showHeartbeat) {
+    return <HeartbeatIntro onUnlock={() => setShowHeartbeat(false)} />;
+  }
+
+  // 2. Password Protection Gate
   if (!isUnlocked) {
     return <AdminSecurityGate onUnlocked={() => setIsUnlocked(true)} />;
   }

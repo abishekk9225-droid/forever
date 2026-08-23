@@ -26,7 +26,7 @@ import WarmthMeltScene from './components/WarmthMeltScene';
 
 // Climax components
 import PostProposalQuiz from './components/PostProposalQuiz';
-import CertificateOfForever from './components/CertificateOfForever';
+import LoveCertificate from './components/LoveCertificate';
 import SecretMessageCard from './components/SecretMessageCard';
 import MemorySnapshotCard from './components/MemorySnapshotCard';
 import SpringCoilFinale from './components/SpringCoilFinale';
@@ -222,7 +222,7 @@ function MainApp() {
               className="w-full flex flex-col items-center"
             >
               <ButterflyExplosion />
-              <CertificateOfForever />
+              <LoveCertificate />
               <button
                 onClick={() => setCurrentScene(SCENES.FINALE)}
                 className="mt-4 mb-6 py-3.5 px-8 rounded-2xl bg-gradient-to-r from-purple-500 via-rose-500 to-pink-500 hover:scale-105 active:scale-95 text-white font-medium text-sm shadow-lg transition cursor-pointer"

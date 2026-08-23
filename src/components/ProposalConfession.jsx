@@ -71,29 +71,46 @@ export default function ProposalConfession({ onNext, onAccept }) {
           </motion.div>
         </div>
 
-        {/* "I LOVE YOU" TEXT SECTION */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="flex items-center justify-center gap-3 sm:gap-5 my-3 w-full"
-        >
-          <span className="text-4xl sm:text-6xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_35px_rgba(250,204,21,0.9)]">
+        {/* "I LOVE YOU" TEXT SECTION WITH STAGGERED TIMING */}
+        <div className="flex items-center justify-center gap-3 sm:gap-5 my-3 w-full">
+          
+          {/* 1. "I" appears first */}
+          <motion.span
+            initial={{ opacity: 0, y: 20, scale: 0.5 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-4xl sm:text-6xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_35px_rgba(250,204,21,0.9)]"
+          >
             I
-          </span>
-          <span className="text-3xl sm:text-5xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-red-600 drop-shadow-[0_0_35px_rgba(244,63,94,0.9)] tracking-widest">
+          </motion.span>
+
+          {/* 2. "LOVE" appears second */}
+          <motion.span
+            initial={{ opacity: 0, y: 20, scale: 0.5 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.9 }}
+            className="text-3xl sm:text-5xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-red-600 drop-shadow-[0_0_35px_rgba(244,63,94,0.9)] tracking-widest"
+          >
             LOVE
-          </span>
-          <span className="text-4xl sm:text-6xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_35px_rgba(250,204,21,0.9)]">
+          </motion.span>
+
+          {/* 3. "YOU" appears third */}
+          <motion.span
+            initial={{ opacity: 0, y: 20, scale: 0.5 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.6, delay: 1.5 }}
+            className="text-4xl sm:text-6xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_35px_rgba(250,204,21,0.9)]"
+          >
             YOU
-          </span>
-        </motion.div>
+          </motion.span>
+
+        </div>
 
         {/* SUBTITLE & ACTION BUTTON */}
         <motion.p
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.9 }}
+          transition={{ duration: 0.6, delay: 2.1 }}
           className="text-sm sm:text-xl font-serif italic text-rose-100 drop-shadow-[0_0_15px_rgba(244,63,94,0.7)] mb-5 px-4"
         >
           "Saranya, will you be mine forever and ever? 💍✨"
@@ -102,7 +119,7 @@ export default function ProposalConfession({ onNext, onAccept }) {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 1.2 }}
+          transition={{ delay: 2.5 }}
         >
           <button
             onClick={handleYes}

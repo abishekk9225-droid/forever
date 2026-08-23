@@ -4,11 +4,16 @@ const SoundContext = createContext();
 
 export const SoundProvider = ({ children }) => {
   const introAudioRef = useRef(null);
+  const abi1AudioRef = useRef(null);
   const celebrationAudioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState('intro'); // 'intro' | 'celebration'
+  const [currentTrack, setCurrentTrack] = useState('intro'); // 'intro' | 'abi1' | 'celebration'
 
   const playIntroTrack = () => {
+    if (abi1AudioRef.current) {
+      abi1AudioRef.current.pause();
+      abi1AudioRef.current.currentTime = 0;
+    }
     if (celebrationAudioRef.current) {
       celebrationAudioRef.current.pause();
       celebrationAudioRef.current.currentTime = 0;
@@ -21,10 +26,31 @@ export const SoundProvider = ({ children }) => {
     }
   };
 
+  const playAbi1Track = () => {
+    if (introAudioRef.current) {
+      introAudioRef.current.pause();
+      introAudioRef.current.currentTime = 0;
+    }
+    if (celebrationAudioRef.current) {
+      celebrationAudioRef.current.pause();
+      celebrationAudioRef.current.currentTime = 0;
+    }
+    if (abi1AudioRef.current) {
+      abi1AudioRef.current.play().then(() => {
+        setIsPlaying(true);
+        setCurrentTrack('abi1');
+      }).catch(() => {});
+    }
+  };
+
   const playCelebrationTrack = (startTime = 0) => {
     if (introAudioRef.current) {
       introAudioRef.current.pause();
       introAudioRef.current.currentTime = 0;
+    }
+    if (abi1AudioRef.current) {
+      abi1AudioRef.current.pause();
+      abi1AudioRef.current.currentTime = 0;
     }
     if (celebrationAudioRef.current) {
       if (startTime > 0) {
@@ -38,7 +64,11 @@ export const SoundProvider = ({ children }) => {
   };
 
   const toggleSound = () => {
-    const active = currentTrack === 'intro' ? introAudioRef.current : celebrationAudioRef.current;
+    let active = null;
+    if (currentTrack === 'intro') active = introAudioRef.current;
+    else if (currentTrack === 'abi1') active = abi1AudioRef.current;
+    else active = celebrationAudioRef.current;
+
     if (!active) return;
     if (isPlaying) {
       active.pause();
@@ -49,9 +79,13 @@ export const SoundProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    introAudioRef.current = new Audio('/abi.1.mp3');
+    introAudioRef.current = new Audio('/bgm-intro.mp3');
     introAudioRef.current.loop = true;
     introAudioRef.current.volume = 0.5;
+
+    abi1AudioRef.current = new Audio('/abi.1.mp3');
+    abi1AudioRef.current.loop = true;
+    abi1AudioRef.current.volume = 0.5;
 
     celebrationAudioRef.current = new Audio('/bgm.mp3');
     celebrationAudioRef.current.loop = true;
@@ -59,7 +93,7 @@ export const SoundProvider = ({ children }) => {
 
     // Define triggerClimaxAudio globally to match original logic
     window.triggerClimaxAudio = () => {
-      // Do nothing, let abi.1 continue playing
+      playCelebrationTrack(219);
     };
 
     // Handle initial browser user gesture unlock for audio
@@ -78,6 +112,7 @@ export const SoundProvider = ({ children }) => {
 
     return () => {
       if (introAudioRef.current) introAudioRef.current.pause();
+      if (abi1AudioRef.current) abi1AudioRef.current.pause();
       if (celebrationAudioRef.current) celebrationAudioRef.current.pause();
       window.removeEventListener('click', handleGlobalTap);
       window.removeEventListener('touchstart', handleGlobalTap);
@@ -85,7 +120,7 @@ export const SoundProvider = ({ children }) => {
   }, []);
 
   return (
-    <SoundContext.Provider value={{ currentTrack, isPlaying, playCelebrationTrack, playIntroTrack, toggleSound }}>
+    <SoundContext.Provider value={{ currentTrack, isPlaying, playCelebrationTrack, playIntroTrack, playAbi1Track, toggleSound }}>
       {children}
     </SoundContext.Provider>
   );

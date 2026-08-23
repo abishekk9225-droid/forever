@@ -15,7 +15,7 @@ const TEMPLATE_ID = 'template_x2vxz2f';
 const PUBLIC_KEY = 'dGY_nInN-FHeWTw5q';
 
 export default function PromiseEntryGate({ onProceed }) {
-  const { playCelebrationTrack } = useSound();
+  const { playAbi1Track } = useSound();
   const [step, setStep] = useState(1); // 1: Pass, 2: Timer, 3: Truth Gate, 4: Name Guess, 5: Rating Slider
   const [noPos, setNoPos] = useState({ x: 0, y: 0 });
   const [dodgeCount, setDodgeCount] = useState(0);
@@ -44,9 +44,9 @@ export default function PromiseEntryGate({ onProceed }) {
       setNameError(false);
       setIsNameCorrect(true);
 
-      // Transition smoothly from abi.1 to celebration song
-      if (typeof playCelebrationTrack === 'function') {
-        playCelebrationTrack();
+      // Transition from intro BGM to abi.1 song
+      if (typeof playAbi1Track === 'function') {
+        playAbi1Track();
       }
 
       // Trigger Mini Celebration Confetti

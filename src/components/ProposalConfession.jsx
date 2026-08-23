@@ -33,8 +33,8 @@ export default function ProposalConfession({ onNext, onAccept }) {
       {/* CINEMATIC GLOW BACKGROUND */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <motion.div
-          animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0.4, 0.2] }}
-          transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
+          transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
           className="w-[400px] h-[400px] sm:w-[650px] sm:h-[650px] rounded-full bg-gradient-to-tr from-rose-600/30 via-pink-500/20 to-amber-400/20 blur-[140px]"
         />
       </div>
@@ -42,34 +42,26 @@ export default function ProposalConfession({ onNext, onAccept }) {
       {/* MAIN CONTAINER */}
       <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center text-center px-4 py-4 relative z-25">
 
-        {/* INSTAGRAM REEL STYLE ROTATING HEART ANIMATION CONTAINER WITH MEM-02 AT CENTER */}
+        {/* TRUE ROTATING HEART ANIMATION CONTAINER WITH MEM-02 AT CENTER */}
         <div className="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center my-2">
           
-          {/* Rotating Text/Particle Heart Ring simulating the Reel Animation */}
+          {/* Animated Glowing Heart Shape Background Ring */}
           <motion.div
-            animate={{ rotate: [0, 360] }}
-            transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
-            className="absolute inset-0 rounded-full border border-rose-500/40 border-dashed pointer-events-none flex items-center justify-center"
+            animate={{ rotate: 360, scale: [1, 1.05, 1] }}
+            transition={{ rotate: { repeat: Infinity, duration: 15, ease: "linear" }, scale: { repeat: Infinity, duration: 2, ease: "easeInOut" } }}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-80"
           >
-            <div className="absolute -top-3 text-xs sm:text-sm font-mono text-rose-300/60">I love you</div>
-            <div className="absolute -bottom-3 text-xs sm:text-sm font-mono text-rose-300/60">I love you</div>
-            <div className="absolute -left-3 text-xs sm:text-sm font-mono text-rose-300/60 rotate-90">I love you</div>
-            <div className="absolute -right-3 text-xs sm:text-sm font-mono text-rose-300/60 -rotate-90">I love you</div>
+            <div className="w-56 h-56 sm:w-72 sm:h-72 border-2 border-rose-500/50 rounded-full blur-[1px] absolute animate-pulse" />
+            <div className="absolute text-rose-400/80 text-xs sm:text-sm font-serif tracking-widest whitespace-nowrap transform -translate-y-28 sm:-translate-y-36">I LOVE YOU I LOVE YOU I LOVE YOU</div>
+            <div className="absolute text-rose-400/80 text-xs sm:text-sm font-serif tracking-widest whitespace-nowrap transform translate-y-28 sm:translate-y-36">I LOVE YOU I LOVE YOU I LOVE YOU</div>
           </motion.div>
-
-          {/* Glowing Aura */}
-          <motion.div
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-            className="absolute inset-4 rounded-full bg-gradient-to-tr from-rose-600/50 via-pink-500/40 to-amber-400/30 blur-2xl"
-          />
 
           {/* CENTER PHOTO FRAME WITH HEART SHAPE MASK */}
           <motion.div
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="relative w-48 h-48 sm:w-60 sm:h-60 flex items-center justify-center z-10 shadow-[0_0_60px_rgba(244,63,94,0.9)]"
+            className="relative w-44 h-44 sm:w-56 sm:h-56 flex items-center justify-center z-10 shadow-[0_0_60px_rgba(244,63,94,0.9)]"
             style={{
               clipPath: "url(#heart-clip)"
             }}

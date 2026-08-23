@@ -33,35 +33,37 @@ export default function ProposalConfession({ onNext, onAccept }) {
       {/* CINEMATIC GLOW BACKGROUND */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <motion.div
-          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
-          transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+          animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.35, 0.15] }}
+          transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
           className="w-[400px] h-[400px] sm:w-[650px] sm:h-[650px] rounded-full bg-gradient-to-tr from-rose-600/30 via-pink-500/20 to-amber-400/20 blur-[140px]"
         />
       </div>
 
       {/* MAIN CONTAINER */}
-      <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center text-center px-4 py-4 relative z-25">
+      <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center text-center px-4 py-2 relative z-25">
 
-        {/* TRUE ROTATING HEART ANIMATION CONTAINER WITH MEM-02 AT CENTER */}
-        <div className="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center my-2">
+        {/* CSS HEART ANIMATION CONTAINER WITH CENTERED MEM-02 PHOTO */}
+        <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center my-2">
           
-          {/* Animated Glowing Heart Shape Background Ring */}
-          <motion.div
-            animate={{ rotate: 360, scale: [1, 1.05, 1] }}
-            transition={{ rotate: { repeat: Infinity, duration: 15, ease: "linear" }, scale: { repeat: Infinity, duration: 2, ease: "easeInOut" } }}
-            className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-80"
-          >
-            <div className="w-56 h-56 sm:w-72 sm:h-72 border-2 border-rose-500/50 rounded-full blur-[1px] absolute animate-pulse" />
-            <div className="absolute text-rose-400/80 text-xs sm:text-sm font-serif tracking-widest whitespace-nowrap transform -translate-y-28 sm:-translate-y-36">I LOVE YOU I LOVE YOU I LOVE YOU</div>
-            <div className="absolute text-rose-400/80 text-xs sm:text-sm font-serif tracking-widest whitespace-nowrap transform translate-y-28 sm:translate-y-36">I LOVE YOU I LOVE YOU I LOVE YOU</div>
-          </motion.div>
+          {/* Animated Glowing Text Heart Words */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none scale-75 sm:scale-90">
+            <div className="absolute text-[#ea80b0] font-sans text-sm tracking-wider animate-pulse" style={{ transform: 'translate(0px, -90px)', textShadow: '0 0 10px #fff' }}>I love you</div>
+            <div className="absolute text-[#ea80b0] font-sans text-sm tracking-wider animate-pulse delay-100" style={{ transform: 'translate(60px, -70px)', textShadow: '0 0 10px #fff' }}>I love you</div>
+            <div className="absolute text-[#ea80b0] font-sans text-sm tracking-wider animate-pulse delay-200" style={{ transform: 'translate(90px, -20px)', textShadow: '0 0 10px #fff' }}>I love you</div>
+            <div className="absolute text-[#ea80b0] font-sans text-sm tracking-wider animate-pulse delay-300" style={{ transform: 'translate(70px, 40px)', textShadow: '0 0 10px #fff' }}>I love you</div>
+            <div className="absolute text-[#ea80b0] font-sans text-sm tracking-wider animate-pulse delay-400" style={{ transform: 'translate(20px, 90px)', textShadow: '0 0 10px #fff' }}>I love you</div>
+            <div className="absolute text-[#ea80b0] font-sans text-sm tracking-wider animate-pulse delay-500" style={{ transform: 'translate(-30px, 90px)', textShadow: '0 0 10px #fff' }}>I love you</div>
+            <div className="absolute text-[#ea80b0] font-sans text-sm tracking-wider animate-pulse delay-600" style={{ transform: 'translate(-80px, 40px)', textShadow: '0 0 10px #fff' }}>I love you</div>
+            <div className="absolute text-[#ea80b0] font-sans text-sm tracking-wider animate-pulse delay-700" style={{ transform: 'translate(-100px, -20px)', textShadow: '0 0 10px #fff' }}>I love you</div>
+            <div className="absolute text-[#ea80b0] font-sans text-sm tracking-wider animate-pulse delay-800" style={{ transform: 'translate(-70px, -70px)', textShadow: '0 0 10px #fff' }}>I love you</div>
+          </div>
 
           {/* CENTER PHOTO FRAME WITH HEART SHAPE MASK */}
           <motion.div
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="relative w-44 h-44 sm:w-56 sm:h-56 flex items-center justify-center z-10 shadow-[0_0_60px_rgba(244,63,94,0.9)]"
+            className="relative w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center z-10 shadow-[0_0_50px_rgba(244,63,94,0.8)]"
             style={{
               clipPath: "url(#heart-clip)"
             }}
@@ -74,8 +76,8 @@ export default function ProposalConfession({ onNext, onAccept }) {
           </motion.div>
         </div>
 
-        {/* "I LOVE YOU" TEXT SECTION WITH STAGGERED TIMING */}
-        <div className="flex items-center justify-center gap-3 sm:gap-5 my-3 w-full">
+        {/* "I LOVE YOU" TEXT SECTION WITH STAGRAMMED TIMING */}
+        <div className="flex items-center justify-center gap-3 sm:gap-5 my-2 w-full">
           
           <motion.span
             initial={{ opacity: 0, y: 20, scale: 0.5 }}
@@ -111,7 +113,7 @@ export default function ProposalConfession({ onNext, onAccept }) {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 2.1 }}
-          className="text-sm sm:text-xl font-serif italic text-rose-100 drop-shadow-[0_0_15px_rgba(244,63,94,0.7)] mb-5 px-4"
+          className="text-sm sm:text-xl font-serif italic text-rose-100 drop-shadow-[0_0_15px_rgba(244,63,94,0.7)] mb-4 px-4"
         >
           "Saranya, will you be mine forever and ever? 💍✨"
         </motion.p>

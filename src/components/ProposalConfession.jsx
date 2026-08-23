@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSound } from '../context/SoundContext';
 
@@ -6,6 +6,7 @@ import photoHeart from '../assets/mem-02.jpg';
 
 export default function ProposalConfession({ onNext, onAccept }) {
   const { playCelebrationTrack } = useSound();
+  const [noPosition, setNoPosition] = useState({ x: 0, y: 0 });
 
   const handleYes = () => {
     if (typeof playCelebrationTrack === 'function') {
@@ -16,6 +17,13 @@ export default function ProposalConfession({ onNext, onAccept }) {
     } else if (typeof onNext === 'function') {
       onNext();
     }
+  };
+
+  // Function to move the "No" button randomly when hovered or touched
+  const moveNoButton = () => {
+    const randomX = (Math.random() - 0.5) * 200; // Random X offset
+    const randomY = (Math.random() - 0.5) * 150; // Random Y offset
+    setNoPosition({ x: randomX, y: randomY });
   };
 
   return (
@@ -102,7 +110,7 @@ export default function ProposalConfession({ onNext, onAccept }) {
 
         </div>
 
-        {/* SUBTITLE & ACTION BUTTON */}
+        {/* SUBTITLE */}
         <motion.p
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -112,18 +120,32 @@ export default function ProposalConfession({ onNext, onAccept }) {
           "Saranya, will you be mine forever and ever? 💍✨"
         </motion.p>
 
+        {/* ACTION BUTTONS (YES + RUNAWAY NO BUTTON) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 2.5 }}
-          className="relative z-30"
+          className="flex items-center justify-center gap-4 relative z-30 mt-2"
         >
+          {/* YES BUTTON */}
           <button
             onClick={handleYes}
-            className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-500 to-pink-500 text-zinc-950 font-bold text-sm sm:text-base shadow-[0_0_40px_rgba(251,191,36,0.6)] cursor-pointer"
+            className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-500 to-pink-500 text-zinc-950 font-bold text-sm sm:text-base shadow-[0_0_40px_rgba(251,191,36,0.6)] cursor-pointer transition-transform hover:scale-105"
           >
             Yes, Forever! 💖✨
           </button>
+
+          {/* RUNAWAY NO BUTTON */}
+          <motion.button
+            animate={{ x: noPosition.x, y: noPosition.y }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            onMouseEnter={moveNoButton}
+            onTouchStart={moveNoButton}
+            onClick={moveNoButton}
+            className="px-6 py-3.5 rounded-2xl bg-zinc-900/80 border border-rose-500/40 text-rose-300 font-semibold text-sm sm:text-base shadow-[0_0_20px_rgba(244,63,94,0.2)] cursor-pointer"
+          >
+            No 🙈
+          </motion.button>
         </motion.div>
 
       </div>

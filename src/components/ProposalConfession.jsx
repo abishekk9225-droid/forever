@@ -30,43 +30,11 @@ export default function ProposalConfession({ onNext, onAccept }) {
         </defs>
       </svg>
 
-      {/* CSS STYLES FOR THE ROTATING TEXT HEART ANIMATION */}
-      <style>{`
-        @keyframes animateHeart {
-          0% {
-            opacity: 0;
-            transform: translate(-50%, -50%) rotate(var(--rot, 0deg)) translateY(-110px) scale(0.8);
-          }
-          50% {
-            opacity: 1;
-            text-shadow: 0 0 15px #ea80b0, 0 0 30px #fff;
-          }
-          100% {
-            opacity: 0;
-            transform: translate(-50%, -50%) rotate(var(--rot, 0deg)) translateY(-50px) scale(1.1);
-          }
-        }
-        .love_word_ring {
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          color: #ea80b0;
-          font-size: 1rem;
-          font-family: sans-serif;
-          text-shadow: 0 0 10px #fff;
-          letter-spacing: 2px;
-          white-space: nowrap;
-          transform-origin: center;
-          animation: animateHeart 4s linear infinite;
-          opacity: 0;
-        }
-      `}</style>
-
       {/* CINEMATIC GLOW BACKGROUND */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <motion.div
-          animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.35, 0.15] }}
-          transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
+          transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
           className="w-[400px] h-[400px] sm:w-[650px] sm:h-[650px] rounded-full bg-gradient-to-tr from-rose-600/30 via-pink-500/20 to-amber-400/20 blur-[140px]"
         />
       </div>
@@ -74,31 +42,22 @@ export default function ProposalConfession({ onNext, onAccept }) {
       {/* MAIN CONTAINER */}
       <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center text-center px-4 py-2 relative z-25">
 
-        {/* CONTAINER HOLDING THE ANIMATED TEXT HEART AND CENTERED PHOTO */}
-        <div className="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center my-2">
+        {/* CONTAINER WITH GLOWING HEART AURA & CENTERED PHOTO */}
+        <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center my-2">
           
-          {/* ROTATING TEXT HEART ANIMATION LAYER */}
-          <div className="absolute inset-0 pointer-events-none z-20">
-            <div className="love_word_ring" style={{ '--rot': '0deg', animationDelay: '0s' }}>I love you</div>
-            <div className="love_word_ring" style={{ '--rot': '30deg', animationDelay: '0.3s' }}>I love you</div>
-            <div className="love_word_ring" style={{ '--rot': '60deg', animationDelay: '0.6s' }}>I love you</div>
-            <div className="love_word_ring" style={{ '--rot': '90deg', animationDelay: '0.9s' }}>I love you</div>
-            <div className="love_word_ring" style={{ '--rot': '120deg', animationDelay: '1.2s' }}>I love you</div>
-            <div className="love_word_ring" style={{ '--rot': '150deg', animationDelay: '1.5s' }}>I love you</div>
-            <div className="love_word_ring" style={{ '--rot': '180deg', animationDelay: '1.8s' }}>I love you</div>
-            <div className="love_word_ring" style={{ '--rot': '210deg', animationDelay: '2.1s' }}>I love you</div>
-            <div className="love_word_ring" style={{ '--rot': '240deg', animationDelay: '2.4s' }}>I love you</div>
-            <div className="love_word_ring" style={{ '--rot': '270deg', animationDelay: '2.7s' }}>I love you</div>
-            <div className="love_word_ring" style={{ '--rot': '300deg', animationDelay: '3.0s' }}>I love you</div>
-            <div className="love_word_ring" style={{ '--rot': '330deg', animationDelay: '3.3s' }}>I love you</div>
-          </div>
+          {/* Glowing Animated Outer Heart Ring */}
+          <motion.div
+            animate={{ scale: [1, 1.08, 1], rotate: [0, 3, -3, 0] }}
+            transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+            className="absolute inset-2 rounded-full bg-gradient-to-tr from-rose-600/50 via-pink-500/40 to-amber-400/40 blur-xl pointer-events-none"
+          />
 
           {/* CENTER PHOTO FRAME WITH HEART SHAPE MASK */}
           <motion.div
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="relative w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center z-10 shadow-[0_0_50px_rgba(244,63,94,0.8)]"
+            className="relative w-44 h-44 sm:w-56 sm:h-56 flex items-center justify-center z-10 shadow-[0_0_60px_rgba(244,63,94,0.9)] border-2 border-rose-400/50"
             style={{
               clipPath: "url(#heart-clip)"
             }}

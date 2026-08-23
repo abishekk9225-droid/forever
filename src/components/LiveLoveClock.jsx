@@ -40,9 +40,9 @@ export default function LiveLoveClock() {
         <span>⏰ OUR TIME TOGETHER ✨</span>
       </div>
 
-      <h2 className="text-2xl sm:text-3xl font-serif text-white font-bold">
-        Every Single Second In Love With You ✨
-      </h2>
+      <h1 className="text-2xl sm:text-4xl font-serif font-black text-white tracking-wider text-center">
+        Infinite Memories, Timeless Moments With You 🌙
+      </h1>
 
       {/* Dynamic Counter Grid */}
       <div className="grid grid-cols-4 gap-2 sm:gap-4 my-4 max-w-md w-full">

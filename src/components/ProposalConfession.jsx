@@ -2,9 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useSound } from '../context/SoundContext';
 
-import photoI from '../assets/mem-01.jpg';
-import photoHeart from '../assets/mem-02.jpg'; // mem-02 inside the heart/center
-import photoYou from '../assets/mem-03.jpg';
+// Secure memory photo for the center heart
+import photoHeart from '../assets/mem-02.jpg';
 
 export default function ProposalConfession({ onNext, onAccept }) {
   const { playCelebrationTrack } = useSound();
@@ -23,104 +22,74 @@ export default function ProposalConfession({ onNext, onAccept }) {
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-4 bg-black text-center select-none overflow-hidden z-30">
       
-      {/* CINEMATIC GLOW & ROTATING HEART BACKGROUND AMBIANCE */}
+      {/* CINEMATIC GLOW BACKGROUND */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <motion.div
-          animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.4, 0.2] }}
-          transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-          className="w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] rounded-full bg-gradient-to-tr from-rose-600/30 via-pink-500/20 to-amber-400/25 blur-[100px]"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.35, 0.15] }}
+          transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+          className="w-[350px] h-[350px] sm:w-[600px] sm:h-[600px] rounded-full bg-gradient-to-tr from-rose-600/30 via-pink-500/20 to-amber-400/20 blur-[120px]"
         />
       </div>
 
       {/* MAIN CONTAINER */}
-      <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center text-center px-4 py-4 relative z-25">
+      <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center text-center px-4 py-4 relative z-25">
 
-        {/* TOP ROW: I PHOTO AND YOU PHOTO WITH STAGGERED TIMING */}
-        <div className="flex items-center justify-center gap-6 sm:gap-16 mb-4 w-full">
+        {/* CENTER HEART CONTAINER WITH "I LOVE YOU" TEXT REVOLVING / GLOWING AROUND */}
+        <div className="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center my-4">
           
-          {/* 1. I PHOTO (Appears first) */}
+          {/* Simulated Heart Orbit / Glowing Text Ring Effect */}
           <motion.div
-            initial={{ opacity: 0, x: -50, scale: 0.8 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            className="flex flex-col items-center"
-          >
-            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl p-1 bg-gradient-to-tr from-amber-300 to-yellow-600 shadow-[0_0_30px_rgba(250,204,21,0.5)] overflow-hidden">
-              <img src={photoI} alt="Memory I" className="w-full h-full object-cover rounded-xl" />
-            </div>
-          </motion.div>
+            animate={{ rotate: [0, 360] }}
+            transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
+            className="absolute inset-0 rounded-full border border-rose-500/30 border-dashed pointer-events-none"
+          />
 
-          {/* 2. CENTER HEART ANIMATION WITH mem-02.jpg INSIDE */}
+          {/* Glowing Outer Heart Aura */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ scale: [1, 1.08, 1] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            className="absolute inset-4 rounded-full bg-gradient-to-tr from-rose-600/40 via-pink-500/30 to-amber-400/30 blur-2xl"
+          />
+
+          {/* CENTER PHOTO FRAME INSIDE THE HEART */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.9, delay: 0.8, ease: "easeOut" }}
-            className="relative flex items-center justify-center"
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="relative w-44 h-44 sm:w-56 sm:h-56 rounded-full p-2 bg-gradient-to-tr from-amber-300 via-rose-500 to-pink-500 shadow-[0_0_60px_rgba(244,63,94,0.8)] overflow-hidden z-10"
           >
-            {/* Glowing Heart Frame for mem-02.jpg */}
-            <div className="w-32 h-32 sm:w-44 sm:h-44 rounded-full p-1.5 bg-gradient-to-tr from-rose-500 via-pink-500 to-amber-400 shadow-[0_0_50px_rgba(244,63,94,0.7)] overflow-hidden animate-pulse">
-              <img src={photoHeart} alt="Memory Heart" className="w-full h-full object-cover rounded-full" />
-            </div>
+            <img 
+              src={photoHeart} 
+              alt="Our Special Memory" 
+              className="w-full h-full object-cover rounded-full" 
+            />
           </motion.div>
-
-          {/* 3. YOU PHOTO (Appears later with different timing) */}
-          <motion.div
-            initial={{ opacity: 0, x: 50, scale: 0.8 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.8, delay: 1.4, ease: "easeOut" }}
-            className="flex flex-col items-center"
-          >
-            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl p-1 bg-gradient-to-tr from-amber-300 to-yellow-600 shadow-[0_0_30px_rgba(250,204,21,0.5)] overflow-hidden">
-              <img src={photoYou} alt="Memory You" className="w-full h-full object-cover rounded-xl" />
-            </div>
-          </motion.div>
-
         </div>
 
-        {/* TEXT SECTION: "I", "YOU" AND BELOW IT "LOVE" */}
-        <div className="flex flex-col items-center justify-center w-full my-2 space-y-1">
-          
-          {/* I and YOU on sides */}
-          <div className="flex items-center justify-center gap-24 sm:gap-40 w-full">
-            <motion.span
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 1.8 }}
-              className="text-5xl sm:text-7xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_35px_rgba(250,204,21,0.9)]"
-            >
-              I
-            </motion.span>
-
-            <motion.span
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 2.2 }}
-              className="text-5xl sm:text-7xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_35px_rgba(250,204,21,0.9)]"
-            >
-              YOU
-            </motion.span>
-          </div>
-
-          {/* LOVE placed right below/between */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 2.6 }}
-            className="-mt-6 sm:-mt-8"
-          >
-            <span className="text-4xl sm:text-6xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-red-600 drop-shadow-[0_0_40px_rgba(244,63,94,1)] tracking-widest">
-              LOVE
-            </span>
-          </motion.div>
-
-        </div>
+        {/* "I LOVE YOU" TEXT SECTION */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="flex items-center justify-center gap-3 sm:gap-5 my-3 w-full"
+        >
+          <span className="text-4xl sm:text-6xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_35px_rgba(250,204,21,0.9)]">
+            I
+          </span>
+          <span className="text-3xl sm:text-5xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-red-600 drop-shadow-[0_0_35px_rgba(244,63,94,0.9)] tracking-widest">
+            LOVE
+          </span>
+          <span className="text-4xl sm:text-6xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_35px_rgba(250,204,21,0.9)]">
+            YOU
+          </span>
+        </motion.div>
 
         {/* SUBTITLE & ACTION BUTTON */}
         <motion.p
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 3.0 }}
-          className="text-sm sm:text-xl font-serif italic text-rose-100 drop-shadow-[0_0_15px_rgba(244,63,94,0.7)] mb-4 px-4 mt-2"
+          transition={{ duration: 0.6, delay: 0.9 }}
+          className="text-sm sm:text-xl font-serif italic text-rose-100 drop-shadow-[0_0_15px_rgba(244,63,94,0.7)] mb-5 px-4"
         >
           "Saranya, will you be mine forever and ever? 💍✨"
         </motion.p>
@@ -128,7 +97,7 @@ export default function ProposalConfession({ onNext, onAccept }) {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 3.4 }}
+          transition={{ delay: 1.2 }}
         >
           <button
             onClick={handleYes}

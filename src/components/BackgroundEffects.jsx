@@ -426,6 +426,50 @@ export default function BackgroundEffects() {
   const moonX = 50 + storyIntensity * 12; // slowly drifts right
   const moonOpacity = 0.25 + storyIntensity * 0.55;
 
+  // Memoize floating elements to prevent recreation on re-renders
+  const floatingItems = React.useMemo(() => {
+    const assets = [
+      { val: '🦋', size: 1.6, opacity: 0.38, duration: 18, delay: 0 },
+      { val: '🌹', size: 1.5, opacity: 0.33, duration: 22, delay: -4 },
+      { val: '🧸', size: 1.8, opacity: 0.28, duration: 26, delay: -8 },
+      { val: '🎈', size: 1.7, opacity: 0.28, duration: 20, delay: -12 },
+      { val: '🌸', size: 1.3, opacity: 0.38, duration: 19, delay: -3 },
+      { val: '🍭', size: 1.4, opacity: 0.28, duration: 24, delay: -6 },
+      { val: '💖', size: 1.5, opacity: 0.38, duration: 17, delay: -15 },
+      { val: '🫧', size: 1.6, opacity: 0.33, duration: 15, delay: -2 },
+      { val: '🍃', size: 1.2, opacity: 0.38, duration: 21, delay: -7 },
+      { val: '🌷', size: 1.4, opacity: 0.33, duration: 23, delay: -1 },
+      { val: '🦋', size: 1.7, opacity: 0.38, duration: 16, delay: -9 },
+      { val: '🧸', size: 1.6, opacity: 0.28, duration: 27, delay: -5 },
+      { val: '🌺', size: 1.5, opacity: 0.33, duration: 23, delay: -11 },
+      { val: '🎈', size: 1.8, opacity: 0.28, duration: 21, delay: -14 },
+      { val: '💖', size: 1.4, opacity: 0.38, duration: 19, delay: -10 },
+      { val: '🫧', size: 1.3, opacity: 0.33, duration: 14, delay: -13 }
+    ];
+
+    return assets.map((item, idx) => {
+      // Position spread
+      const x = 5 + (idx * 23) % 90;
+      const y = 8 + (idx * 19) % 78;
+      const driftX = (idx % 2 === 0 ? 1 : -1) * (20 + (idx * 6) % 35);
+      const driftY = -1 * (35 + (idx * 8) % 45); // general upward drift
+
+      return {
+        id: idx,
+        val: item.val,
+        size: item.size,
+        opacity: item.opacity,
+        duration: item.duration,
+        delay: item.delay,
+        x,
+        y,
+        driftX,
+        driftY,
+        parallaxFactor: 0.015 + (idx % 3) * 0.015
+      };
+    });
+  }, []);
+
   return (
     <div
       ref={containerRef}
@@ -437,12 +481,66 @@ export default function BackgroundEffects() {
           #02040a 100%)`
       }}
     >
+      {/* CSS Stylesheet for floating drift keyframe animations */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes floatDriftAnim {
+          0% {
+            transform: translate3d(0, 0, 0) rotate(0deg);
+          }
+          55% {
+            transform: translate3d(var(--drift-x), var(--drift-y), 0) rotate(180deg);
+          }
+          100% {
+            transform: translate3d(0, 0, 0) rotate(360deg);
+          }
+        }
+        .float-drift-element {
+          animation: floatDriftAnim var(--duration) ease-in-out infinite;
+          animation-delay: var(--delay);
+        }
+      `}} />
+
       {/* Cinematic Ambient Night Layer */}
       <div className="fixed inset-0 pointer-events-none z-[1] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0b132b] via-[#050814] to-[#02040a] opacity-90" />
       <div className="fixed inset-0 pointer-events-none z-[2] bg-[radial-gradient(circle_at_center,_transparent_45%,_rgba(2,4,10,0.85)_100%)]" />
 
       {/* Background Canvas for stars, fireflies, and water */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
+
+      {/* Ambient Floating Elements (Drifting Butterflies, Florals, and 3D toys) */}
+      {floatingItems.map((item) => {
+        // Calculate mouse parallax translate offsets
+        const mouseOffsetW = typeof window !== 'undefined' ? window.innerWidth / 2 : 500;
+        const mouseOffsetH = typeof window !== 'undefined' ? window.innerHeight / 2 : 400;
+        const dx = (mousePos.x - mouseOffsetW) * item.parallaxFactor;
+        const dy = (mousePos.y - mouseOffsetH) * item.parallaxFactor;
+
+        return (
+          <div
+            key={item.id}
+            className="absolute pointer-events-none select-none float-drift-element font-sans"
+            style={{
+              left: `${item.x}%`,
+              top: `${item.y}%`,
+              fontSize: `${item.size}rem`,
+              opacity: item.opacity,
+              '--drift-x': `${item.driftX}px`,
+              '--drift-y': `${item.driftY}px`,
+              '--duration': `${item.duration}s`,
+              '--delay': `${item.delay}s`,
+              filter: `
+                drop-shadow(0 8px 12px rgba(0, 0, 0, 0.45))
+                drop-shadow(0 0 10px rgba(224, 168, 153, 0.15))
+              `,
+              transform: `translate3d(${dx}px, ${dy}px, 0)`,
+              transition: 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
+              zIndex: 3
+            }}
+          >
+            {item.val}
+          </div>
+        );
+      })}
 
       {/* Persistent Moon Overlay */}
       <div

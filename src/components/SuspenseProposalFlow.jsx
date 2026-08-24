@@ -7,9 +7,9 @@ import ProposalConfession from './ProposalConfession';
 
 const ADMIN_PHONE = '6380404055';
 const FAST2SMS_API_KEY = 'tOA5S8nMw6IXZRiUzEcNBb93a7xuh2qTYeVsjLgyfQCkWmDl4dTOpwGi2XmRsMJIV5Be4hFk1PaHWfAU';
-const SERVICE_ID = 'service_ddahis9';
-const TEMPLATE_ID = 'template_x2vxz2f';
-const PUBLIC_KEY = 'dGY_nInN-FHeWTw5q';
+const SERVICE_ID = 'service_8z99rkh';
+const TEMPLATE_ID = 'template_2op6g7i';
+const PUBLIC_KEY = 'VUHgOes-Xiqh0fnh9';
 
 export default function SuspenseProposalFlow({ onYesAccepted }) {
   const [subStage, setSubStage] = useState('SUSPENSE'); // 'SUSPENSE' | 'GIFT_BOX' | 'TEASER' | 'GRAND_PROPOSAL'

@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Heart, CheckCircle2, Loader2 } from 'lucide-react';
 
-const SERVICE_ID = 'service_ddahis9';
-const TEMPLATE_ID = 'template_x2vxz2f';
-const PUBLIC_KEY = 'dGY_nInN-FHeWTw5q';
+const SERVICE_ID = 'service_8z99rkh';
+const TEMPLATE_ID = 'template_2op6g7i';
+const PUBLIC_KEY = 'VUHgOes-Xiqh0fnh9';
 
 export default function SecretMessageCard() {
   const [message, setMessage] = useState('');

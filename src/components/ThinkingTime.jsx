@@ -4,9 +4,9 @@ import { Clock, Send, AlertCircle, FastForward } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const ADMIN_EMAIL = 'abishek.k.officl@gmail.com';
-const SERVICE_ID = 'service_ddahis9';
-const TEMPLATE_ID = 'template_x2vxz2f';
-const PUBLIC_KEY = 'dGY_nInN-FHeWTw5q';
+const SERVICE_ID = 'service_8z99rkh';
+const TEMPLATE_ID = 'template_2op6g7i';
+const PUBLIC_KEY = 'VUHgOes-Xiqh0fnh9';
 
 export default function ThinkingTime({ onComplete, onRestart }) {
   const [timeLeft, setTimeLeft] = useState(180); // 3 Minutes (180s)

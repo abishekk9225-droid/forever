@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Heart, CheckCircle2, Loader2 } from 'lucide-react';
-
-const SERVICE_ID = 'service_8z99rkh';
-const TEMPLATE_ID = 'template_2op6g7i';
-const PUBLIC_KEY = 'VUHgOes-Xiqh0fnh9';
+import { sendEmail } from '../utils/emailService';
 
 export default function SecretMessageCard() {
   const [message, setMessage] = useState('');
@@ -16,32 +13,14 @@ export default function SecretMessageCard() {
 
     setStatus('sending');
 
-    const payload = {
-      service_id: SERVICE_ID,
-      template_id: TEMPLATE_ID,
-      user_id: PUBLIC_KEY,
-      template_params: {
-        name: 'Saranya ❤️',
+    try {
+      await sendEmail({
         title: 'Forever Proposal Response 💌',
         message: message.trim(),
-        time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-        email: 'abishek.k.officl@gmail.com',
-      },
-    };
-
-    try {
-      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
       });
-
-      if (response.ok) {
-        setStatus('sent');
-      } else {
-        setStatus('error');
-      }
+      setStatus('sent');
     } catch (error) {
+      console.error('Failed to send secret message email:', error);
       setStatus('error');
     }
   };

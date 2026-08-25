@@ -2,11 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Send, AlertCircle, FastForward } from 'lucide-react';
 import confetti from 'canvas-confetti';
-
-const ADMIN_EMAIL = 'abishek.k.officl@gmail.com';
-const SERVICE_ID = 'service_8z99rkh';
-const TEMPLATE_ID = 'template_2op6g7i';
-const PUBLIC_KEY = 'VUHgOes-Xiqh0fnh9';
+import { sendEmail } from '../utils/emailService';
 
 export default function ThinkingTime({ onComplete, onRestart }) {
   const [timeLeft, setTimeLeft] = useState(180); // 3 Minutes (180s)
@@ -153,23 +149,13 @@ export default function ThinkingTime({ onComplete, onRestart }) {
     `;
 
     try {
-      await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          service_id: SERVICE_ID,
-          template_id: TEMPLATE_ID,
-          user_id: PUBLIC_KEY,
-          template_params: {
-            name: 'Saranya ❤️',
-            title: 'Special Person Response! 👀',
-            message: message,
-            time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-            email: ADMIN_EMAIL,
-          },
-        }),
+      await sendEmail({
+        title: 'Special Person Response! 👀',
+        message: message,
       });
-    } catch (e) {}
+    } catch (e) {
+      console.error('Failed to send special person email:', e);
+    }
 
     setIsSending(false);
     onComplete();

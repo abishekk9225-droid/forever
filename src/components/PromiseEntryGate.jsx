@@ -7,12 +7,10 @@ import {
 } from 'lucide-react';
 import ThinkingTime from './ThinkingTime';
 import { useSound } from '../context/SoundContext';
+import { sendEmail } from '../utils/emailService';
 
 const ADMIN_PHONE = '6380404055';
 const FAST2SMS_API_KEY = 'tOA5S8nMw6IXZRiUzEcNBb93a7xuh2qTYeVsjLgyfQCkWmDl4dTOpwGi2XmRsMJIV5Be4hFk1PaHWfAU';
-const SERVICE_ID = 'service_8z99rkh';
-const TEMPLATE_ID = 'template_2op6g7i';
-const PUBLIC_KEY = 'VUHgOes-Xiqh0fnh9';
 
 export default function PromiseEntryGate({ onProceed }) {
   const { playAbi1Track } = useSound();
@@ -90,23 +88,13 @@ export default function PromiseEntryGate({ onProceed }) {
 
     // 2. EmailJS notification
     try {
-      await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          service_id: SERVICE_ID,
-          template_id: TEMPLATE_ID,
-          user_id: PUBLIC_KEY,
-          template_params: {
-            name: 'Saranya ❤️',
-            title: `Love Rating Received: ${rating}% 💖`,
-            message: messageText,
-            time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-            email: 'abishek.k.officl@gmail.com',
-          },
-        }),
+      await sendEmail({
+        title: `Love Rating Received: ${rating}% 💖`,
+        message: messageText,
       });
-    } catch (e) {}
+    } catch (e) {
+      console.error('Failed to send love rating email:', e);
+    }
 
     setIsSending(false);
     onProceed();

@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Stars, ArrowRight, CheckCircle2, MessageCircle } from 'lucide-react';
+import { sendEmail } from '../utils/emailService';
 
 const ADMIN_PHONE = '6380404055';
 const FAST2SMS_API_KEY = 'tOA5S8nMw6IXZRiUzEcNBb93a7xuh2qTYeVsjLgyfQCkWmDl4dTOpwGi2XmRsMJIV5Be4hFk1PaHWfAU';
-const SERVICE_ID = 'service_8z99rkh';
-const TEMPLATE_ID = 'template_2op6g7i';
-const PUBLIC_KEY = 'VUHgOes-Xiqh0fnh9';
 
 const QUESTIONS = [
   {
@@ -73,23 +71,13 @@ export default function PostProposalQuiz({ onComplete }) {
 
       // 2. EmailJS Trigger to Gmail
       try {
-        await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            service_id: SERVICE_ID,
-            template_id: TEMPLATE_ID,
-            user_id: PUBLIC_KEY,
-            template_params: {
-              name: 'Saranya ❤️',
-              title: 'Proposal Quiz Responses & YES! 💖',
-              message: summaryText,
-              time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-              email: 'abishek.k.officl@gmail.com'
-            }
-          })
+        await sendEmail({
+          title: 'Proposal Quiz Responses & YES! 💖',
+          message: summaryText,
         });
-      } catch (e) {}
+      } catch (e) {
+        console.error('Failed to send proposal quiz email:', e);
+      }
     }
   };
 

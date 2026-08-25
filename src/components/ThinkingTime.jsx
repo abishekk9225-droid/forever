@@ -194,6 +194,49 @@ export default function ThinkingTime({ onComplete, onRestart }) {
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-0" />
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.005)_1px,transparent_1px)] bg-[size:100%_3px] pointer-events-none opacity-20" />
 
+            {/* Ambient cyber floating assets */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+              <motion.div
+                className="absolute w-24 h-24 rounded-full bg-[#e0a899]/5 blur-2xl"
+                animate={{
+                  x: [0, 40, -20, 0],
+                  y: [0, -30, 20, 0],
+                }}
+                transition={{
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                style={{ top: '10%', left: '15%' }}
+              />
+              <motion.div
+                className="absolute w-32 h-32 rounded-full bg-sky-500/5 blur-2xl"
+                animate={{
+                  x: [0, -50, 30, 0],
+                  y: [0, 40, -30, 0],
+                }}
+                transition={{
+                  duration: 12,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                style={{ bottom: '15%', right: '10%' }}
+              />
+              <motion.div
+                className="absolute w-16 h-16 rounded-full bg-pink-500/5 blur-xl"
+                animate={{
+                  x: [0, 30, -30, 0],
+                  y: [0, 50, -50, 0],
+                }}
+                transition={{
+                  duration: 10,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                style={{ bottom: '10%', left: '20%' }}
+              />
+            </div>
+
             <div className="relative z-10 space-y-6 flex flex-col items-center">
               
               {/* Pulsating Holographic Sci-Fi Clock Ring & digital text */}

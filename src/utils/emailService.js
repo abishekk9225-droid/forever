@@ -1,5 +1,5 @@
 const SERVICE_ID = 'service_8z99rkh';
-const TEMPLATE_ID = 'template_2op6g7i';
+const TEMPLATE_ID = 'template_z7jgo2n';
 const PUBLIC_KEY = 'VUHgOes-Xiqh0fnh9';
 const ADMIN_EMAIL = 'abishek.k.officl@gmail.com';
 

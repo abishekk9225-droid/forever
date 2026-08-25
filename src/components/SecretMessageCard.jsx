@@ -27,15 +27,45 @@ export default function SecretMessageCard() {
 
   return (
     <div className="w-full max-w-md mx-auto my-8 px-4 z-40 relative">
-      <div className="p-6 sm:p-8 rounded-3xl backdrop-blur-2xl bg-zinc-950/85 border border-rose-400/30 shadow-[0_0_40px_rgba(244,114,182,0.25)]">
-        <div className="flex items-center gap-2 mb-2">
+      <div className="p-6 sm:p-8 rounded-3xl backdrop-blur-2xl bg-zinc-950/85 border border-rose-400/30 shadow-[0_0_40px_rgba(244,114,182,0.25)] relative overflow-hidden">
+        {/* Floating cyber assets */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <motion.div
+            className="absolute w-20 h-20 rounded-full bg-rose-500/5 blur-xl"
+            animate={{
+              x: [0, 30, -10, 0],
+              y: [0, -20, 20, 0],
+            }}
+            transition={{
+              duration: 9,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            style={{ top: '5%', left: '10%' }}
+          />
+          <motion.div
+            className="absolute w-24 h-24 rounded-full bg-purple-500/5 blur-xl"
+            animate={{
+              x: [0, -30, 20, 0],
+              y: [0, 30, -20, 0],
+            }}
+            transition={{
+              duration: 11,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            style={{ bottom: '10%', right: '15%' }}
+          />
+        </div>
+
+        <div className="relative z-10 flex items-center gap-2 mb-2">
           <Heart className="w-5 h-5 text-rose-400 fill-rose-400 animate-pulse"/>
           <h3 className="text-white font-serif italic text-xl tracking-wide">
             Leave a note for Abishek
           </h3>
         </div>
 
-        <p className="text-rose-200/70 text-xs sm:text-sm font-light mb-4">
+        <p className="relative z-10 text-rose-200/70 text-xs sm:text-sm font-light mb-4">
           Write anything in your heart... it lands directly in his inbox ✨
         </p>
 

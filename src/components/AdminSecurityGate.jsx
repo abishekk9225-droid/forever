@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, KeyRound, ChevronRight, HelpCircle, Sparkles } from 'lucide-react';
 
-const SECRET_WORD = 'ALWAYS';
+const SECRET_WORD = 'SARANYA';
 
 export default function AdminSecurityGate({ onUnlocked }) {
   const [passcode, setPasscode] = useState('');
@@ -99,7 +99,7 @@ export default function AdminSecurityGate({ onUnlocked }) {
                 className="mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-400/20 text-rose-200 text-xs italic"
               >
                 <Sparkles className="w-3.5 h-3.5 inline mr-1 text-rose-400"/>
-                "Forever and _____? (6 Letters) ✨"
+                "Your name? (7 Letters) ✨"
               </motion.div>
             )}
           </AnimatePresence>

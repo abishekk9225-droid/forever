@@ -11,7 +11,7 @@ export default function AdminSecurityGate({ onUnlocked }) {
 
   const handleUnlock = (e) => {
     e.preventDefault();
-    if (passcode.trim().toUpperCase() === SECRET_WORD) {
+    if (passcode.trim().toLowerCase() === SECRET_WORD.toLowerCase()) {
       setError(false);
       if (typeof window.unlockAudio === 'function') {
         window.unlockAudio();

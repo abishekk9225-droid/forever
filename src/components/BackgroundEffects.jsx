@@ -8,6 +8,7 @@ export default function BackgroundEffects() {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const mousePosRef = useRef({ x: 0, y: 0 });
   const [flowerClicks, setFlowerClicks] = useState([1.0, 1.0, 1.0, 1.0]);
 
   // Keep ref to current settings for RAF loop
@@ -19,7 +20,9 @@ export default function BackgroundEffects() {
   // Track mouse coordinates for firefly attraction and parallax
   useEffect(() => {
     const handleMouseMove = (e) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
+      const pos = { x: e.clientX, y: e.clientY };
+      mousePosRef.current = pos;
+      setMousePos(pos);
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
@@ -308,6 +311,50 @@ export default function BackgroundEffects() {
       }
     }
 
+    class CursorSparkle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 2.0 + 0.8;
+        const colors = ['#F472B6', '#38BDF8', '#A78BFA', '#FBBF24', '#F43F5E', '#E879F9'];
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.vx = (Math.random() - 0.5) * 1.5;
+        this.vy = (Math.random() - 0.6) * 1.5;
+        this.alpha = 1.0;
+        this.decay = Math.random() * 0.02 + 0.015;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.08;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.02; // Soft gravity
+        this.alpha -= this.decay;
+        this.rotation += this.rotationSpeed;
+      }
+      draw() {
+        if (this.alpha <= 0) return;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.globalAlpha = this.alpha;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = this.size * 5.0;
+        ctx.fillStyle = this.color;
+
+        // Draw a soft glowing sparkle (4-pointed star)
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+          ctx.rotate(Math.PI / 2);
+          ctx.lineTo(this.size * 2.5, 0);
+          ctx.lineTo(this.size * 0.5, this.size * 0.5);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
     // Track last scene to trigger transition events
     let lastScene = null;
 
@@ -316,6 +363,7 @@ export default function BackgroundEffects() {
     const firefliesList = Array.from({ length: 60 }, () => new Firefly());
     const butterfliesList = Array.from({ length: 24 }, () => new Butterfly());
     const celebrationButterfliesList = Array.from({ length: 100 }, () => new CelebrationButterfly(window.innerWidth || 1200, window.innerHeight || 800));
+    const sparklesList = [];
 
     const updateAndDrawFrame = () => {
       time += 0.02;
@@ -337,8 +385,8 @@ export default function BackgroundEffects() {
       lastScene = scene;
 
       // Parallax offsets (scroll/mouse coordinate mappings)
-      const pX = (mousePos.x / window.innerWidth - 0.5) * 0.25;
-      const pY = (mousePos.y / window.innerHeight - 0.5) * 0.25;
+      const pX = (mousePosRef.current.x / window.innerWidth - 0.5) * 0.25;
+      const pY = (mousePosRef.current.y / window.innerHeight - 0.5) * 0.25;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -360,7 +408,7 @@ export default function BackgroundEffects() {
         const activeFirefliesCount = Math.floor(targetFireflies * intensity * celebrationMultiplier);
 
         for (let i = 0; i < activeFirefliesCount; i++) {
-          firefliesList[i].update(mousePos.x, mousePos.y);
+          firefliesList[i].update(mousePosRef.current.x, mousePosRef.current.y);
           firefliesList[i].draw();
         }
       }
@@ -377,6 +425,30 @@ export default function BackgroundEffects() {
         for (let i = 0; i < activeButterfliesCount; i++) {
           butterfliesList[i].update();
           butterfliesList[i].draw();
+        }
+      }
+
+      // 2c. Spawn, update, and draw interactive cursor sparkles
+      const currentMouse = mousePosRef.current;
+      if (currentMouse.x !== 0 || currentMouse.y !== 0) {
+        const spawnCount = low ? 1 : 2;
+        for (let i = 0; i < spawnCount; i++) {
+          sparklesList.push(new CursorSparkle(
+            currentMouse.x + (Math.random() - 0.5) * 6,
+            currentMouse.y + (Math.random() - 0.5) * 6
+          ));
+        }
+      }
+      if (sparklesList.length > 200) {
+        sparklesList.splice(0, sparklesList.length - 200);
+      }
+      for (let i = sparklesList.length - 1; i >= 0; i--) {
+        const sp = sparklesList[i];
+        sp.update();
+        if (sp.alpha <= 0) {
+          sparklesList.splice(i, 1);
+        } else {
+          sp.draw();
         }
       }
 

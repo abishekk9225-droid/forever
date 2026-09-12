@@ -36,12 +36,14 @@ import CelebrationReveal from './components/CelebrationReveal';
 import PromiseVault from './components/PromiseVault';
 import AskDialogueScene from './components/AskDialogueScene';
 import HeartbeatIntro from './components/HeartbeatIntro';
+import EmotionalQuestionGate from './components/EmotionalQuestionGate';
 
 
 
 function MainApp() {
   const [showHeartbeat, setShowHeartbeat] = useState(true);
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [hasConfirmedFeelings, setHasConfirmedFeelings] = useState(false);
   const { currentScene, goToScene: setCurrentScene } = useScene();
 
   // 1. Heartbeat ECG Entry Scene
@@ -49,9 +51,24 @@ function MainApp() {
     return <HeartbeatIntro onUnlock={() => setShowHeartbeat(false)} />;
   }
 
-  // 2. Password Protection Gate
+  // 2. Password Protection Gate (Opens with 'saranya')
   if (!isUnlocked) {
     return <AdminSecurityGate onUnlocked={() => setIsUnlocked(true)} />;
+  }
+
+  // 3. Emotional Question Gate (Opens immediately after entering secret code 'saranya')
+  if (!hasConfirmedFeelings) {
+    return (
+      <EmotionalQuestionGate
+        onAccept={() => {
+          setHasConfirmedFeelings(true);
+          setCurrentScene(SCENES.INTRO);
+        }}
+        onReset={() => {
+          setIsUnlocked(false);
+        }}
+      />
+    );
   }
 
   const handleProposalYes = () => {

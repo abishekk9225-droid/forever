@@ -60,6 +60,13 @@ function MainApp() {
   if (!hasConfirmedFeelings) {
     return (
       <EmotionalQuestionGate
+        onFeelings={() => {
+          setHasConfirmedFeelings(true);
+          setCurrentScene(SCENES.INTRO);
+        }}
+        onNoFeelings={() => {
+          setIsUnlocked(false);
+        }}
         onAccept={() => {
           setHasConfirmedFeelings(true);
           setCurrentScene(SCENES.INTRO);

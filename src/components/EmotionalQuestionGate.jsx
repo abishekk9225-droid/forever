@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, Mail, Sparkles, Send } from 'lucide-react';
+import { Heart } from 'lucide-react';
+import confetti from 'canvas-confetti';
+import { sendEmail } from '../utils/emailService';
+import CelebrationReveal from './CelebrationReveal';
 
-export default function EmotionalQuestionGate({ onFeelings, onNoFeelings }) {
+export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAccept, onReset }) {
   const [showEnvelope, setShowEnvelope] = useState(false);
   const [typedText, setTypedText] = useState('');
   const fullText = "நீ எப்போ இதை ஓபன் பண்ணுவனு எனக்குத் தெரியல... ஆனா உன்கிட்ட பேசணும்னு தோணினப்போ இது உருவானது...";
@@ -19,6 +22,49 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings }) {
     }, 45);
     return () => clearInterval(timer);
   }, []);
+
+  const handleFeelingsClick = () => {
+    // 1. Trigger celebratory confetti blast
+    confetti({
+      particleCount: 75,
+      spread: 100,
+      origin: { y: 0.6 },
+      colors: ['#ff1493', '#ff69b4', '#ffd700', '#ff0055', '#a855f7'],
+    });
+
+    // 2. Trigger email notification via existing EmailJS
+    sendEmail({
+      title: 'Saranya Clicked: Feelings ❤️',
+      message: 'Saranya unlocked the passcode "saranya" and accepted the emotional question by clicking: "Feelings ❤️"!',
+    }).catch((err) => {
+      console.warn('EmailJS notification error:', err);
+    });
+
+    // 3. Reveal the interactive envelope and floating neon hearts celebration component
+    setShowEnvelope(true);
+  };
+
+  const handleNoFeelingsClick = () => {
+    const callback = onNoFeelings || onReset;
+    if (typeof callback === 'function') {
+      callback();
+    }
+  };
+
+  // When 'Feelings' is clicked, render CelebrationReveal with the interactive envelope & floating neon hearts
+  if (showEnvelope) {
+    return (
+      <CelebrationReveal
+        onComplete={() => {
+          const callback = onFeelings || onAccept;
+          if (typeof callback === 'function') {
+            callback();
+          }
+        }}
+        isFeelings={true}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#030712] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden select-none">
@@ -54,8 +100,8 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings }) {
 
           {/* Feelings Button with Advanced Floating Neon Celebration Trigger */}
           <button
-            onClick={onFeelings}
-            className="flex-1 group relative overflow-hidden bg-gradient-to-r from-pink-600 via-rose-500 to-pink-500 hover:from-pink-500 hover:to-rose-600 text-white font-bold py-4 px-8 rounded-2xl shadow-[0_0_30px_rgba(244,63,94,0.5)] hover:shadow-[0_0_40px_rgba(244,63,94,0.8)] transition-all duration-300 transform hover:-translate-y-1 active:translate-y-0 border border-pink-400/40"
+            onClick={handleFeelingsClick}
+            className="flex-1 group relative overflow-hidden bg-gradient-to-r from-pink-600 via-rose-500 to-pink-500 hover:from-pink-500 hover:to-rose-600 text-white font-bold py-4 px-8 rounded-2xl shadow-[0_0_30px_rgba(244,63,94,0.5)] hover:shadow-[0_0_40px_rgba(244,63,94,0.8)] transition-all duration-300 transform hover:-translate-y-1 active:translate-y-0 border border-pink-400/40 cursor-pointer"
           >
             <span className="relative z-10 flex items-center justify-center gap-2 text-lg tracking-wider">
               Feelings ❤️
@@ -65,8 +111,8 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings }) {
 
           {/* No Feelings Button */}
           <button
-            onClick={onNoFeelings}
-            className="flex-1 group bg-slate-950/80 hover:bg-slate-900 text-slate-300 hover:text-white font-semibold py-4 px-8 rounded-2xl border border-slate-700/80 hover:border-slate-500 transition-all duration-300 shadow-lg transform hover:-translate-y-0.5"
+            onClick={handleNoFeelingsClick}
+            className="flex-1 group bg-slate-950/80 hover:bg-slate-900 text-slate-300 hover:text-white font-semibold py-4 px-8 rounded-2xl border border-slate-700/80 hover:border-slate-500 transition-all duration-300 shadow-lg transform hover:-translate-y-0.5 cursor-pointer"
           >
             <span className="flex items-center justify-center gap-2 text-lg tracking-wider">
               No Feelings 🍃
@@ -77,4 +123,4 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings }) {
       </div>
     </div>
   );
-}  
+}

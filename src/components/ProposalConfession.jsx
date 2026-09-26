@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useSound } from '../context/SoundContext';
 
-import photoHeart from '../assets/mem-02.jpg';
-
-export default function ProposalConfession({ onNext, onAccept }) {
+export default function ProposalConfession({ onNext, onAccept, onReject }) {
   const { playCelebrationTrack } = useSound();
   const [noPosition, setNoPosition] = useState({ x: 0, y: 0 });
 
@@ -19,136 +16,83 @@ export default function ProposalConfession({ onNext, onAccept }) {
     }
   };
 
-  // Function to move the "No" button randomly when hovered or touched
+  // Playfully dodge the "No" button when hovered or touched
   const moveNoButton = () => {
-    const randomX = (Math.random() - 0.5) * 200; // Random X offset
-    const randomY = (Math.random() - 0.5) * 150; // Random Y offset
+    const randomX = (Math.random() - 0.5) * 220;
+    const randomY = (Math.random() - 0.5) * 160;
     setNoPosition({ x: randomX, y: randomY });
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-4 bg-black text-center select-none overflow-hidden z-30">
+    <div className="fixed inset-0 z-50 min-h-screen w-full bg-[#030712] flex flex-col items-center justify-end pb-12 md:pb-16 select-none overflow-hidden">
       
-      {/* Responsive SVG ClipPath Definition for Heart Shape */}
-      <svg width="0" height="0" className="absolute">
-        <defs>
-          <clipPath id="heart-clip" clipPathUnits="objectBoundingBox">
-            <path d="M 0.5, 0.28 C 0.5, 0.28, 0.62, 0.05, 0.81, 0.05 C 0.93, 0.05, 1, 0.18, 1, 0.33 C 1, 0.55, 0.78, 0.78, 0.5, 0.95 C 0.22, 0.78, 0, 0.55, 0, 0.33 C 0, 0.18, 0.07, 0.05, 0.19, 0.05 C 0.38, 0.05, 0.5, 0.28, 0.5, 0.28 Z" />
-          </clipPath>
-        </defs>
-      </svg>
-
-      {/* CINEMATIC GLOW BACKGROUND */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <motion.div
-          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
-          transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-          className="w-[400px] h-[400px] sm:w-[650px] sm:h-[650px] rounded-full bg-gradient-to-tr from-rose-600/30 via-pink-500/20 to-amber-400/20 blur-[140px]"
+      {/* 1. Deep-blurred Ambient Background to Fill Entire Screen */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <img
+          src="/as.jpg"
+          alt="Ambient Background"
+          className="w-full h-full object-cover filter blur-2xl scale-125 opacity-35"
         />
+        <div className="absolute inset-0 bg-[#030712]/50"></div>
       </div>
 
-      {/* MAIN CONTAINER */}
-      <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center text-center px-4 py-2 relative z-25">
+      {/* 2. Uncropped, Perfectly Framed Center Photo (Faces Fully Visible) */}
+      <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none overflow-hidden">
+        <img
+          src="/as.jpg"
+          alt="Saranya & Abishek"
+          className="h-full w-auto max-w-none md:max-w-4xl object-contain object-top opacity-90 drop-shadow-[0_0_50px_rgba(0,0,0,0.8)]"
+        />
+        {/* Soft bottom vignette to merge seamlessly with text & buttons */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#030712] via-[#030712]/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/40 via-transparent to-transparent"></div>
+      </div>
 
-        {/* CONTAINER WITH GLOWING HEART AURA & CENTERED PHOTO */}
-        <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center my-2">
-          
-          {/* Glowing Animated Outer Heart Ring */}
-          <motion.div
-            animate={{ scale: [1, 1.08, 1], rotate: [0, 3, -3, 0] }}
-            transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-            className="absolute inset-2 rounded-full bg-gradient-to-tr from-rose-600/50 via-pink-500/40 to-amber-400/40 blur-xl pointer-events-none"
-          />
+      {/* 3. Floating Neon Ambient Glow Behind Content */}
+      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-pink-600/25 rounded-full blur-[120px] pointer-events-none z-[1]"></div>
 
-          {/* CENTER PHOTO FRAME WITH HEART SHAPE MASK */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="relative w-44 h-44 sm:w-56 sm:h-56 flex items-center justify-center z-10 shadow-[0_0_60px_rgba(244,63,94,0.9)] border-2 border-rose-400/50"
-            style={{
-              clipPath: "url(#heart-clip)"
-            }}
-          >
-            <img 
-              src={photoHeart} 
-              alt="Our Special Memory" 
-              className="w-full h-full object-cover" 
-            />
-          </motion.div>
-        </div>
+      {/* 4. Proposal Action Container (Placed elegantly at the lower half) */}
+      <div className="relative z-10 max-w-lg w-full flex flex-col items-center space-y-4 px-4 text-center">
+        
+        {/* Golden Romantic Title */}
+        <h1 className="text-4xl md:text-5xl font-serif font-extrabold tracking-wider bg-gradient-to-r from-amber-200 via-rose-300 to-pink-400 bg-clip-text text-transparent drop-shadow-[0_4px_25px_rgba(244,63,94,0.7)] animate-fade-in">
+          I LOVE YOU
+        </h1>
 
-        {/* "I LOVE YOU" TEXT SECTION WITH STAGGERED TIMING */}
-        <div className="flex items-center justify-center gap-3 sm:gap-5 my-2 w-full relative z-30">
-          
-          <motion.span
-            initial={{ opacity: 0, y: 20, scale: 0.5 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-4xl sm:text-6xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_35px_rgba(250,204,21,0.9)]"
-          >
-            I
-          </motion.span>
-
-          <motion.span
-            initial={{ opacity: 0, y: 20, scale: 0.5 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.9 }}
-            className="text-3xl sm:text-5xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-red-600 drop-shadow-[0_0_35px_rgba(244,63,94,0.9)] tracking-widest"
-          >
-            LOVE
-          </motion.span>
-
-          <motion.span
-            initial={{ opacity: 0, y: 20, scale: 0.5 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.6, delay: 1.5 }}
-            className="text-4xl sm:text-6xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-300 to-amber-600 drop-shadow-[0_0_35px_rgba(250,204,21,0.9)]"
-          >
-            YOU
-          </motion.span>
-
-        </div>
-
-        {/* SUBTITLE */}
-        <motion.p
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 2.1 }}
-          className="text-sm sm:text-xl font-serif italic text-rose-100 drop-shadow-[0_0_15px_rgba(244,63,94,0.7)] mb-4 px-4 relative z-30"
-        >
+        {/* Emotional Quote */}
+        <p className="text-slate-100 text-base md:text-lg font-medium italic tracking-wide drop-shadow-md">
           "Saranya, will you be mine forever and ever? 💍✨"
-        </motion.p>
+        </p>
 
-        {/* ACTION BUTTONS (YES + RUNAWAY NO BUTTON) */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 2.5 }}
-          className="flex items-center justify-center gap-4 relative z-30 mt-2"
-        >
-          {/* YES BUTTON */}
+        {/* Buttons */}
+        <div className="flex items-center justify-center gap-4 pt-2">
           <button
             onClick={handleYes}
-            className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-500 to-pink-500 text-zinc-950 font-bold text-sm sm:text-base shadow-[0_0_40px_rgba(251,191,36,0.6)] cursor-pointer transition-transform hover:scale-105"
+            className="px-8 py-3 rounded-full font-bold text-white bg-gradient-to-r from-amber-500 via-pink-600 to-rose-600 hover:opacity-95 shadow-[0_0_30px_rgba(244,63,94,0.5)] transform hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
           >
-            Yes, Forever! 💖✨
+            Yes, Forever! 💍✨
           </button>
 
-          {/* RUNAWAY NO BUTTON */}
-          <motion.button
-            animate={{ x: noPosition.x, y: noPosition.y }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          <button
+            style={{
+              transform: `translate(${noPosition.x}px, ${noPosition.y}px)`,
+              transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            }}
             onMouseEnter={moveNoButton}
             onTouchStart={moveNoButton}
-            onClick={moveNoButton}
-            className="px-6 py-3.5 rounded-2xl bg-zinc-900/80 border border-rose-500/40 text-rose-300 font-semibold text-sm sm:text-base shadow-[0_0_20px_rgba(244,63,94,0.2)] cursor-pointer"
+            onClick={() => {
+              moveNoButton();
+              if (onReject) onReject();
+            }}
+            className="px-6 py-3 rounded-full font-medium text-slate-300 bg-slate-900/70 border border-slate-700 hover:border-pink-500/40 backdrop-blur-md transition-all duration-300 cursor-pointer select-none"
           >
             No 🙈
-          </motion.button>
-        </motion.div>
+          </button>
+        </div>
 
       </div>
     </div>
   );
 }
+
+export { ProposalConfession as ProposalScene };

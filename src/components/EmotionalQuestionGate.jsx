@@ -35,7 +35,7 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
     // 2. Trigger email notification via existing EmailJS
     sendEmail({
       title: 'Saranya Clicked: Feelings ❤️',
-      message: 'Saranya unlocked the passcode "saranya" and accepted the emotional question by clicking: "Feelings ❤️"!',
+      message: 'Saranya unlocked the passcode "SARANYA26" and accepted the emotional question by clicking: "Feelings ❤️"!',
     }).catch((err) => {
       console.warn('EmailJS notification error:', err);
     });

@@ -220,3 +220,38 @@ body {
   50% { transform: scaleY(1.15) translateY(-8px); }
 }
 
+/* Shake animation for incorrect secret code */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+/* Continuous rising floating neon hearts animation */
+@keyframes riseHeart {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.65) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(-55vh) translateX(14px) scale(1) rotate(8deg);
+    opacity: 0.9;
+  }
+  85% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(-120vh) translateX(-14px) scale(1.15) rotate(-8deg);
+    opacity: 0;
+  }
+}
+.animate-rise-heart {
+  animation: riseHeart linear infinite;
+}
+

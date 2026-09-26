@@ -14,6 +14,7 @@ import HeartBurst from './components/HeartBurst';
 import ButterflyExplosion from './components/ButterflyExplosion';
 
 // Journey core components
+import PasscodeGate from './components/PasscodeGate';
 import AdminSecurityGate from './components/AdminSecurityGate';
 import LiveLoveClock from './components/LiveLoveClock';
 import InteractiveLoveLetter from './components/InteractiveLoveLetter';
@@ -51,9 +52,9 @@ function MainApp() {
     return <HeartbeatIntro onUnlock={() => setShowHeartbeat(false)} />;
   }
 
-  // 2. Password Protection Gate (Opens with 'saranya')
+  // 2. Password Protection Gate (Opens with 'SARANYA26')
   if (!isUnlocked) {
-    return <AdminSecurityGate onUnlocked={() => setIsUnlocked(true)} />;
+    return <PasscodeGate onUnlock={() => setIsUnlocked(true)} onUnlocked={() => setIsUnlocked(true)} />;
   }
 
   // 3. Emotional Question Gate (Opens immediately after entering secret code 'saranya')

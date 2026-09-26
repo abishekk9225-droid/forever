@@ -4,10 +4,13 @@ import confetti from 'canvas-confetti';
 import { sendEmail } from '../utils/emailService';
 import CelebrationReveal from './CelebrationReveal';
 import VoiceMessageScene from './VoiceMessageScene';
+import MemoryRoom from './MemoryRoom';
+import OpenWhenLetters from './OpenWhenLetters';
+import ProposalConfession from './ProposalConfession';
 
 export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAccept, onReset, onSelectFeelings }) {
-  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
-  const [showEnvelope, setShowEnvelope] = useState(false);
+  // Flow steps: 'QUESTION' -> 'VOICE' -> 'MEMORY_ROOM' -> 'OPEN_WHEN' -> 'CELEBRATION' -> 'PROPOSAL'
+  const [step, setStep] = useState('QUESTION');
   const [typedText, setTypedText] = useState('');
   const fullText = "நீ எப்போ இதை ஓபன் பண்ணுவனு எனக்குத் தெரியல... ஆனா உன்கிட்ட பேசணும்னு தோணினப்போ இது உருவானது...";
 
@@ -40,11 +43,11 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
       message: 'Saranya unlocked the passcode "SARANYA26" and accepted the emotional question by clicking: "Feelings ❤️"!',
     }).catch(() => {});
 
-    // 3. Transition to Voice Note Recorder screen
+    // 3. Move to Voice Note Recorder screen
     if (typeof onSelectFeelings === 'function') {
       onSelectFeelings();
     } else {
-      setShowVoiceRecorder(true);
+      setStep('VOICE');
     }
   };
 
@@ -55,29 +58,64 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
     }
   };
 
-  // Step 2: Voice Note Recorder
-  if (showVoiceRecorder) {
+  // Step 2: Voice Note Recorder Screen
+  if (step === 'VOICE') {
     return (
       <VoiceMessageScene
         onComplete={() => {
-          setShowVoiceRecorder(false);
-          setShowEnvelope(true);
+          setStep('MEMORY_ROOM');
         }}
       />
     );
   }
 
-  // Step 3: Interactive Envelope & Floating Neon Hearts Celebration Reveal
-  if (showEnvelope) {
+  // Step 3: [NEW] 3D Memory Room (Wall photos + Desk objects)
+  if (step === 'MEMORY_ROOM') {
+    return (
+      <MemoryRoom
+        onProceed={() => {
+          setStep('OPEN_WHEN');
+        }}
+      />
+    );
+  }
+
+  // Step 4: [NEW] Open When Letters (Sealed letters + Secret Letter)
+  if (step === 'OPEN_WHEN') {
+    return (
+      <OpenWhenLetters
+        onComplete={() => {
+          setStep('CELEBRATION');
+        }}
+      />
+    );
+  }
+
+  // Step 5: Celebration Reveal (The special envelope message)
+  if (step === 'CELEBRATION') {
     return (
       <CelebrationReveal
         onComplete={() => {
+          setStep('PROPOSAL');
+        }}
+        isFeelings={true}
+      />
+    );
+  }
+
+  // Step 6: "I LOVE YOU" Proposal Screen (ProposalConfession.jsx)
+  if (step === 'PROPOSAL') {
+    return (
+      <ProposalConfession
+        onAccept={() => {
+          if (typeof window.triggerClimaxAudio === 'function') {
+            window.triggerClimaxAudio();
+          }
           const callback = onFeelings || onAccept;
           if (typeof callback === 'function') {
             callback();
           }
         }}
-        isFeelings={true}
       />
     );
   }

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { memoriesData, deskObjects } from '../data/memories';
-import { Sparkles, ArrowRight, X, Volume2, VolumeX } from 'lucide-react';
+import { Sparkles, ArrowRight, X, Volume2, VolumeX, Lock, Unlock } from 'lucide-react';
 
 export default function MemoryRoom({ onProceed }) {
+  const [unlockedDoors, setUnlockedDoors] = useState([]);
   const [selectedMemory, setSelectedMemory] = useState(null);
   const [selectedDeskItem, setSelectedDeskItem] = useState(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
+  const [butterflies, setButterflies] = useState([]);
   const audioRef = useRef(null);
 
   useEffect(() => {
@@ -27,7 +29,10 @@ export default function MemoryRoom({ onProceed }) {
   }, []);
 
   const toggleAudio = () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current) {
+      setAudioPlaying(!audioPlaying);
+      return;
+    }
     if (audioPlaying) {
       audioRef.current.pause();
       setAudioPlaying(false);
@@ -35,8 +40,42 @@ export default function MemoryRoom({ onProceed }) {
       audioRef.current.play().then(() => {
         setAudioPlaying(true);
       }).catch((e) => {
-        console.warn('Audio playback error:', e);
+        console.warn('Playback error:', e);
+        setAudioPlaying(true);
       });
+    }
+  };
+
+  // Trigger Flying Butterflies from Click Position
+  const triggerButterflies = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const originX = rect.left + rect.width / 2;
+    const originY = rect.top + rect.height / 2;
+
+    const newButterflies = Array.from({ length: 14 }).map((_, i) => ({
+      id: Date.now() + i,
+      x: originX,
+      y: originY,
+      targetX: originX + (Math.random() - 0.5) * 600,
+      targetY: originY - Math.random() * 500 - 100,
+      size: Math.random() * 1.2 + 1.2,
+      duration: Math.random() * 1.5 + 1.8,
+    }));
+
+    setButterflies((prev) => [...prev, ...newButterflies]);
+    setTimeout(() => {
+      setButterflies((prev) => prev.filter((b) => !newButterflies.find((nb) => nb.id === b.id)));
+    }, 3000);
+  };
+
+  const handleFrameClick = (e, item) => {
+    if (!unlockedDoors.includes(item.id)) {
+      // First click: Open Door
+      setUnlockedDoors((prev) => [...prev, item.id]);
+    } else {
+      // Already open: Spawn butterflies & open kavithai modal
+      triggerButterflies(e);
+      setSelectedMemory(item);
     }
   };
 
@@ -54,28 +93,48 @@ export default function MemoryRoom({ onProceed }) {
   return (
     <div className="min-h-screen w-full bg-[#030712] text-slate-100 flex flex-col justify-between p-6 md:p-10 relative overflow-hidden select-none animate-in fade-in duration-700">
       
-      {/* Cinematic Ambient Lighting */}
-      <div className="absolute top-10 left-1/4 w-[500px] h-[500px] bg-pink-900/10 rounded-full blur-[160px] pointer-events-none"></div>
-      <div className="absolute bottom-10 right-1/4 w-[500px] h-[500px] bg-rose-900/10 rounded-full blur-[160px] pointer-events-none"></div>
-
-      {/* Floating Dust Particles */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        {[...Array(25)].map((_, i) => (
+      {/* 1. Continuous Rising Neon Hearts (Just like Celebration Scene) */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        {[...Array(40)].map((_, i) => (
           <div
             key={i}
-            className="absolute rounded-full bg-pink-300/30 blur-[0.5px] animate-pulse"
+            className="absolute text-pink-500/80 animate-rise-heart drop-shadow-[0_0_10px_rgba(244,63,94,0.8)]"
             style={{
-              top: `${(i * 17 + 5) % 96}%`,
-              left: `${(i * 23 + 9) % 96}%`,
-              width: `${(i % 3) + 1.5}px`,
-              height: `${(i % 3) + 1.5}px`,
-              animationDuration: `${(i % 4) + 3}s`,
+              left: `${(i * 2.5) % 96}%`,
+              bottom: '-40px',
+              fontSize: `${(i % 3) * 0.4 + 1.2}rem`,
+              animationDuration: `${(i % 4) + 4}s`,
+              animationDelay: `${(i % 6) * 0.8}s`,
             }}
-          />
+          >
+            ❤️
+          </div>
         ))}
       </div>
 
-      {/* Top Header & Ambient Audio Toggle */}
+      {/* 2. Flying Butterflies Layer */}
+      <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+        {butterflies.map((b) => (
+          <div
+            key={b.id}
+            className="absolute transition-all ease-out animate-butterfly-flight"
+            style={{
+              left: `${b.x}px`,
+              top: `${b.y}px`,
+              '--dx': `${b.targetX - b.x}px`,
+              '--dy': `${b.targetY - b.y}px`,
+              '--s': b.size,
+              animationDuration: `${b.duration}s`,
+            }}
+          >
+            <span className="inline-block animate-bounce drop-shadow-[0_0_12px_rgba(244,63,94,0.9)]">
+              🦋
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Header */}
       <header className="relative z-10 flex items-center justify-between border-b border-pink-500/20 pb-4">
         <div>
           <span className="text-pink-400 text-xs font-semibold tracking-widest uppercase flex items-center gap-1.5">
@@ -93,34 +152,60 @@ export default function MemoryRoom({ onProceed }) {
         </button>
       </header>
 
-      {/* Main 3D Memory Wall (Frames with Metallic Finish & Glow) */}
+      {/* Main Memory Wall with Mystery Doors */}
       <main className="relative z-10 py-8 flex-1 flex flex-col justify-center">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-          {memoriesData.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => setSelectedMemory(item)}
-              className="group cursor-pointer rounded-2xl p-2 bg-gradient-to-b from-slate-800/60 to-slate-900/90 border border-slate-700/60 hover:border-pink-500/80 shadow-lg hover:shadow-[0_0_35px_rgba(244,63,94,0.4)] transition-all duration-500 transform hover:-translate-y-2 hover:rotate-1"
-            >
-              <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-slate-950">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-40 transition-opacity"></div>
-                <span className="absolute bottom-2 left-2 text-[10px] tracking-wider text-pink-300 font-semibold px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm">
-                  {item.tag}
-                </span>
+          {memoriesData.map((item) => {
+            const isOpen = unlockedDoors.includes(item.id);
+
+            return (
+              <div
+                key={item.id}
+                onClick={(e) => handleFrameClick(e, item)}
+                className="group cursor-pointer rounded-2xl p-2 bg-gradient-to-b from-slate-800/60 to-slate-900/90 border border-slate-700/60 hover:border-pink-500/80 shadow-lg hover:shadow-[0_0_35px_rgba(244,63,94,0.4)] transition-all duration-500 transform hover:-translate-y-2 relative"
+              >
+                <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center">
+                  
+                  {/* Photo Layer */}
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className={`w-full h-full object-cover object-center transition-all duration-1000 ${
+                      isOpen ? 'scale-100 opacity-100' : 'scale-90 opacity-0 pointer-events-none'
+                    }`}
+                  />
+
+                  {/* Mystery Door Layer (Closed State) */}
+                  {!isOpen && (
+                    <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-rose-950/40 to-slate-950 flex flex-col items-center justify-center p-4 text-center z-10 transition-all duration-700 border border-pink-500/30 rounded-xl group-hover:border-pink-500/70">
+                      <div className="w-12 h-12 rounded-full bg-pink-500/20 border border-pink-500/40 flex items-center justify-center text-pink-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(244,63,94,0.4)]">
+                        <Lock className="w-5 h-5 text-pink-300" />
+                      </div>
+                      <span className="text-[11px] font-semibold text-pink-200 mt-3 uppercase tracking-wider">
+                        Tap to Unlock
+                      </span>
+                    </div>
+                  )}
+
+                  {isOpen && (
+                    <>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-40 transition-opacity"></div>
+                      <span className="absolute bottom-2 left-2 text-[10px] tracking-wider text-pink-300 font-semibold px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm">
+                        {item.tag}
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                <p className="text-center text-xs font-medium text-slate-300 mt-2 truncate group-hover:text-pink-300">
+                  {isOpen ? item.title : `Door ${item.id}`}
+                </p>
               </div>
-              <p className="text-center text-xs font-medium text-slate-300 mt-2 truncate group-hover:text-pink-300">
-                {item.title}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Vintage Desk / Table Objects */}
+        {/* Vintage Desk Keepsakes */}
         <div className="mt-8 p-4 rounded-3xl bg-slate-950/60 border border-pink-500/20 backdrop-blur-xl flex flex-wrap items-center justify-around gap-4">
           <span className="text-xs uppercase tracking-widest text-slate-400 font-semibold">The Desk of Keepsakes:</span>
           {deskObjects.map((obj) => (
@@ -146,7 +231,7 @@ export default function MemoryRoom({ onProceed }) {
         </button>
       </footer>
 
-      {/* Modal 1: Enlarged Photo Wall Zoom with Emotional Kavithai */}
+      {/* Modal: Zoomed Photo with Kavithai */}
       {selectedMemory && (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-slate-900/95 border border-pink-500/50 rounded-3xl p-6 shadow-[0_0_50px_rgba(244,63,94,0.4)] relative animate-in fade-in zoom-in-95 duration-300 space-y-4">
@@ -179,7 +264,7 @@ export default function MemoryRoom({ onProceed }) {
         </div>
       )}
 
-      {/* Modal 2: Desk Keepsake Object Details */}
+      {/* Modal: Desk Object */}
       {selectedDeskItem && (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
           <div className="max-w-sm w-full bg-slate-900/95 border border-pink-500/40 rounded-3xl p-6 shadow-[0_0_40px_rgba(244,63,94,0.3)] relative text-center space-y-4">

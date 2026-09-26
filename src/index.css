@@ -255,3 +255,84 @@ body {
   animation: riseHeart linear infinite;
 }
 
+/* Ken Burns Slow Zoom */
+@keyframes slowZoom {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.08);
+  }
+}
+
+.animate-slow-zoom {
+  animation: slowZoom 14s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Pulsing Vignette Heartbeat */
+@keyframes vignettePulse {
+  0%, 100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+.animate-vignette-pulse {
+  animation: vignettePulse 3s ease-in-out infinite;
+}
+
+/* Massive Rising Hearts */
+@keyframes riseHeartExplosion {
+  0% {
+    transform: translateY(110vh) scale(0.4) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  85% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-20vh) scale(1.2) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-heart-rise {
+  animation: riseHeartExplosion linear forwards;
+}
+
+/* Radial Background utility */
+.bg-radial {
+  background-image: radial-gradient(circle at center, var(--tw-gradient-stops));
+}
+
+/* Vivid Bloom & Darkness Fade-in Animations */
+@keyframes fadeInZoom95 {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+    filter: brightness(0.4) blur(6px);
+  }
+  50% {
+    filter: brightness(1.15) blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1) blur(0px);
+  }
+}
+
+.animate-in.fade-in.zoom-in-95,
+.animate-vivid-bloom {
+  animation: fadeInZoom95 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.duration-1000 {
+  animation-duration: 1000ms;
+}
+

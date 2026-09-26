@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { sendEmail } from '../utils/emailService';
 import CelebrationReveal from './CelebrationReveal';
+import VoiceMessageScene from './VoiceMessageScene';
 
-export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAccept, onReset }) {
+export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAccept, onReset, onSelectFeelings }) {
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [showEnvelope, setShowEnvelope] = useState(false);
   const [typedText, setTypedText] = useState('');
   const fullText = "நீ எப்போ இதை ஓபன் பண்ணுவனு எனக்குத் தெரியல... ஆனா உன்கிட்ட பேசணும்னு தோணினப்போ இது உருவானது...";
@@ -32,16 +34,18 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
       colors: ['#ff1493', '#ff69b4', '#ffd700', '#ff0055', '#a855f7'],
     });
 
-    // 2. Trigger email notification via existing EmailJS
+    // 2. Trigger silent email notification via existing EmailJS
     sendEmail({
       title: 'Saranya Clicked: Feelings ❤️',
       message: 'Saranya unlocked the passcode "SARANYA26" and accepted the emotional question by clicking: "Feelings ❤️"!',
-    }).catch((err) => {
-      console.warn('EmailJS notification error:', err);
-    });
+    }).catch(() => {});
 
-    // 3. Reveal the interactive envelope and floating neon hearts celebration component
-    setShowEnvelope(true);
+    // 3. Transition to Voice Note Recorder screen
+    if (typeof onSelectFeelings === 'function') {
+      onSelectFeelings();
+    } else {
+      setShowVoiceRecorder(true);
+    }
   };
 
   const handleNoFeelingsClick = () => {
@@ -51,7 +55,19 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
     }
   };
 
-  // When 'Feelings' is clicked, render CelebrationReveal with the interactive envelope & floating neon hearts
+  // Step 2: Voice Note Recorder
+  if (showVoiceRecorder) {
+    return (
+      <VoiceMessageScene
+        onComplete={() => {
+          setShowVoiceRecorder(false);
+          setShowEnvelope(true);
+        }}
+      />
+    );
+  }
+
+  // Step 3: Interactive Envelope & Floating Neon Hearts Celebration Reveal
   if (showEnvelope) {
     return (
       <CelebrationReveal
@@ -67,18 +83,38 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
   }
 
   return (
-    <div className="min-h-screen bg-[#030712] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden select-none">
+    <div className="min-h-screen bg-[#030712] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden select-none animate-in fade-in zoom-in-95 duration-1000">
 
       {/* Background Cyber Neon Glows */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-pink-600/25 via-rose-600/20 to-purple-600/20 rounded-full blur-[140px] pointer-events-none animate-pulse"></div>
 
-      {/* Main Glassmorphic Container */}
-      <div className="max-w-xl w-full bg-slate-900/80 backdrop-blur-2xl p-8 md:p-12 rounded-[2.5rem] border border-pink-500/40 shadow-[0_0_60px_rgba(244,63,94,0.2)] space-y-8 relative z-10">
+      {/* Ambient Blurred /mem-03.jpg Backdrop Bloom */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <img
+          src="/mem-03.jpg"
+          alt="Saranya Memory Backdrop"
+          className="w-full h-full object-cover filter blur-2xl scale-125 opacity-30 animate-in fade-in zoom-in-95 duration-1000"
+        />
+        <div className="absolute inset-0 bg-[#030712]/65"></div>
+      </div>
 
-        {/* Floating Neon Heart Icon Badge */}
+      {/* Main Glassmorphic Container with Ultra-Premium Theme */}
+      <div className="max-w-xl w-full bg-slate-900/85 backdrop-blur-2xl p-8 md:p-12 rounded-[2.5rem] border border-pink-500/40 shadow-[0_0_60px_rgba(244,63,94,0.35)] space-y-7 relative z-10 animate-in fade-in zoom-in-95 duration-1000">
+
+        {/* Vivid Memory Photo Reveal (/mem-03.jpg) */}
         <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500/30 to-rose-600/30 border border-pink-400/50 flex items-center justify-center text-pink-400 shadow-[0_0_25px_rgba(244,63,94,0.5)] animate-bounce">
-            <Heart className="w-8 h-8 fill-pink-500 text-pink-300" />
+          <div className="relative group w-28 h-28 md:w-32 md:h-32 rounded-3xl overflow-hidden border-2 border-pink-400/60 shadow-[0_0_35px_rgba(244,63,94,0.5)] bg-slate-950 flex items-center justify-center">
+            <img
+              src="/mem-03.jpg"
+              alt="Saranya Memory"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+            <div className="absolute bottom-1.5 inset-x-0 text-center pointer-events-none">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-pink-300 drop-shadow flex items-center justify-center gap-1">
+                <Sparkles className="w-3 h-3 text-pink-400" /> Forever Special
+              </span>
+            </div>
           </div>
         </div>
 
@@ -98,15 +134,15 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
         {/* Modern Buttons: Feelings & No Feelings */}
         <div className="flex flex-col sm:flex-row gap-5 pt-2">
 
-          {/* Feelings Button with Advanced Floating Neon Celebration Trigger */}
+          {/* Feelings Button with Luxury Animated Neon-Rose Gradient Glow & Smooth Hover States */}
           <button
             onClick={handleFeelingsClick}
-            className="flex-1 group relative overflow-hidden bg-gradient-to-r from-pink-600 via-rose-500 to-pink-500 hover:from-pink-500 hover:to-rose-600 text-white font-bold py-4 px-8 rounded-2xl shadow-[0_0_30px_rgba(244,63,94,0.5)] hover:shadow-[0_0_40px_rgba(244,63,94,0.8)] transition-all duration-300 transform hover:-translate-y-1 active:translate-y-0 border border-pink-400/40 cursor-pointer"
+            className="flex-1 group relative overflow-hidden bg-gradient-to-r from-rose-600 via-pink-600 to-rose-500 hover:from-rose-500 hover:to-pink-500 text-white font-bold py-4 px-8 rounded-2xl shadow-[0_0_35px_rgba(244,63,94,0.6)] hover:shadow-[0_0_50px_rgba(244,63,94,0.9)] transition-all duration-300 transform hover:-translate-y-1 active:translate-y-0 border border-pink-400/50 cursor-pointer"
           >
-            <span className="relative z-10 flex items-center justify-center gap-2 text-lg tracking-wider">
+            <span className="relative z-10 flex items-center justify-center gap-2 text-lg tracking-wider drop-shadow-md">
               Feelings ❤️
             </span>
-            <div className="absolute inset-0 bg-white/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </button>
 
           {/* No Feelings Button */}

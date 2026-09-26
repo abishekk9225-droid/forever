@@ -5,18 +5,42 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   const [passcode, setPasscode] = useState('');
   const [error, setError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isBlackout, setIsBlackout] = useState(false);
+
+  const playHeartbeatAudio = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(60, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.4);
+      gain.gain.setValueAtTime(0.8, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.5);
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (passcode.trim().toUpperCase() === 'SARANYA26') {
       setError(false);
+      setIsBlackout(true);
+      playHeartbeatAudio();
       if (typeof window.unlockAudio === 'function') {
         window.unlockAudio();
       }
-      const callback = onUnlock || onUnlocked;
-      if (typeof callback === 'function') {
-        callback();
-      }
+      setTimeout(() => {
+        const callback = onUnlock || onUnlocked;
+        if (typeof callback === 'function') {
+          callback(); // அடுத்த ஸ்கிரீனில் /mem-03.jpg தோன்றும்
+        }
+      }, 1200);
     } else {
       setError(true);
     }
@@ -116,6 +140,13 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
           </div>
         </div>
       </div>
+
+      {/* Return-ல் இந்த முழு பிளாக்அவுட் லேயரைச் சேர்க்கவும்: */}
+      {isBlackout && (
+        <div className="fixed inset-0 bg-black z-50 transition-opacity duration-700 pointer-events-none flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-pink-500/30 blur-xl animate-ping"></div>
+        </div>
+      )}
     </div>
   );
 }

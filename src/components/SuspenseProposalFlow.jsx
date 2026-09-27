@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Gift, Heart, Sparkles, AlertCircle, Eye } from 'lucide-react';
+import { Gift, AlertCircle, Eye } from 'lucide-react';
 import ProposalConfession from './ProposalConfession';
+import SecretGiftCinematicScene from './SecretGiftCinematicScene';
 import { sendEmail } from '../utils/emailService';
 
 const ADMIN_PHONE = '6380404055';
@@ -50,7 +51,7 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
           numbers: ADMIN_PHONE,
         }),
       });
-    } catch (e) {}
+    } catch {}
 
     // 4. EmailJS notification to Gmail
     try {
@@ -150,26 +151,9 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
                 <p className="text-xs text-rose-300/70">Unakkaga oru chinna message ulla irukku...</p>
               </div>
             ) : (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.85, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="space-y-6"
-              >
-                <div className="p-6 rounded-2xl bg-white/[0.05] border border-rose-400/30 shadow-inner">
-                  <span className="text-4xl block mb-2">😜😂</span>
-                  <h4 className="text-2xl font-serif text-white mb-2">"Onnum illa..."</h4>
-                  <p className="text-rose-200/80 text-xs italic">
-                    Chumma oru prank! Original surprise adutha page-la irukku... 🙈❤️
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => setSubStage('TEASER')}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:from-rose-600 text-white font-medium text-sm tracking-wider shadow-lg hover:scale-102 transition cursor-pointer"
-                >
-                  Aii summa... 😆❤️
-                </button>
-              </motion.div>
+              <SecretGiftCinematicScene
+                onComplete={() => setSubStage('TEASER')}
+              />
             )}
           </motion.div>
         )}

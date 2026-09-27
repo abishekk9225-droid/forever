@@ -133,6 +133,118 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
           50% { opacity: 0.6; }
           100% { opacity: 0; transform: scale(1.35); }
         }
+        @keyframes rgbRotate {
+          0% { transform: translate(-50%, -50%) rotate(0deg); }
+          100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes rgbBreathe {
+          0%, 100% {
+            opacity: 0.45;
+            transform: scale(0.99);
+          }
+          50% {
+            opacity: 0.75;
+            transform: scale(1.02);
+          }
+        }
+        @keyframes rgbSweepFlash {
+          0% { filter: brightness(1) drop-shadow(0 0 8px rgba(244,63,94,0.5)); }
+          40% { filter: brightness(2.2) drop-shadow(0 0 35px rgba(255,255,255,0.9)); }
+          100% { filter: brightness(1) drop-shadow(0 0 8px rgba(244,63,94,0.5)); }
+        }
+
+        .rgb-conic-spinner {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: max(300%, 160vh);
+          height: max(300%, 160vh);
+          background: conic-gradient(
+            from 0deg,
+            #f43f5e,
+            #d946ef,
+            #a855f7,
+            #6366f1,
+            #06b6d4,
+            #f43f5e
+          );
+          transform-origin: center center;
+          will-change: transform;
+          pointer-events: none;
+        }
+
+        .rgb-spinner-left {
+          animation: rgbRotate 8s linear infinite;
+        }
+
+        .rgb-spinner-right {
+          animation: rgbRotate 8s linear infinite -2.5s;
+        }
+
+        /* Layer 2: Wide Ambient Aura */
+        .rgb-aura-container {
+          position: absolute;
+          inset: -14px;
+          border-radius: 2.25rem;
+          overflow: hidden;
+          filter: blur(28px);
+          opacity: 0.45;
+          z-index: 0;
+          animation: rgbBreathe 3.5s ease-in-out infinite;
+          transition: opacity 0.5s ease, filter 0.5s ease;
+          will-change: opacity, transform;
+        }
+
+        .rgb-aura-right {
+          animation-delay: -1.75s;
+        }
+
+        /* Hover states */
+        .group:hover .rgb-aura-container {
+          opacity: 0.85;
+          filter: blur(34px);
+        }
+
+        .group:hover .rgb-border-wrapper {
+          filter: drop-shadow(0 0 12px rgba(244,63,94,0.75)) drop-shadow(0 0 24px rgba(99,102,241,0.5));
+        }
+
+        /* Typing passcode state */
+        .rgb-aura-typing {
+          opacity: 0.75 !important;
+          filter: blur(32px) !important;
+        }
+
+        /* Unlocking state */
+        .rgb-aura-unlocking {
+          opacity: 0.95 !important;
+          filter: blur(36px) !important;
+        }
+
+        /* Sweep Stage Flash */
+        .rgb-sweep-flash {
+          animation: rgbSweepFlash 0.8s ease-in-out forwards !important;
+        }
+
+        /* Layer 1 + 2.5px LED Border Card */
+        .rgb-border-wrapper {
+          border-radius: 1.5rem;
+          padding: 2.5px;
+          overflow: hidden;
+          position: relative;
+          z-index: 1;
+          filter: drop-shadow(0 0 8px rgba(244,63,94,0.5)) drop-shadow(0 0 16px rgba(168,85,247,0.35));
+          transition: filter 0.5s ease, opacity 0.7s ease;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .rgb-conic-spinner {
+            animation: none !important;
+          }
+          .rgb-aura-container {
+            animation: none !important;
+          }
+        }
       `}</style>
 
       {/* Background Atmosphere: Deep navy/black ambient glow & soft rose radial spots */}
@@ -170,34 +282,57 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
       </div>
 
       <div className="w-full h-full flex items-center justify-between gap-4 md:gap-6 lg:gap-8 max-w-[1920px] mx-auto z-10">
-        {/* Left Side Dynamic Full Photo (/sa.jpg) */}
+        {/* Left Side Dynamic Full Photo (/sa.jpg) with RGB Lighting */}
         <div
-          className={`hidden md:flex flex-1 h-[88vh] rounded-3xl overflow-hidden border-2 border-pink-500/50 shadow-[0_0_40px_rgba(244,63,94,0.35)] backdrop-blur-md relative group transition-all duration-500 animate-fade-in ${
-            isUnlocking ? 'shadow-[0_0_55px_rgba(244,63,94,0.55)] border-pink-400/70' : ''
+          className={`hidden md:flex flex-1 h-[88vh] relative group animate-fade-in transition-opacity duration-700 ${
+            stage === 'BLACKOUT' ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         >
-          <img
-            src="/sa.jpg"
-            alt="Saranya"
-            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/20 via-transparent to-slate-950/80 pointer-events-none"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/30 pointer-events-none"></div>
+          {/* Layer 2: Wide Ambient Neon Aura (28px - 34px blur, breathing pulse) */}
+          <div
+            className={`rgb-aura-container rgb-aura-left pointer-events-none ${
+              passcode.length > 0 ? 'rgb-aura-typing' : ''
+            } ${isUnlocking ? 'rgb-aura-unlocking' : ''} ${
+              stage === 'SWEEP' ? 'rgb-sweep-flash' : ''
+            }`}
+          >
+            <div className="rgb-conic-spinner rgb-spinner-left" />
+          </div>
 
-          {/* Cinematic Light Sweep Overlay during unlock */}
-          {(stage === 'SWEEP' || stage === 'BLACKOUT') && (
-            <div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none z-10"
-              style={{
-                animation: 'photoSweep 0.8s ease-in-out forwards',
-              }}
-            />
-          )}
+          {/* Layer 1: 2.5px Animated RGB Conic Border Container */}
+          <div
+            className={`rgb-border-wrapper rgb-border-left w-full h-full relative ${
+              stage === 'SWEEP' ? 'rgb-sweep-flash' : ''
+            }`}
+          >
+            <div className="rgb-conic-spinner rgb-spinner-left" />
 
-          <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-slate-950/60 backdrop-blur-md border border-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-            <p className="text-pink-300 text-xs font-medium tracking-wider uppercase text-center flex items-center justify-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" /> Forever In My Eyes
-            </p>
+            {/* Original Photo Container - 100% untouched dimensions & contents */}
+            <div className="w-full h-full rounded-[calc(1.5rem-2.5px)] overflow-hidden relative z-10 bg-slate-950 backdrop-blur-md">
+              <img
+                src="/sa.jpg"
+                alt="Saranya"
+                className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-slate-950/20 via-transparent to-slate-950/80 pointer-events-none"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/30 pointer-events-none"></div>
+
+              {/* Cinematic Light Sweep Overlay during unlock */}
+              {(stage === 'SWEEP' || stage === 'BLACKOUT') && (
+                <div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none z-10"
+                  style={{
+                    animation: 'photoSweep 0.8s ease-in-out forwards',
+                  }}
+                />
+              )}
+
+              <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-slate-950/60 backdrop-blur-md border border-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                <p className="text-pink-300 text-xs font-medium tracking-wider uppercase text-center flex items-center justify-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" /> Forever In My Eyes
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -296,34 +431,57 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
           </form>
         </div>
 
-        {/* Right Side Dynamic Full Photo (/sk.jpg) */}
+        {/* Right Side Dynamic Full Photo (/sk.jpg) with RGB Lighting */}
         <div
-          className={`hidden md:flex flex-1 h-[88vh] rounded-3xl overflow-hidden border-2 border-pink-500/50 shadow-[0_0_40px_rgba(244,63,94,0.35)] backdrop-blur-md relative group transition-all duration-500 animate-fade-in ${
-            isUnlocking ? 'shadow-[0_0_55px_rgba(244,63,94,0.55)] border-pink-400/70' : ''
+          className={`hidden md:flex flex-1 h-[88vh] relative group animate-fade-in transition-opacity duration-700 ${
+            stage === 'BLACKOUT' ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         >
-          <img
-            src="/sk.jpg"
-            alt="Saranya & Abishek"
-            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
-          />
-          <div className="absolute inset-0 bg-gradient-to-l from-slate-950/20 via-transparent to-slate-950/80 pointer-events-none"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/30 pointer-events-none"></div>
+          {/* Layer 2: Wide Ambient Neon Aura (28px - 34px blur, breathing pulse) */}
+          <div
+            className={`rgb-aura-container rgb-aura-right pointer-events-none ${
+              passcode.length > 0 ? 'rgb-aura-typing' : ''
+            } ${isUnlocking ? 'rgb-aura-unlocking' : ''} ${
+              stage === 'SWEEP' ? 'rgb-sweep-flash' : ''
+            }`}
+          >
+            <div className="rgb-conic-spinner rgb-spinner-right" />
+          </div>
 
-          {/* Cinematic Light Sweep Overlay during unlock */}
-          {(stage === 'SWEEP' || stage === 'BLACKOUT') && (
-            <div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none z-10"
-              style={{
-                animation: 'photoSweep 0.8s ease-in-out forwards',
-              }}
-            />
-          )}
+          {/* Layer 1: 2.5px Animated RGB Conic Border Container */}
+          <div
+            className={`rgb-border-wrapper rgb-border-right w-full h-full relative ${
+              stage === 'SWEEP' ? 'rgb-sweep-flash' : ''
+            }`}
+          >
+            <div className="rgb-conic-spinner rgb-spinner-right" />
 
-          <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-slate-950/60 backdrop-blur-md border border-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-            <p className="text-pink-300 text-xs font-medium tracking-wider uppercase text-center flex items-center justify-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" /> Always In My Heart
-            </p>
+            {/* Original Photo Container - 100% untouched dimensions & contents */}
+            <div className="w-full h-full rounded-[calc(1.5rem-2.5px)] overflow-hidden relative z-10 bg-slate-950 backdrop-blur-md">
+              <img
+                src="/sk.jpg"
+                alt="Saranya & Abishek"
+                className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
+              />
+              <div className="absolute inset-0 bg-gradient-to-l from-slate-950/20 via-transparent to-slate-950/80 pointer-events-none"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/30 pointer-events-none"></div>
+
+              {/* Cinematic Light Sweep Overlay during unlock */}
+              {(stage === 'SWEEP' || stage === 'BLACKOUT') && (
+                <div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none z-10"
+                  style={{
+                    animation: 'photoSweep 0.8s ease-in-out forwards',
+                  }}
+                />
+              )}
+
+              <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-slate-950/60 backdrop-blur-md border border-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                <p className="text-pink-300 text-xs font-medium tracking-wider uppercase text-center flex items-center justify-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" /> Always In My Heart
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

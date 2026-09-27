@@ -3,12 +3,13 @@ import { Heart, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { sendEmail } from '../utils/emailService';
 import CelebrationReveal from './CelebrationReveal';
+import EmotionalSongLyricScene from './EmotionalSongLyricScene';
 import VoiceMessageScene from './VoiceMessageScene';
 import MemoryRoom from './MemoryRoom';
 import OpenWhenLetters from './OpenWhenLetters';
 
 export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAccept, onReset, onSelectFeelings }) {
-  // Flow steps: 'QUESTION' -> 'VOICE' -> 'MEMORY_ROOM' -> 'OPEN_WHEN' -> 'CELEBRATION'
+  // Flow steps: 'QUESTION' -> 'LYRIC_SCENE' -> 'VOICE' -> 'MEMORY_ROOM' -> 'OPEN_WHEN' -> 'CELEBRATION'
   const [step, setStep] = useState('QUESTION');
   const [typedText, setTypedText] = useState('');
   const fullText = "நீ எப்போ இதை ஓபன் பண்ணுவனு எனக்குத் தெரியல... ஆனா உன்கிட்ட பேசணும்னு தோணினப்போ இது உருவானது...";
@@ -42,11 +43,11 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
       message: 'Saranya unlocked the passcode "SARANYA26" and accepted the emotional question by clicking: "Feelings ❤️"!',
     }).catch(() => {});
 
-    // 3. Move to Voice Note Recorder screen
+    // 3. Move to Cinematic Musical Lyric Scene (abi.mp3)
     if (typeof onSelectFeelings === 'function') {
       onSelectFeelings();
     } else {
-      setStep('VOICE');
+      setStep('LYRIC_SCENE');
     }
   };
 
@@ -56,6 +57,17 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
       callback();
     }
   };
+
+  // Step 1.5: Cinematic Musical Lyric Scene (abi.mp3 + Synced Tamil Typewriter Lyrics)
+  if (step === 'LYRIC_SCENE') {
+    return (
+      <EmotionalSongLyricScene
+        onComplete={() => {
+          setStep('VOICE');
+        }}
+      />
+    );
+  }
 
   // Step 2: Voice Note Recorder Screen
   if (step === 'VOICE') {

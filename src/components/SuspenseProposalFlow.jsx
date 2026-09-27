@@ -209,7 +209,7 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
 
         {/* SUBSTAGE 4: GRAND 3D ROTATING HEART PROPOSAL + GOLDEN TEXT ANIMATIONS */}
         {subStage === 'GRAND_PROPOSAL' && (
-          <ProposalConfession onAccept={handleYes} />
+          <ProposalConfession onAccept={handleYes} onReject={() => setSubStage('SUSPENSE')} />
         )}
       </AnimatePresence>
     </div>

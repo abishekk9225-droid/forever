@@ -188,7 +188,7 @@ export default function AskDialogueScene({ onNext }) {
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#b76e79] via-[#e0a899] to-[#ffd700] text-zinc-950 font-bold text-base sm:text-lg shadow-[0_0_35px_rgba(224,168,153,0.5)] flex items-center justify-center gap-3 cursor-pointer bg-fluid-grad border border-white/20 select-none transition-shadow"
           >
             <Sparkles className="w-5 h-5 animate-pulse fill-zinc-950/20"/>
-            <span className="tracking-wide">Ask 💭 ✨ ➔</span>
+            <span className="tracking-wide">✨ Ask Saranya -&gt;</span>
           </motion.button>
         </motion.div>
 

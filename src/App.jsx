@@ -208,7 +208,7 @@ function MainApp() {
 
           {/* 5. CONFESSION ("WILL YOU BE MINE FOREVER?") */}
           {currentScene === SCENES.CONFESSION && (
-            <SuspenseProposalFlow onYesAccepted={() => setCurrentScene(SCENES.CELEBRATION)} />
+            <SuspenseProposalFlow onYesAccepted={() => setCurrentScene(SCENES.LOCK_REVEAL)} />
           )}
 
           {/* CELEBRATION REVEAL */}

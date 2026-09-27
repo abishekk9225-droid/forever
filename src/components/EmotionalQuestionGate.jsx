@@ -6,10 +6,9 @@ import CelebrationReveal from './CelebrationReveal';
 import VoiceMessageScene from './VoiceMessageScene';
 import MemoryRoom from './MemoryRoom';
 import OpenWhenLetters from './OpenWhenLetters';
-import ProposalConfession from './ProposalConfession';
 
 export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAccept, onReset, onSelectFeelings }) {
-  // Flow steps: 'QUESTION' -> 'VOICE' -> 'MEMORY_ROOM' -> 'OPEN_WHEN' -> 'CELEBRATION' -> 'PROPOSAL'
+  // Flow steps: 'QUESTION' -> 'VOICE' -> 'MEMORY_ROOM' -> 'OPEN_WHEN' -> 'CELEBRATION'
   const [step, setStep] = useState('QUESTION');
   const [typedText, setTypedText] = useState('');
   const fullText = "நீ எப்போ இதை ஓபன் பண்ணுவனு எனக்குத் தெரியல... ஆனா உன்கிட்ட பேசணும்னு தோணினப்போ இது உருவானது...";
@@ -96,26 +95,12 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
     return (
       <CelebrationReveal
         onComplete={() => {
-          setStep('PROPOSAL');
-        }}
-        isFeelings={true}
-      />
-    );
-  }
-
-  // Step 6: "I LOVE YOU" Proposal Screen (ProposalConfession.jsx)
-  if (step === 'PROPOSAL') {
-    return (
-      <ProposalConfession
-        onAccept={() => {
-          if (typeof window.triggerClimaxAudio === 'function') {
-            window.triggerClimaxAudio();
-          }
           const callback = onFeelings || onAccept;
           if (typeof callback === 'function') {
             callback();
           }
         }}
+        isFeelings={true}
       />
     );
   }

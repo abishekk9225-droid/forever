@@ -1,6 +1,7 @@
 export const memoriesData = [
   {
     id: 1,
+    letter: "S",
     image: "/as.jpg",
     title: "நம் முதல் உலகம்",
     date: "2026",
@@ -9,6 +10,7 @@ export const memoriesData = [
   },
   {
     id: 2,
+    letter: "A",
     image: "/sa.jpg",
     title: "அந்தப் புன்னகை",
     date: "2026",
@@ -17,6 +19,7 @@ export const memoriesData = [
   },
   {
     id: 3,
+    letter: "R",
     image: "/sk.jpg",
     title: "தொலைந்து போன நொடிகள்",
     date: "2026",
@@ -25,6 +28,7 @@ export const memoriesData = [
   },
   {
     id: 4,
+    letter: "A",
     image: "/mem-01.jpg",
     title: "மறக்க முடியாத பயணம்",
     date: "2026",
@@ -33,6 +37,7 @@ export const memoriesData = [
   },
   {
     id: 5,
+    letter: "N",
     image: "/mem-02.jpg",
     title: "மௌனத்தின் மொழி",
     date: "2026",
@@ -41,11 +46,21 @@ export const memoriesData = [
   },
   {
     id: 6,
+    letter: "Y",
     image: "/mem-03.jpg",
     title: "இதயத்தின் நிழல்",
     date: "2026",
     quote: "எத்தனை இரவுகள் கடந்தாலும், என் நினைவுகளின் வெளிச்சம் உன் பெயர் மட்டுமே.",
     tag: "Always",
+  },
+  {
+    id: 7,
+    letter: "A",
+    image: "/ak.jpg",
+    title: "முழுமை",
+    date: "Forever",
+    quote: "என் தொடக்கமும் நீயே, என் முடிவும் நீயே... என் மொத்த உலகமும் நீயே சரண்யா.",
+    tag: "Soulmate",
   }
 ];
 

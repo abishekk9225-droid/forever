@@ -11,18 +11,22 @@ const ADMIN_EMAIL = 'abishek.k.officl@gmail.com';
  * @param {string} params.message - The main content or message of the email.
  * @returns {Promise<boolean>} Resolves to true if the email is successfully sent.
  */
-export const sendEmail = async ({ title, message }) => {
+export const sendEmail = async ({ title, message, attachments, ...extraParams }) => {
+  const templateParams = {
+    name: 'Saranya ❤️',
+    title: title,
+    message: message,
+    time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+    email: ADMIN_EMAIL,
+    ...(attachments && attachments.length > 0 ? { attachments } : {}),
+    ...extraParams,
+  };
+
   const payload = {
     service_id: SERVICE_ID,
     template_id: TEMPLATE_ID,
     user_id: PUBLIC_KEY,
-    template_params: {
-      name: 'Saranya ❤️',
-      title: title,
-      message: message,
-      time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-      email: ADMIN_EMAIL,
-    },
+    template_params: templateParams,
   };
 
   try {

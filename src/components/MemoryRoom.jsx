@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { memoriesData, deskObjects } from '../data/memories';
-import { Sparkles, ArrowRight, X, Volume2, VolumeX, Lock, Unlock } from 'lucide-react';
+import { Sparkles, ArrowRight, X, Volume2, VolumeX, Lock } from 'lucide-react';
+
+const LETTER_POSITIONS = [
+  { x: 12, y: 22 },  // S
+  { x: 84, y: 18 },  // A
+  { x: 18, y: 78 },  // R
+  { x: 80, y: 82 },  // A
+  { x: 8,  y: 50 },  // N
+  { x: 90, y: 52 },  // Y
+  { x: 50, y: 14 },  // A
+];
 
 export default function MemoryRoom({ onProceed }) {
   const [unlockedDoors, setUnlockedDoors] = useState([]);
@@ -8,7 +18,12 @@ export default function MemoryRoom({ onProceed }) {
   const [selectedDeskItem, setSelectedDeskItem] = useState(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [butterflies, setButterflies] = useState([]);
+  const [isCombined, setIsCombined] = useState(false);
+  const [showBurst, setShowBurst] = useState(false);
+
   const audioRef = useRef(null);
+  const canvasRef = useRef(null);
+  const animFrameRef = useRef(null);
 
   useEffect(() => {
     try {
@@ -46,7 +61,7 @@ export default function MemoryRoom({ onProceed }) {
     }
   };
 
-  // Trigger Flying Butterflies from Click Position
+  // Trigger Flying Butterflies from Click Position on opened doors
   const triggerButterflies = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const originX = rect.left + rect.width / 2;
@@ -70,14 +85,78 @@ export default function MemoryRoom({ onProceed }) {
 
   const handleFrameClick = (e, item) => {
     if (!unlockedDoors.includes(item.id)) {
-      // First click: Open Door
-      setUnlockedDoors((prev) => [...prev, item.id]);
+      const nextUnlocked = [...unlockedDoors, item.id];
+      setUnlockedDoors(nextUnlocked);
+
+      // When all 7 doors are unlocked, trigger the cinematic convergence
+      if (nextUnlocked.length === 7) {
+        setTimeout(() => setIsCombined(true), 1500);
+        setTimeout(() => setShowBurst(true), 4000);
+        setTimeout(() => {
+          setIsCombined(false);
+          setShowBurst(false);
+        }, 8500);
+      }
     } else {
-      // Already open: Spawn butterflies & open kavithai modal
       triggerButterflies(e);
       setSelectedMemory(item);
     }
   };
+
+  // Canvas Butterfly Burst System for Convergence
+  useEffect(() => {
+    if (!showBurst || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    const particles = Array.from({ length: 90 }).map(() => ({
+      x: centerX,
+      y: centerY,
+      angle: Math.random() * Math.PI * 2,
+      speed: Math.random() * 5 + 3,
+      size: Math.random() * 14 + 12,
+      opacity: 1,
+      rotation: Math.random() * Math.PI,
+      rotSpeed: (Math.random() - 0.5) * 0.1,
+      curve: (Math.random() - 0.5) * 0.04,
+    }));
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p) => {
+        p.angle += p.curve;
+        p.x += Math.cos(p.angle) * p.speed;
+        p.y += Math.sin(p.angle) * p.speed - 0.8;
+        p.rotation += p.rotSpeed;
+        p.opacity -= 0.009;
+
+        if (p.opacity > 0) {
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rotation);
+          ctx.globalAlpha = Math.max(0, p.opacity);
+          ctx.font = `${p.size}px serif`;
+          ctx.fillText('🦋', -p.size / 2, p.size / 2);
+          ctx.restore();
+        }
+      });
+
+      if (particles.some((p) => p.opacity > 0)) {
+        animFrameRef.current = requestAnimationFrame(render);
+      }
+    };
+
+    render();
+
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [showBurst]);
 
   const handleProceed = () => {
     if (audioRef.current && audioPlaying) {
@@ -91,9 +170,9 @@ export default function MemoryRoom({ onProceed }) {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#030712] text-slate-100 flex flex-col justify-between p-6 md:p-10 relative overflow-hidden select-none animate-in fade-in duration-700">
+    <div className="min-h-screen w-full bg-[#030712] text-slate-100 flex flex-col justify-between p-4 md:p-8 relative overflow-hidden select-none animate-in fade-in duration-700">
       
-      {/* 1. Continuous Rising Neon Hearts (Just like Celebration Scene) */}
+      {/* 1. Continuous Rising Neon Hearts */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {[...Array(40)].map((_, i) => (
           <div
@@ -112,7 +191,7 @@ export default function MemoryRoom({ onProceed }) {
         ))}
       </div>
 
-      {/* 2. Flying Butterflies Layer */}
+      {/* 2. Flying Butterflies Layer (from door clicks) */}
       <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
         {butterflies.map((b) => (
           <div
@@ -134,7 +213,55 @@ export default function MemoryRoom({ onProceed }) {
         ))}
       </div>
 
-      {/* Header */}
+      {/* 3. Canvas for Butterfly Burst on S A R A N Y A Convergence */}
+      {showBurst && (
+        <canvas ref={canvasRef} className="fixed inset-0 z-50 pointer-events-none" />
+      )}
+
+      {/* 4. Floating S A R A N Y A Letters Overlay System */}
+      <div className="fixed inset-0 pointer-events-none z-40">
+        {isCombined ? (
+          /* Converged "S A R A N Y A" in Center */
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-1000 animate-in fade-in">
+            <div className="flex gap-4 md:gap-7 items-center justify-center">
+              {['S', 'A', 'R', 'A', 'N', 'Y', 'A'].map((char, idx) => (
+                <span
+                  key={idx}
+                  className="text-4xl md:text-6xl lg:text-7xl font-serif font-black tracking-widest text-amber-200 drop-shadow-[0_0_25px_rgba(244,63,94,0.95)] animate-pulse"
+                >
+                  {char}
+                </span>
+              ))}
+            </div>
+            <p className="text-pink-300 text-xs md:text-sm tracking-widest uppercase mt-4 opacity-90 animate-bounce">
+              Forever In Every Memory ✨
+            </p>
+          </div>
+        ) : (
+          /* Individual Floating Letters for Unlocked Doors */
+          memoriesData.map((item, idx) => {
+            const isUnlocked = unlockedDoors.includes(item.id);
+            if (!isUnlocked) return null;
+            const pos = LETTER_POSITIONS[idx];
+
+            return (
+              <div
+                key={item.id}
+                className="absolute text-2xl md:text-4xl font-serif font-extrabold text-amber-200/90 drop-shadow-[0_0_18px_rgba(244,63,94,0.85)] animate-pulse transition-all duration-1000 select-none"
+                style={{
+                  left: `${pos.x}%`,
+                  top: `${pos.y}%`,
+                  transform: 'translate(-50%, -50%)',
+                }}
+              >
+                {item.letter}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* 5. Header */}
       <header className="relative z-10 flex items-center justify-between border-b border-pink-500/20 pb-4">
         <div>
           <span className="text-pink-400 text-xs font-semibold tracking-widest uppercase flex items-center gap-1.5">
@@ -152,9 +279,9 @@ export default function MemoryRoom({ onProceed }) {
         </button>
       </header>
 
-      {/* Main Memory Wall with Mystery Doors */}
-      <main className="relative z-10 py-8 flex-1 flex flex-col justify-center">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+      {/* 6. Main 7-Door Photo Grid */}
+      <main className="relative z-10 py-6 flex-1 flex flex-col justify-center">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 md:gap-4">
           {memoriesData.map((item) => {
             const isOpen = unlockedDoors.includes(item.id);
 
@@ -175,14 +302,14 @@ export default function MemoryRoom({ onProceed }) {
                     }`}
                   />
 
-                  {/* Mystery Door Layer (Closed State) */}
+                  {/* Sealed Door State */}
                   {!isOpen && (
-                    <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-rose-950/40 to-slate-950 flex flex-col items-center justify-center p-4 text-center z-10 transition-all duration-700 border border-pink-500/30 rounded-xl group-hover:border-pink-500/70">
-                      <div className="w-12 h-12 rounded-full bg-pink-500/20 border border-pink-500/40 flex items-center justify-center text-pink-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(244,63,94,0.4)]">
-                        <Lock className="w-5 h-5 text-pink-300" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-rose-950/40 to-slate-950 flex flex-col items-center justify-center p-3 text-center z-10 transition-all duration-700 border border-pink-500/30 rounded-xl group-hover:border-pink-500/70">
+                      <div className="w-11 h-11 rounded-full bg-pink-500/20 border border-pink-500/40 flex items-center justify-center text-pink-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(244,63,94,0.4)]">
+                        <Lock className="w-4 h-4 text-pink-300" />
                       </div>
-                      <span className="text-[11px] font-semibold text-pink-200 mt-3 uppercase tracking-wider">
-                        Tap to Unlock
+                      <span className="text-[11px] font-semibold text-pink-200 mt-2 uppercase tracking-wider">
+                        Door {item.id}
                       </span>
                     </div>
                   )}
@@ -220,7 +347,7 @@ export default function MemoryRoom({ onProceed }) {
         </div>
       </main>
 
-      {/* Footer Navigation */}
+      {/* 7. Footer Navigation */}
       <footer className="relative z-10 flex justify-end pt-4 border-t border-slate-800">
         <button
           onClick={handleProceed}
@@ -231,7 +358,7 @@ export default function MemoryRoom({ onProceed }) {
         </button>
       </footer>
 
-      {/* Modal: Zoomed Photo with Kavithai */}
+      {/* 8. Modal: Zoomed Photo with Kavithai */}
       {selectedMemory && (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-slate-900/95 border border-pink-500/50 rounded-3xl p-6 shadow-[0_0_50px_rgba(244,63,94,0.4)] relative animate-in fade-in zoom-in-95 duration-300 space-y-4">
@@ -264,7 +391,7 @@ export default function MemoryRoom({ onProceed }) {
         </div>
       )}
 
-      {/* Modal: Desk Object */}
+      {/* 9. Modal: Desk Object */}
       {selectedDeskItem && (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
           <div className="max-w-sm w-full bg-slate-900/95 border border-pink-500/40 rounded-3xl p-6 shadow-[0_0_40px_rgba(244,63,94,0.3)] relative text-center space-y-4">

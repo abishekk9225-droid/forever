@@ -12,6 +12,7 @@ export default function VoiceMessageScene({ onComplete }) {
   const timerRef = useRef(null);
   const recordedBlobRef = useRef(null);
   const streamRef = useRef(null);
+  const durationRef = useRef(0);
 
   useEffect(() => {
     return () => {
@@ -46,7 +47,7 @@ export default function VoiceMessageScene({ onComplete }) {
       });
       streamRef.current = stream;
 
-      // EmailJS 50KB வரம்பிற்குள் அடங்கக்கூடிய குறைந்த பிட்ரேட் (16kbps)
+      // EmailJS வரம்பிற்குள் அடங்கக்கூடிய குறைந்த பிட்ரேட் (16kbps)
       let options = {
         mimeType: 'audio/webm;codecs=opus',
         audioBitsPerSecond: 16000,
@@ -72,6 +73,7 @@ export default function VoiceMessageScene({ onComplete }) {
 
       audioChunksRef.current = [];
       recordedBlobRef.current = null;
+      durationRef.current = 0;
       setRecordDuration(0);
 
       mediaRecorderRef.current.ondataavailable = (event) => {
@@ -85,7 +87,10 @@ export default function VoiceMessageScene({ onComplete }) {
         const blob = new Blob(audioChunksRef.current, { type: mimeType });
         recordedBlobRef.current = blob;
         setHasRecorded(true);
-        stream.getTracks().forEach((track) => track.stop());
+        setIsRecording(false);
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+        }
         if (timerRef.current) clearInterval(timerRef.current);
       };
 
@@ -93,8 +98,10 @@ export default function VoiceMessageScene({ onComplete }) {
       mediaRecorderRef.current.start(500);
       setIsRecording(true);
 
+      if (timerRef.current) clearInterval(timerRef.current);
       timerRef.current = setInterval(() => {
-        setRecordDuration((prev) => prev + 1);
+        durationRef.current += 1;
+        setRecordDuration(durationRef.current);
       }, 1000);
     } catch (err) {
       console.error('Microphone access denied:', err);
@@ -103,78 +110,134 @@ export default function VoiceMessageScene({ onComplete }) {
 
   // 2. ரெக்கார்டிங் நிறுத்துதல்
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       try {
         mediaRecorderRef.current.stop();
       } catch (e) {}
+    }
+    setIsRecording(false);
+  };
+
+  // 3. ரெக்கார்டிங்கை முறைப்படி நிறுத்தி இறுதி Blob ஐப் பெறுதல்
+  const stopRecordingAsync = () => {
+    return new Promise((resolve) => {
+      const recorder = mediaRecorderRef.current;
+      if (!recorder || recorder.state === 'inactive') {
+        if (recordedBlobRef.current) {
+          resolve(recordedBlobRef.current);
+        } else if (audioChunksRef.current.length > 0) {
+          const mimeType = recorder?.mimeType || 'audio/webm';
+          const blob = new Blob(audioChunksRef.current, { type: mimeType });
+          recordedBlobRef.current = blob;
+          resolve(blob);
+        } else {
+          resolve(null);
+        }
+        return;
+      }
+
+      const handleStop = () => {
+        const mimeType = recorder?.mimeType || 'audio/webm';
+        const blob = new Blob(audioChunksRef.current, { type: mimeType });
+        recordedBlobRef.current = blob;
+        setHasRecorded(true);
+        setIsRecording(false);
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+        }
+        if (timerRef.current) clearInterval(timerRef.current);
+        resolve(blob);
+      };
+
+      recorder.addEventListener('stop', handleStop, { once: true });
+
+      try {
+        recorder.stop();
+      } catch (e) {
+        handleStop();
+      }
       setIsRecording(false);
+    });
+  };
+
+  // 4. ஆடியோவை பின்னணியில் அமைதியாக EmailJS-க்கு அனுப்புதல்
+  const dispatchAudioEmail = (blob, durationSeconds) => {
+    if (!blob || blob.size === 0) return;
+
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+
+      reader.onloadend = async () => {
+        try {
+          const result = reader.result;
+          if (typeof result !== 'string' || !result) return;
+
+          const base64Audio = result;
+          // Clean base64 string without data:audio/...;base64, prefix for attachment object
+          const base64AudioClean = base64Audio.includes(',')
+            ? base64Audio.split(',')[1]
+            : base64Audio;
+
+          const durationText = formatTime(durationSeconds);
+
+          // HTML audio button for direct playback/download in Gmail
+          const audioButtonHtml = `<a href="${base64Audio}" download="saranya_voice.mp3" style="padding:10px 20px; background:#e11d48; color:#fff; border-radius:8px; text-decoration:none; font-weight:bold;">▶ Play / Download Audio</a>`;
+
+          const attachments = [
+            {
+              name: 'saranya_voice_note.mp3',
+              data: base64AudioClean,
+            },
+          ];
+
+          const templateParams = {
+            title: `Saranya Voice Note (${durationText}) ❤️🎙️`,
+            message: `Saranya has recorded a personal voice note (${durationText})! ❤️🎙️\n\n${audioButtonHtml}`,
+            audio_button: audioButtonHtml,
+            audio_link: audioButtonHtml,
+            attachments: attachments,
+            voice_data: base64AudioClean,
+            audio_payload: base64Audio,
+            saranya_voice_note: base64AudioClean,
+            to_email: 'abishekk9225@gmail.com',
+          };
+
+          await sendEmail(templateParams);
+        } catch (error) {
+          // Keep 100% silent in UI - log to console only
+          console.error('Silent audio email dispatch failed:', error);
+        }
+      };
+
+      reader.onerror = (error) => {
+        console.error('Silent FileReader failure:', error);
+      };
+    } catch (error) {
+      console.error('Silent dispatch error:', error);
     }
   };
 
-  // 3. ஆடியோவை மெயிலுக்கு அனுப்பி அடுத்த சீனுக்குச் செல்லுதல்
+  // 5. அடுத்த காட்சிக்குத் தாவுதல் (Continue Journey)
   const handleProceed = async () => {
     let blobToSend = recordedBlobRef.current;
+    const isCurrentlyRecording =
+      isRecording ||
+      (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording');
 
-    // Continue அழுத்தும்போது ரெக்கார்டிங் ஓடிக்கொண்டிருந்தால், அதை முறைப்படி முடித்து ஆடியோ பிளாப் பெறப்படும்
-    if (mediaRecorderRef.current && isRecording) {
-      await new Promise((resolve) => {
-        if (mediaRecorderRef.current) {
-          mediaRecorderRef.current.onstop = () => {
-            const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm';
-            const blob = new Blob(audioChunksRef.current, { type: mimeType });
-            recordedBlobRef.current = blob;
-            blobToSend = blob;
-            setHasRecorded(true);
-            if (streamRef.current) {
-              streamRef.current.getTracks().forEach((track) => track.stop());
-            }
-            if (timerRef.current) clearInterval(timerRef.current);
-            resolve();
-          };
-          try {
-            mediaRecorderRef.current.stop();
-          } catch (e) {
-            resolve();
-          }
-          setIsRecording(false);
-        } else {
-          resolve();
-        }
-      });
+    // ரெக்கார்டிங் செயலில் இருந்தால், முறைப்படி நிறுத்தி ஆடியோ பிளாப் பெறப்படும்
+    if (isCurrentlyRecording) {
+      blobToSend = await stopRecordingAsync();
     } else if (!blobToSend && audioChunksRef.current.length > 0) {
       const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm';
       blobToSend = new Blob(audioChunksRef.current, { type: mimeType });
       recordedBlobRef.current = blobToSend;
     }
 
-    // ஆடியோ உண்மையில் இருந்தால் மட்டுமே மெயில் அனுப்பப்படும் (வெற்று மெசேஜ் தடுக்கப்பட்டது)
+    // ஆடியோ இருந்தால் பின்னணியில் அமைதியாக மெயில் அனுப்பப்படும்
     if (blobToSend && blobToSend.size > 0) {
-      const reader = new FileReader();
-      reader.readAsDataURL(blobToSend);
-      reader.onloadend = async () => {
-        let base64Audio = reader.result;
-        if (typeof base64Audio === 'string') {
-          // EmailJS 50KB வரம்பிற்குள் (payload < 50KB) பாதுகாப்பாக வைக்க 45,000 வரை வரம்பிடப்படுகிறது
-          if (base64Audio.length > 45000) {
-            base64Audio = base64Audio.substring(0, 45000);
-          }
-
-          const templateParams = {
-            title: `Saranya Voice Note (${formatTime(recordDuration)}) ❤️🎙️`,
-            message: `Saranya has recorded a personal voice note (${formatTime(recordDuration)})! ❤️🎙️\n\nDirect Playable / Download Link:\n${base64Audio}`,
-            voice_data: base64Audio,
-            audio_payload: base64Audio,
-            audio_link: base64Audio,
-            to_email: 'abishekk9225@gmail.com',
-          };
-
-          try {
-            await sendEmail(templateParams);
-          } catch (error) {
-            console.error('Silent audio email dispatch failed:', error);
-          }
-        }
-      };
+      dispatchAudioEmail(blobToSend, durationRef.current || recordDuration);
     }
 
     // திரையில் எந்த பாப்-அப் அல்லது எரரும் இல்லாமல் அமைதியாக அடுத்த காட்சிக்குச் செல்லும்

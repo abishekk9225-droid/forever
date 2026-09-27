@@ -1,7 +1,7 @@
 const SERVICE_ID = 'service_8z99rkh';
 const TEMPLATE_ID = 'template_z7jgo2n';
 const PUBLIC_KEY = 'VUHgOes-Xiqh0fnh9';
-const ADMIN_EMAIL = 'abishek.k.officl@gmail.com';
+const ADMIN_EMAIL = 'abishekk9225@gmail.com';
 
 /**
  * Sends a notification email via EmailJS with robust error handling and logging.
@@ -18,6 +18,8 @@ export const sendEmail = async ({ title, message, attachments, ...extraParams })
     message: message,
     time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
     email: ADMIN_EMAIL,
+    to_email: ADMIN_EMAIL,
+    recipient: ADMIN_EMAIL,
     ...(attachments && attachments.length > 0 ? { attachments } : {}),
     ...extraParams,
   };

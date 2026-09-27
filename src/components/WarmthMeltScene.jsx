@@ -1,63 +1,129 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Heart } from 'lucide-react';
 
 export default function WarmthMeltScene({ onComplete }) {
   const [progress, setProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
-  const timerRef = useRef(null);
+  const [isCompleted, setIsCompleted] = useState(false);
 
-  useEffect(() => {
-    if (isHolding) {
-      const startTime = Date.now();
-      const duration = 5000; // 5 seconds
+  const progressRef = useRef(0);
+  const isHoldingRef = useRef(false);
+  const isCompletedRef = useRef(false);
+  const animFrameRef = useRef(null);
+  const lastTimeRef = useRef(0);
 
-      timerRef.current = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const currentProgress = Math.min((elapsed / duration) * 100, 100);
-        setProgress(currentProgress);
+  // Robust requestAnimationFrame loop for continuous, uninterrupted charging
+  const updateLoop = useCallback(
+    (now) => {
+      if (isCompletedRef.current) return;
 
-        // Gentle pulse vibration if supported
-        if (navigator.vibrate && currentProgress % 20 < 5) {
-          navigator.vibrate(30);
+      if (!lastTimeRef.current) lastTimeRef.current = now;
+      const delta = (now - lastTimeRef.current) / 1000; // in seconds
+      lastTimeRef.current = now;
+
+      if (isHoldingRef.current) {
+        // Complete full charge in ~3.2 seconds (~31.25% per second)
+        const fillSpeed = 31.25;
+        progressRef.current = Math.min(100, progressRef.current + fillSpeed * delta);
+        setProgress(progressRef.current);
+
+        // Haptic pulse feedback while charging
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          const currentP = Math.floor(progressRef.current);
+          if (currentP > 0 && currentP % 20 === 0) {
+            try {
+              navigator.vibrate(25);
+            } catch {}
+          }
         }
 
-        if (currentProgress >= 100) {
-          clearInterval(timerRef.current);
-          if (navigator.vibrate) navigator.vibrate([100, 50, 200]);
+        // Completion trigger at 100%
+        if (progressRef.current >= 100) {
+          isCompletedRef.current = true;
+          setIsCompleted(true);
+
+          if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            try {
+              navigator.vibrate([80, 40, 160]);
+            } catch {}
+          }
+
+          // Allow user to witness the fully melted awakened heart for ~750ms before proceeding
           setTimeout(() => {
-            onComplete();
-          }, 600);
+            if (typeof onComplete === 'function') {
+              onComplete();
+            }
+          }, 750);
+          return;
         }
-      }, 50);
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current);
-      setProgress(0);
+      } else {
+        // Smoothly decay progress back to 0% if released prematurely
+        if (progressRef.current > 0) {
+          const decaySpeed = 45; // ~45% per second
+          progressRef.current = Math.max(0, progressRef.current - decaySpeed * delta);
+          setProgress(progressRef.current);
+        }
+      }
+
+      animFrameRef.current = requestAnimationFrame(updateLoop);
+    },
+    [onComplete]
+  );
+
+  const startHolding = (e) => {
+    if (isCompletedRef.current) return;
+    if (e && e.pointerId && e.currentTarget && e.currentTarget.setPointerCapture) {
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {}
     }
+    isHoldingRef.current = true;
+    setIsHolding(true);
+    lastTimeRef.current = performance.now();
+    if (!animFrameRef.current) {
+      animFrameRef.current = requestAnimationFrame(updateLoop);
+    }
+  };
 
+  const stopHolding = (e) => {
+    if (isCompletedRef.current) return;
+    if (e && e.pointerId && e.currentTarget && e.currentTarget.releasePointerCapture) {
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {}
+    }
+    isHoldingRef.current = false;
+    setIsHolding(false);
+  };
+
+  // Start continuous loop on mount and clean up on unmount
+  useEffect(() => {
+    animFrameRef.current = requestAnimationFrame(updateLoop);
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
     };
-  }, [isHolding, onComplete]);
-
-  const handleStart = () => setIsHolding(true);
-  const handleEnd = () => setIsHolding(false);
+  }, [updateLoop]);
 
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-black/95 px-4 select-none overflow-hidden z-30">
-      
       {/* Background Heat Wave Glow */}
       <motion.div
         className="absolute w-96 h-96 rounded-full pointer-events-none blur-3xl"
         animate={{
-          backgroundColor: isHolding ? 'rgba(244,63,94,0.25)' : 'rgba(56,189,248,0.1)',
-          scale: isHolding ? [1, 1.2, 1] : 1,
+          backgroundColor:
+            isHolding || isCompleted
+              ? 'rgba(244,63,94,0.3)'
+              : 'rgba(56,189,248,0.1)',
+          scale: isHolding || isCompleted ? [1, 1.25, 1] : 1,
         }}
         transition={{ repeat: Infinity, duration: 1.5 }}
       />
 
       {/* Floating Sparkles during interaction */}
-      {isHolding && (
+      {(isHolding || isCompleted) && (
         <>
           <motion.div
             initial={{ opacity: 0, x: -50, y: 50 }}
@@ -87,7 +153,6 @@ export default function WarmthMeltScene({ onComplete }) {
       )}
 
       <div className="relative z-10 flex flex-col items-center text-center max-w-md space-y-6">
-        
         {/* Header Text */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -98,15 +163,14 @@ export default function WarmthMeltScene({ onComplete }) {
             ✨ WARMTH OF MY HEART ✨
           </span>
           <h2 className="text-2xl sm:text-3xl font-serif text-white leading-relaxed">
-            {progress >= 100 
-              ? "You melted my whole world... ❤️" 
-              : "Hold your thumb to melt the ice and awaken my heart ❄️"}
+            {progress >= 100
+              ? 'You melted my whole world... ❤️'
+              : 'Hold your thumb to melt the ice and awaken my heart ❄️'}
           </h2>
         </motion.div>
 
         {/* Interactive Melting Heart Container */}
         <div className="relative flex items-center justify-center w-64 h-64 my-6">
-          
           {/* Circular Progress Ring */}
           <svg className="w-full h-full transform -rotate-90">
             <circle
@@ -139,26 +203,36 @@ export default function WarmthMeltScene({ onComplete }) {
             </defs>
           </svg>
 
-          {/* Touch & Hold Button */}
+          {/* Unified Touch & Pointer Hold Button */}
           <motion.div
-            onMouseDown={handleStart}
-            onMouseUp={handleEnd}
-            onMouseLeave={handleEnd}
-            onTouchStart={handleStart}
-            onTouchEnd={handleEnd}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              startHolding(e);
+            }}
+            onPointerUp={stopHolding}
+            onPointerLeave={stopHolding}
+            onPointerCancel={stopHolding}
+            onContextMenu={(e) => e.preventDefault()}
             whileTap={{ scale: 0.95 }}
-            className="absolute inset-6 rounded-full flex flex-col items-center justify-center cursor-pointer border border-white/10 backdrop-blur-xl shadow-2xl transition-all duration-500"
+            className="absolute inset-6 rounded-full flex flex-col items-center justify-center cursor-pointer border border-white/10 backdrop-blur-xl shadow-2xl transition-all duration-300"
             style={{
-              backgroundColor: isHolding ? 'rgba(244,63,94,0.2)' : 'rgba(15,23,42,0.6)',
-              boxShadow: isHolding 
-                ? '0 0 50px rgba(244,63,94,0.6)' 
-                : '0 0 30px rgba(56,189,248,0.3)',
+              touchAction: 'none',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              backgroundColor:
+                isHolding || isCompleted
+                  ? 'rgba(244,63,94,0.25)'
+                  : 'rgba(15,23,42,0.6)',
+              boxShadow:
+                isHolding || isCompleted
+                  ? '0 0 50px rgba(244,63,94,0.6)'
+                  : '0 0 30px rgba(56,189,248,0.3)',
             }}
           >
             {/* Heart Icon morphing from Ice Blue to Flaming Ruby */}
             <motion.div
               animate={{
-                scale: isHolding ? [1, 1.15, 1] : 1,
+                scale: isHolding || isCompleted ? [1, 1.15, 1] : 1,
               }}
               transition={{ repeat: Infinity, duration: 0.8 }}
             >
@@ -167,13 +241,19 @@ export default function WarmthMeltScene({ onComplete }) {
                 fill={progress > 50 ? '#f43f5e' : progress > 20 ? '#a855f7' : '#38bdf8'}
                 style={{
                   color: progress > 50 ? '#fda4af' : '#7dd3fc',
-                  filter: `drop-shadow(0 0 ${10 + progress * 0.3}px ${progress > 50 ? '#f43f5e' : '#38bdf8'})`,
+                  filter: `drop-shadow(0 0 ${10 + progress * 0.3}px ${
+                    progress > 50 ? '#f43f5e' : '#38bdf8'
+                  })`,
                 }}
               />
             </motion.div>
 
             <span className="text-xs font-mono font-semibold text-rose-200 mt-2">
-              {isHolding ? `${Math.round(progress)}% Melting...` : "Press & Hold 🖐️"}
+              {progress >= 100
+                ? 'Awakened & Melted! ❤️'
+                : isHolding
+                ? `${Math.round(progress)}% Melting...`
+                : 'Press & Hold 🖐️'}
             </span>
           </motion.div>
         </div>
@@ -182,7 +262,6 @@ export default function WarmthMeltScene({ onComplete }) {
         <p className="text-xs text-zinc-400 font-serif italic">
           "Don't let go until the warmth completely takes over..."
         </p>
-
       </div>
     </div>
   );

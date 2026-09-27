@@ -79,13 +79,6 @@ function MainApp() {
     );
   }
 
-  const handleProposalYes = () => {
-    if (typeof window.triggerClimaxAudio === 'function') {
-      window.triggerClimaxAudio(); // Jump to 219s audio peak
-    }
-    setCurrentScene(SCENES.QUIZ);
-  };
-
   return (
     <main className="relative w-full min-h-screen overflow-hidden bg-[#05020a] text-white select-none flex items-center justify-center font-sans">
       <AudioPlayer />
@@ -113,7 +106,7 @@ function MainApp() {
         <EasterEggs />
       </ErrorBoundary>
 
-      <div className="relative z-30 w-full max-w-xl px-4 py-8 flex flex-col items-center">
+      <div className={`relative ${currentScene === SCENES.CONFESSION ? 'z-50' : 'z-30'} w-full max-w-xl px-4 py-8 flex flex-col items-center`}>
         <AnimatePresence mode="wait">
           {/* 1. INTRO SCENE WITH BEAUTIFUL LINES */}
           {currentScene === SCENES.INTRO && (

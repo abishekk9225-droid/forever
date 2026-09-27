@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { Gift, Heart, Sparkles, AlertCircle, Eye } from 'lucide-react';
-import ThreeDHeartBackground from './ThreeDHeartBackground';
 import ProposalConfession from './ProposalConfession';
 import { sendEmail } from '../utils/emailService';
 
@@ -207,9 +206,9 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
           </motion.div>
         )}
 
-        {/* SUBSTAGE 4: GRAND 3D ROTATING HEART PROPOSAL + GOLDEN TEXT ANIMATIONS */}
+        {/* SUBSTAGE 4: GRAND PROPOSAL CONFESSION ("THE LAST FRAME") */}
         {subStage === 'GRAND_PROPOSAL' && (
-          <ProposalConfession onAccept={handleYes} onReject={() => setSubStage('SUSPENSE')} />
+          <ProposalConfession key="grand_proposal" onAccept={handleYes} onReject={() => setSubStage('SUSPENSE')} />
         )}
       </AnimatePresence>
     </div>

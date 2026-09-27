@@ -90,7 +90,7 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
   };
 
   return (
-    <div className="fixed inset-0 w-full h-full bg-black text-slate-100 flex flex-col items-center justify-center overflow-hidden select-none z-50">
+    <div className="fixed inset-0 w-full h-full bg-black text-slate-100 flex flex-col items-center justify-center overflow-hidden select-none z-[100]">
       
       {/* 1. PHOTO LAYER (Emerges smoothly from darkness) */}
       <div

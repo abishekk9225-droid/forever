@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Gift, Sparkles, Heart } from 'lucide-react';
 
 // AUTHORIZED / CUSTOMIZABLE LYRIC STRUCTURE (Synchronized via audio.currentTime)
@@ -227,11 +228,15 @@ export default function SecretGiftCinematicScene({ onComplete }) {
   };
   transitionRef.current = handleFinalTransition;
 
-  return (
-    <div className={`fixed inset-0 z-50 overflow-hidden bg-[#030108] text-white flex flex-col items-center justify-center select-none transition-opacity duration-1000 ${
-      stage === 'FADE_OUT' ? 'opacity-0' : 'opacity-100'
-    }`}>
-
+  const content = (
+    <div
+      className={`fixed inset-0 w-screen h-screen z-[9999] overflow-y-auto overflow-x-hidden bg-[#030108] text-white flex flex-col items-center justify-center select-none transition-opacity duration-1000 ${
+        stage === 'FADE_OUT' ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
+      }`}
+      style={{
+        fontFamily: "'Playfair Display', 'Noto Sans Tamil', 'Tamil Sangam MN', 'Mukta Malar', 'Latha', serif",
+      }}
+    >
       {/* INLINE CSS FOR CINEMATIC LIGHTING, PARTICLES & GLOWS */}
       <style>{`
         @keyframes softBloom {
@@ -256,8 +261,8 @@ export default function SecretGiftCinematicScene({ onComplete }) {
           50% { transform: scale(1.08); opacity: 0.42; }
         }
         @keyframes textShimmerGlow {
-          0%, 100% { text-shadow: 0 0 20px rgba(251,191,36,0.3), 0 0 35px rgba(244,63,94,0.3); }
-          50% { text-shadow: 0 0 30px rgba(251,191,36,0.5), 0 0 50px rgba(244,63,94,0.55); }
+          0%, 100% { text-shadow: 0 0 25px rgba(251,191,36,0.38), 0 0 50px rgba(244,63,94,0.32); }
+          50% { text-shadow: 0 0 35px rgba(251,191,36,0.55), 0 0 70px rgba(244,63,94,0.5); }
         }
         .ambient-breathe {
           animation: ambientHeartbeat 7s ease-in-out infinite;
@@ -268,8 +273,13 @@ export default function SecretGiftCinematicScene({ onComplete }) {
       `}</style>
 
       {/* 1. DEEP CINEMATIC BACKGROUND GLOWS */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-rose-600/20 via-pink-600/15 to-amber-500/15 rounded-full blur-[140px] pointer-events-none ambient-breathe" />
-      <div className="absolute inset-0 bg-radial from-transparent via-[#030108]/50 to-[#030108] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-tr from-rose-600/20 via-pink-600/15 to-amber-500/15 rounded-full blur-[150px] pointer-events-none ambient-breathe" />
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at center, transparent 35%, rgba(3,1,8,0.55) 70%, #030108 100%)',
+        }}
+      />
 
       {/* 2. BACKGROUND MEMORY PHOTO FLASHES (DURING SONG STAGE) */}
       {stage === 'SONG' && (
@@ -381,15 +391,30 @@ export default function SecretGiftCinematicScene({ onComplete }) {
         </div>
       )}
 
-      {/* 5. PHASE B: EMOTIONAL TAMIL MESSAGES (Sequential with Slow Fades) */}
+      {/* 5. PHASE B: EMOTIONAL TAMIL MESSAGES (Full Screen Responsive, Centered, Zero Clipping) */}
       {stage === 'TAMIL_MSG' && (
-        <div className="relative z-30 max-w-xl mx-auto px-6 text-center">
+        <div
+          className="relative z-30 mx-auto px-4 sm:px-6 md:px-8 text-center flex flex-col items-center justify-center animate-in fade-in duration-700"
+          style={{
+            width: 'min(90vw, 900px)',
+            minHeight: '160px',
+            height: 'auto',
+            overflow: 'visible',
+          }}
+        >
           <div
-            className={`transition-all duration-700 ease-in-out transform ${
-              msgVisible ? 'opacity-100 translate-y-0 scale-100 blur-0' : 'opacity-0 translate-y-3 scale-95 blur-sm'
+            className={`w-full py-4 transition-all duration-700 ease-in-out transform ${
+              msgVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-98'
             }`}
+            style={{ overflow: 'visible' }}
           >
-            <p className="shimmer-tamil font-serif text-2xl sm:text-3xl md:text-4xl text-amber-50/95 leading-relaxed md:leading-loose whitespace-pre-line tracking-wide drop-shadow-[0_0_30px_rgba(244,63,94,0.4)]">
+            <p
+              className="shimmer-tamil text-2xl sm:text-3xl md:text-4xl lg:text-[42px] text-[#fffdfa] leading-[1.8] sm:leading-[1.9] md:leading-[2.0] tracking-wide whitespace-pre-line break-words drop-shadow-[0_0_35px_rgba(244,63,94,0.45)]"
+              style={{
+                fontFamily: "'Playfair Display', 'Noto Sans Tamil', 'Tamil Sangam MN', 'Mukta Malar', 'Latha', serif",
+                textShadow: '0 0 25px rgba(251,191,36,0.4), 0 0 50px rgba(244,63,94,0.35)',
+              }}
+            >
               {TAMIL_SENTENCES[msgIndex]}
             </p>
           </div>
@@ -398,9 +423,23 @@ export default function SecretGiftCinematicScene({ onComplete }) {
 
       {/* 6. PHASE C: BUTTERFLY MOMENT (8-15 Glowing Butterflies Fluttering Upward) */}
       {stage === 'BUTTERFLIES' && (
-        <div className="relative z-30 w-full h-full flex flex-col items-center justify-center">
-          {/* Centered final words fading softly */}
-          <p className="font-serif text-xl sm:text-2xl text-rose-200/80 italic drop-shadow-md mb-8">
+        <div
+          className="relative z-30 mx-auto px-4 sm:px-6 md:px-8 text-center flex flex-col items-center justify-center"
+          style={{
+            width: 'min(90vw, 900px)',
+            minHeight: '160px',
+            height: 'auto',
+            overflow: 'visible',
+          }}
+        >
+          {/* Centered final words fading softly with comfortable line height */}
+          <p
+            className="shimmer-tamil text-2xl sm:text-3xl md:text-4xl lg:text-[40px] text-[#fffdfa] leading-[1.8] sm:leading-[1.9] md:leading-[2.0] tracking-wide whitespace-pre-line break-words drop-shadow-[0_0_30px_rgba(244,63,94,0.4)] mb-8"
+            style={{
+              fontFamily: "'Playfair Display', 'Noto Sans Tamil', 'Tamil Sangam MN', 'Mukta Malar', 'Latha', serif",
+              textShadow: '0 0 25px rgba(251,191,36,0.4), 0 0 50px rgba(244,63,94,0.35)',
+            }}
+          >
             "இன்று... அதை மறைக்காமல் சொல்ல நினைக்கிறேன்."
           </p>
 
@@ -408,12 +447,12 @@ export default function SecretGiftCinematicScene({ onComplete }) {
             {[...Array(14)].map((_, i) => (
               <span
                 key={`flock-${i}`}
-                className="absolute text-2xl sm:text-3xl drop-shadow-[0_0_15px_rgba(244,114,182,0.9)] opacity-90"
+                className="absolute text-2xl sm:text-3xl md:text-4xl drop-shadow-[0_0_15px_rgba(244,114,182,0.9)] opacity-90"
                 style={{
                   animation: `butterflyDrift 2.8s cubic-bezier(0.25, 1, 0.5, 1) forwards`,
                   animationDelay: `${i * 0.14}s`,
-                  '--dx': `${(Math.sin(i * 1.8) * 160)}px`,
-                  '--rot': `${(Math.sin(i * 2.2) * 30)}deg`,
+                  '--dx': `${Math.sin(i * 1.8) * 180}px`,
+                  '--rot': `${Math.sin(i * 2.2) * 30}deg`,
                 }}
               >
                 🦋
@@ -451,32 +490,49 @@ export default function SecretGiftCinematicScene({ onComplete }) {
         </div>
       )}
 
-      {/* 8. PHASE E: SONG STAGE (Synchronized Lyrics + Movie Atmosphere) */}
+      {/* 8. PHASE E: SONG STAGE (Synchronized Lyrics + Movie Atmosphere, Zero Clipping) */}
       {stage === 'SONG' && (
-        <div className="relative z-30 w-full max-w-2xl px-6 flex flex-col items-center justify-center text-center space-y-6">
-          
+        <div
+          className="relative z-30 mx-auto px-4 sm:px-6 md:px-8 flex flex-col items-center justify-center text-center space-y-6"
+          style={{
+            width: 'min(90vw, 900px)',
+            height: 'auto',
+            overflow: 'visible',
+          }}
+        >
           {/* Subtle Ambient Heartbeat Halo */}
-          <div className="w-24 h-24 rounded-full bg-rose-500/20 blur-xl flex items-center justify-center ambient-breathe">
+          <div className="w-20 h-20 rounded-full bg-rose-500/20 blur-xl flex items-center justify-center ambient-breathe">
             <Heart className="w-10 h-10 text-rose-400/80 fill-rose-500/20" />
           </div>
 
-          {/* Synchronized Song Lyric Display (Lower-Middle Position) */}
-          <div className="min-h-[90px] flex items-center justify-center">
+          {/* Synchronized Song Lyric Display (Lower-Middle Position with ample height and padding) */}
+          <div
+            className="w-full flex items-center justify-center py-4"
+            style={{
+              minHeight: '120px',
+              height: 'auto',
+              overflow: 'visible',
+            }}
+          >
             {currentLyric ? (
               <p
                 key={currentLyric}
-                className="font-serif text-2xl sm:text-3xl md:text-4xl text-amber-50/95 leading-relaxed tracking-wider drop-shadow-[0_0_25px_rgba(244,63,94,0.45)] animate-in fade-in slide-in-from-bottom-3 duration-700"
+                className="text-2xl sm:text-3xl md:text-4xl text-[#fffdfa] leading-[1.8] sm:leading-[1.9] md:leading-[2.0] tracking-wide whitespace-pre-line break-words drop-shadow-[0_0_25px_rgba(244,63,94,0.45)] animate-in fade-in duration-500"
+                style={{
+                  fontFamily: "'Playfair Display', 'Noto Sans Tamil', 'Tamil Sangam MN', 'Mukta Malar', 'Latha', serif",
+                  textShadow: '0 0 20px rgba(251,191,36,0.4), 0 0 45px rgba(244,63,94,0.4)',
+                }}
               >
                 "{currentLyric}"
               </p>
             ) : (
-              <p className="font-serif text-lg text-rose-200/50 italic tracking-widest animate-pulse">
+              <p className="text-base sm:text-lg text-rose-200/50 italic tracking-widest animate-pulse">
                 ♪ Unakkaga oru paattu... ♪
               </p>
             )}
           </div>
 
-          {/* Autoplay Fallback Tap Button (If browser autoplay was restricted) */}
+          {/* Autoplay Fallback Tap Button */}
           {audioError && (
             <button
               onClick={handleManualPlay}
@@ -487,10 +543,10 @@ export default function SecretGiftCinematicScene({ onComplete }) {
           )}
 
           {/* Elegant Continue Journey Button */}
-          <div className="pt-8">
+          <div className="pt-6">
             <button
               onClick={handleFinalTransition}
-              className="group px-8 py-3 rounded-full bg-gradient-to-r from-rose-500/80 via-pink-500/80 to-purple-600/80 hover:from-rose-500 hover:to-purple-600 border border-rose-400/40 text-white font-serif text-sm tracking-widest shadow-[0_0_30px_rgba(244,63,94,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer flex items-center gap-2"
+              className="group px-8 py-3 rounded-full bg-gradient-to-r from-rose-500/80 via-pink-500/80 to-purple-600/80 hover:from-rose-500 hover:to-purple-600 border border-rose-400/40 text-white text-sm tracking-widest shadow-[0_0_30px_rgba(244,63,94,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer flex items-center gap-2"
             >
               <span>Continue Journey</span>
               <Sparkles className="w-4 h-4 text-amber-200 group-hover:rotate-12 transition-transform" />
@@ -498,7 +554,8 @@ export default function SecretGiftCinematicScene({ onComplete }) {
           </div>
         </div>
       )}
-
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(content, document.body) : content;
 }

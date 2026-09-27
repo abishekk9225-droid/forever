@@ -128,14 +128,14 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
 
         {/* SUBSTAGE 2: PRANK GIFT BOX & LETTER */}
         {subStage === 'GIFT_BOX' && (
-          <motion.div
-            key="gift_box"
-            initial={{ opacity: 0, scale: 0.92, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: -20 }}
-            className="w-full p-8 sm:p-10 rounded-3xl backdrop-blur-3xl bg-zinc-950/85 border border-rose-500/30 shadow-[0_0_50px_rgba(244,114,182,0.25)] text-center relative"
-          >
-            {!isBoxOpen ? (
+          <>
+            <motion.div
+              key="gift_box"
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: -20 }}
+              className="w-full p-8 sm:p-10 rounded-3xl backdrop-blur-3xl bg-zinc-950/85 border border-rose-500/30 shadow-[0_0_50px_rgba(244,114,182,0.25)] text-center relative"
+            >
               <div
                 onClick={() => setIsBoxOpen(true)}
                 className="cursor-pointer group flex flex-col items-center justify-center py-6"
@@ -150,12 +150,17 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
                 </h3>
                 <p className="text-xs text-rose-300/70">Unakkaga oru chinna message ulla irukku...</p>
               </div>
-            ) : (
+            </motion.div>
+
+            {isBoxOpen && (
               <SecretGiftCinematicScene
-                onComplete={() => setSubStage('TEASER')}
+                onComplete={() => {
+                  setIsBoxOpen(false);
+                  setSubStage('TEASER');
+                }}
               />
             )}
-          </motion.div>
+          </>
         )}
 
         {/* SUBSTAGE 3: TEASER SCREEN */}

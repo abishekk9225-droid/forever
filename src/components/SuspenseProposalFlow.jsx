@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { Gift, AlertCircle, Eye } from 'lucide-react';
@@ -14,6 +14,25 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
   const [isBoxOpen, setIsBoxOpen] = useState(false);
   const [noPos, setNoPos] = useState({ x: 0, y: 0 });
   const [dodgeCount, setDodgeCount] = useState(0);
+
+  // Synchronize suspense buildup with heartbeat BPM
+  useEffect(() => {
+    if (window.heartbeatEngine) {
+      switch (subStage) {
+        case 'SUSPENSE':
+          window.heartbeatEngine.setTargetBPM(116, 0.40);
+          break;
+        case 'GIFT_BOX':
+          window.heartbeatEngine.setTargetBPM(122, 0.44);
+          break;
+        case 'TEASER':
+          window.heartbeatEngine.setTargetBPM(128, 0.48);
+          break;
+        default:
+          break;
+      }
+    }
+  }, [subStage]);
 
   const dodgeNoButton = () => {
     const randomX = (Math.random() - 0.5) * 260;

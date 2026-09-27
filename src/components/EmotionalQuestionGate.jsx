@@ -29,6 +29,34 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
     return () => clearInterval(timer);
   }, []);
 
+  // Synchronize Emotional Question Gate progression with heartbeat BPM
+  useEffect(() => {
+    if (window.heartbeatEngine) {
+      switch (step) {
+        case 'QUESTION':
+          window.heartbeatEngine.setTargetBPM(66, 0.16);
+          break;
+        case 'LYRIC_SCENE':
+          window.heartbeatEngine.setTargetBPM(68, 0.18);
+          break;
+        case 'VOICE':
+          window.heartbeatEngine.setTargetBPM(74, 0.20);
+          break;
+        case 'MEMORY_ROOM':
+          window.heartbeatEngine.setTargetBPM(82, 0.23);
+          break;
+        case 'OPEN_WHEN':
+          window.heartbeatEngine.setTargetBPM(90, 0.27);
+          break;
+        case 'CELEBRATION':
+          window.heartbeatEngine.setTargetBPM(102, 0.32);
+          break;
+        default:
+          break;
+      }
+    }
+  }, [step]);
+
   const handleFeelingsClick = () => {
     // 1. Trigger celebratory confetti blast
     confetti({

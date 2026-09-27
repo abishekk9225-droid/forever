@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Sparkles, ArrowRight } from 'lucide-react';
 import { SceneProvider, useScene, SCENES } from './context/SceneProvider';
 import { SoundProvider } from './context/SoundContext';
+import { HeartbeatProvider, HeartbeatVisualSync, useHeartbeat } from './context/HeartbeatContext';
 
 // Visual canvases and companion components
 import BackgroundEffects from './components/BackgroundEffects';
@@ -46,6 +47,42 @@ function MainApp() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [hasConfirmedFeelings, setHasConfirmedFeelings] = useState(false);
   const { currentScene, goToScene: setCurrentScene } = useScene();
+  const { setTargetBPM } = useHeartbeat();
+
+  React.useEffect(() => {
+    if (showHeartbeat) {
+      setTargetBPM(54, 0.12);
+    } else if (!isUnlocked) {
+      setTargetBPM(56, 0.12);
+    } else if (!hasConfirmedFeelings) {
+      // Dynamic progression inside EmotionalQuestionGate steps
+    } else {
+      switch (currentScene) {
+        case SCENES.INTRO:
+        case SCENES.ASK_DIALOGUE:
+          setTargetBPM(104, 0.32);
+          break;
+        case SCENES.MEMORIES:
+          setTargetBPM(108, 0.35);
+          break;
+        case SCENES.GAME:
+          setTargetBPM(110, 0.38);
+          break;
+        case SCENES.LETTER:
+          setTargetBPM(114, 0.40);
+          break;
+        case SCENES.MELT:
+          setTargetBPM(118, 0.42);
+          break;
+        case SCENES.CONFESSION:
+          // Handled inside SuspenseProposalFlow and ProposalConfession
+          break;
+        default:
+          setTargetBPM(80, 0.20);
+          break;
+      }
+    }
+  }, [showHeartbeat, isUnlocked, hasConfirmedFeelings, currentScene, setTargetBPM]);
 
   // 1. Heartbeat ECG Entry Scene
   if (showHeartbeat) {
@@ -302,7 +339,10 @@ export default function App() {
     <ErrorBoundary>
       <SceneProvider>
         <SoundProvider>
-          <MainApp />
+          <HeartbeatProvider>
+            <HeartbeatVisualSync />
+            <MainApp />
+          </HeartbeatProvider>
         </SoundProvider>
       </SceneProvider>
     </ErrorBoundary>

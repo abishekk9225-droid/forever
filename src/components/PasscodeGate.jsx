@@ -20,7 +20,6 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   const [countdown, setCountdown] = useState(15);
 
   const timersRef = useRef([]);
-  const audioCtxRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const cameraStreamRef = useRef(null);
@@ -56,35 +55,14 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
     return () => {
       timers.forEach((t) => clearTimeout(t));
       stopCamera();
-      if (audioCtxRef.current) {
-        try {
-          audioCtxRef.current.close();
-        } catch {}
-      }
     };
   }, [stopCamera]);
 
   const playHeartbeatAudio = () => {
-    try {
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      const ctx = audioCtxRef.current;
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(60, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.4);
-      gain.gain.setValueAtTime(0.8, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.5);
-    } catch {}
+    if (window.heartbeatEngine) {
+      window.heartbeatEngine.start();
+      window.heartbeatEngine.setTargetBPM(56, 0.12);
+    }
   };
 
   // Reusable cinematic unlock transition (used by both manual passcode & 0s countdown)
@@ -94,6 +72,11 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
 
     // Immediately stop camera tracks so webcam LED turns off
     stopCamera();
+
+    // Gradually increase heartbeat over 2-3s upon unlock
+    if (window.heartbeatEngine) {
+      window.heartbeatEngine.setTargetBPM(64, 0.15);
+    }
 
     // 0.0s: successful unlock triggered
     playHeartbeatAudio();

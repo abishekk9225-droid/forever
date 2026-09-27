@@ -1,45 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function ProposalConfession({ onAccept, onReject, onNext }) {
   // Timeline Stages: 'BLACKOUT' -> 'PHOTO' -> 'SARANYA' -> 'ILOVEYOU' -> 'BUTTONS'
   const [stage, setStage] = useState('BLACKOUT');
   const [echoPhoto, setEchoPhoto] = useState(null);
   const [celebratingYes, setCelebratingYes] = useState(false);
-  const audioCtxRef = useRef(null);
 
-  // Synthetic Heartbeat Pulse Audio (Web Audio API)
+  // Cinematic Heartbeat Integration with unified persistent engine
   const triggerHeartbeat = () => {
-    try {
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      const ctx = audioCtxRef.current;
-      if (ctx.state === 'suspended') ctx.resume();
-
-      const thump = (time, freq, gainVal) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, time);
-        osc.frequency.exponentialRampToValueAtTime(30, time + 0.15);
-        gain.gain.setValueAtTime(gainVal, time);
-        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(time);
-        osc.stop(time + 0.2);
-      };
-
-      const now = ctx.currentTime;
-      thump(now, 75, 0.4);
-      thump(now + 0.22, 55, 0.3);
-    } catch {
-      // Audio autoplay policy fallback
+    if (window.heartbeatEngine) {
+      window.heartbeatEngine.start();
     }
   };
 
   useEffect(() => {
-    // Phase 1 (0.0s): Pitch Blackout + Heartbeat
+    // Initial Climax Heartbeat (BPM: 138, Volume: 0.52)
+    if (window.heartbeatEngine) {
+      window.heartbeatEngine.setTargetBPM(138, 0.52);
+    }
     triggerHeartbeat();
 
     // Phase 2 (1.8s - 2.5s): Memory Echo flashes
@@ -50,22 +28,37 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
       setEchoPhoto('/sk.jpg');
     }, 2200);
 
-    // Phase 2 Climax (2.5s): Main Photo Focus
+    // Phase 2 Climax (2.5s): Main Photo Focus (BPM: 142)
     const tPhoto = setTimeout(() => {
       setEchoPhoto(null);
       setStage('PHOTO');
-      triggerHeartbeat();
+      if (window.heartbeatEngine) {
+        window.heartbeatEngine.setTargetBPM(142, 0.54);
+      }
     }, 2500);
 
-    // Phase 3 (4.5s): SARANYA text appears
+    // Phase 3 (4.5s): SARANYA text appears (Fastest point: 145 BPM)
     const tSaranya = setTimeout(() => {
       setStage('SARANYA');
+      if (window.heartbeatEngine) {
+        window.heartbeatEngine.setTargetBPM(145, 0.55);
+      }
     }, 4500);
 
+    // Brief 250ms silence immediately before "I LOVE YOU" (Emotional suspense)
+    const tSilence = setTimeout(() => {
+      if (window.heartbeatEngine) {
+        window.heartbeatEngine.silence(250);
+      }
+    }, 6550);
+
     // Phase 4 (6.8s): Grand Climax "I LOVE YOU" + Lens Flare
+    // After text appears: Heartbeat settles into a slower emotional rhythm (~75-85 BPM)
     const tClimax = setTimeout(() => {
       setStage('ILOVEYOU');
-      triggerHeartbeat();
+      if (window.heartbeatEngine) {
+        window.heartbeatEngine.setTargetBPM(80, 0.22);
+      }
     }, 6800);
 
     // Phase 5 (9.8s): Buttons Fade in
@@ -78,13 +71,9 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
       clearTimeout(tEcho2);
       clearTimeout(tPhoto);
       clearTimeout(tSaranya);
+      clearTimeout(tSilence);
       clearTimeout(tClimax);
       clearTimeout(tButtons);
-      if (audioCtxRef.current) {
-        try {
-          audioCtxRef.current.close();
-        } catch {}
-      }
     };
   }, []);
 

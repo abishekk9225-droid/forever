@@ -12,12 +12,12 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   const [lockGlowEnhanced, setLockGlowEnhanced] = useState(false);
   const [rosePulse, setRosePulse] = useState(false);
 
-  // Camera Presence Experience States
-  // cameraStatus: 'INACTIVE' | 'REQUESTING' | 'ACTIVE' | 'DENIED'
-  const [cameraStatus, setCameraStatus] = useState('INACTIVE');
-  const [cameraError, setCameraError] = useState('');
+  // Camera Cinematic Presence Mode States
+  // cameraStatus: 'REQUESTING' | 'ACTIVE' | 'DENIED' | 'CLOSED'
+  const [cameraStatus, setCameraStatus] = useState('REQUESTING');
   const [isPresenceDetected, setIsPresenceDetected] = useState(false);
-  const [countdown, setCountdown] = useState(30);
+  const [hasDetectedOnce, setHasDetectedOnce] = useState(false);
+  const [countdown, setCountdown] = useState(15);
 
   const timersRef = useRef([]);
   const audioCtxRef = useRef(null);
@@ -50,7 +50,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
     presenceCounterRef.current = 0;
   }, []);
 
-  // Full cleanup on unmount
+  // Cleanup on unmount
   useEffect(() => {
     const timers = timersRef.current;
     return () => {
@@ -115,14 +115,14 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
       }, 700)
     );
 
-    // 1.0s: stage = GLOW (passcode text gets soft rose/gold glow)
+    // 1.0s: stage = GLOW (rose/gold glow expands from camera circle & card)
     timersRef.current.push(
       setTimeout(() => {
         setStage('GLOW');
       }, 1000)
     );
 
-    // 1.5s: stage = SWEEP (subtle cinematic light sweep passes across existing photos)
+    // 1.5s: stage = SWEEP (subtle cinematic light sweep passes across card & photos)
     timersRef.current.push(
       setTimeout(() => {
         setStage('SWEEP');
@@ -165,13 +165,65 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
     }
   };
 
-  // Lightweight local presence detection (Method 1: Browser FaceDetector API -> Method 2: Local Canvas RGB/YCbCr Analysis)
+  // Start Camera Experience (Requested automatically on mount)
+  const startCamera = useCallback(async () => {
+    setCameraStatus('REQUESTING');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'user',
+          width: { ideal: 480 },
+          height: { ideal: 480 },
+        },
+        audio: false,
+      });
+
+      cameraStreamRef.current = stream;
+      setCameraStatus('ACTIVE');
+      setCountdown(15);
+      setIsPresenceDetected(false);
+      setHasDetectedOnce(false);
+      presenceCounterRef.current = 0;
+    } catch (err) {
+      console.warn('Camera permission dismissed, denied or unavailable:', err);
+      // Gracefully hide camera experience when permission is denied
+      setCameraStatus('DENIED');
+    }
+  }, []);
+
+  // Request camera immediately on mount as early as browser allows
+  useEffect(() => {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      startCamera();
+    } else {
+      setCameraStatus('DENIED');
+    }
+  }, [startCamera]);
+
+  // Attach stream to video element when camera becomes active
+  useEffect(() => {
+    if (cameraStatus === 'ACTIVE' && videoRef.current && cameraStreamRef.current) {
+      videoRef.current.srcObject = cameraStreamRef.current;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [cameraStatus]);
+
+  // Close Camera Experience manually
+  const handleCloseCamera = () => {
+    stopCamera();
+    setCameraStatus('CLOSED');
+    setIsPresenceDetected(false);
+    setCountdown(15);
+  };
+
+  // Lightweight local presence detection (Method 1: Browser FaceDetector -> Method 2: Local Canvas RGB/YCbCr Analysis)
+  // PRIVACY: Zero biometric templates, zero comparisons with /public/sha.jpg or /public/sa.jpg, 100% local in-browser
   const detectPresence = async () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas || video.readyState < 2) return false;
 
-    // Method 1: Native browser FaceDetector if supported
+    // Method 1: Native browser FaceDetector if available
     if (typeof window !== 'undefined' && 'FaceDetector' in window) {
       try {
         if (!faceDetectorRef.current) {
@@ -209,7 +261,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
           const lum = 0.299 * r + 0.587 * g + 0.114 * b;
           totalLum += lum;
 
-          // YCbCr skin tone boundaries (robust against varying skin tones and warm indoor lighting)
+          // YCbCr skin tone boundaries (robust across all skin tones and warm indoor lighting)
           const cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b;
           const cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b;
 
@@ -236,50 +288,6 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
     }
   };
 
-  // Start Camera Experience on explicit user click
-  const handleStartCamera = async () => {
-    setCameraError('');
-    setCameraStatus('REQUESTING');
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user',
-          width: { ideal: 480 },
-          height: { ideal: 480 },
-        },
-        audio: false,
-      });
-
-      cameraStreamRef.current = stream;
-      setCameraStatus('ACTIVE');
-      setCountdown(30);
-      setIsPresenceDetected(false);
-      presenceCounterRef.current = 0;
-    } catch (err) {
-      console.warn('Camera permission denied or camera unavailable:', err);
-      setCameraStatus('DENIED');
-      setCameraError('Camera experience skipped.');
-    }
-  };
-
-  // Attach stream to video element when camera becomes active
-  useEffect(() => {
-    if (cameraStatus === 'ACTIVE' && videoRef.current && cameraStreamRef.current) {
-      videoRef.current.srcObject = cameraStreamRef.current;
-      videoRef.current.play().catch(() => {});
-    }
-  }, [cameraStatus]);
-
-  // Close Camera Experience manually
-  const handleCloseCamera = () => {
-    stopCamera();
-    setCameraStatus('INACTIVE');
-    setCameraError('');
-    setIsPresenceDetected(false);
-    setCountdown(30);
-  };
-
   // Presence Detection loop while camera is active
   useEffect(() => {
     if (cameraStatus !== 'ACTIVE') return;
@@ -296,6 +304,9 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
 
       const nowPresent = presenceCounterRef.current >= 2;
       setIsPresenceDetected(nowPresent);
+      if (nowPresent) {
+        setHasDetectedOnce(true);
+      }
     }, 320);
 
     return () => {
@@ -306,11 +317,11 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
     };
   }, [cameraStatus]);
 
-  // 30-Second Countdown behavior:
-  // - Decrements by 1 while presence is detected
-  // - Automatically PAUSES if presence disappears
-  // - Resumes when presence returns
-  // - At 0s: Triggers existing unlock sequence!
+  // 15-SECOND COUNTDOWN:
+  // - When presence is detected continuously: counts down 15, 14, 13, ... 1
+  // - If presence disappears: PAUSES countdown and shows "Waiting for you... ❤️"
+  // - When presence returns: RESUMES countdown from remaining time
+  // - At 0s: triggers auto unlock sequence
   useEffect(() => {
     if (cameraStatus !== 'ACTIVE' || !isPresenceDetected || stage !== 'IDLE') return;
 
@@ -336,10 +347,10 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
 
   const isUnlocking = stage !== 'IDLE';
 
-  // SVG circular countdown progress variables (Radius: 66, Circumference: 414.69)
+  // SVG circular countdown progress variables (Radius: 66, Circumference: 414.69) for 15s
   const ringRadius = 66;
   const ringCircumference = 2 * Math.PI * ringRadius;
-  const ringOffset = ringCircumference * (1 - (30 - countdown) / 30);
+  const ringOffset = ringCircumference * (1 - (15 - countdown) / 15);
 
   return (
     <div className="min-h-screen w-full bg-[#030712] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden select-none">
@@ -362,10 +373,10 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
           0%, 100% { opacity: 0.7; filter: blur(14px); }
           50% { opacity: 1; filter: blur(24px); }
         }
-        @keyframes scanLine {
-          0% { top: 5%; opacity: 0; }
-          50% { opacity: 0.85; }
-          100% { top: 95%; opacity: 0; }
+        @keyframes scanSweep {
+          0% { top: 6%; opacity: 0; }
+          50% { opacity: 0.9; }
+          100% { top: 92%; opacity: 0; }
         }
         .rgb-border-box {
           position: relative;
@@ -399,8 +410,19 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
         .rgb-border-aura-right {
           animation-delay: -3s;
         }
+        .camera-edge-glow::before {
+          content: '';
+          position: absolute;
+          inset: -4px;
+          border-radius: 9999px;
+          background: conic-gradient(from 0deg, #f43f5e, #06b6d4, #ec4899, #3b82f6, #f43f5e);
+          animation: rgbSpin 4s linear infinite;
+          filter: blur(4px);
+          opacity: 0.85;
+          z-index: 0;
+        }
         @media (prefers-reduced-motion: reduce) {
-          .rgb-border-box::before, .rgb-border-aura {
+          .rgb-border-box::before, .rgb-border-aura, .camera-edge-glow::before {
             animation: none !important;
           }
         }
@@ -485,11 +507,11 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
         </div>
 
         {/* Central Elevated Glassmorphic Passcode Box (Preserves layout & dimensions) */}
-        <div className="relative z-20 w-full max-w-md shrink-0 bg-slate-900/85 backdrop-blur-3xl p-6 sm:p-8 md:p-10 rounded-[2.5rem] border border-pink-500/40 shadow-[0_0_60px_rgba(244,63,94,0.3)] text-center space-y-5 mx-auto animate-fade-in">
+        <div className="relative z-20 w-full max-w-md shrink-0 bg-slate-900/85 backdrop-blur-3xl p-6 sm:p-8 md:p-10 rounded-[2.5rem] border border-pink-500/40 shadow-[0_0_60px_rgba(244,63,94,0.3)] text-center space-y-4 mx-auto animate-fade-in">
           {/* Lock Icon Container */}
           <div className="flex justify-center">
             <div
-              className={`w-16 h-16 rounded-2xl bg-pink-500/20 border border-pink-400/40 flex items-center justify-center text-pink-400 transition-all duration-500 ${
+              className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-pink-500/20 border border-pink-400/40 flex items-center justify-center text-pink-400 transition-all duration-500 ${
                 lockGlowEnhanced || isUnlocking
                   ? 'shadow-[0_0_35px_rgba(244,63,94,0.7)] border-pink-400 scale-105'
                   : passcode.length > 0 || isPresenceDetected
@@ -501,16 +523,16 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
               stage === 'GLOW' ||
               stage === 'SWEEP' ||
               stage === 'BLACKOUT' ? (
-                <Unlock className="w-8 h-8 text-pink-200 transition-all duration-300 scale-105" />
+                <Unlock className="w-7 h-7 md:w-8 md:h-8 text-pink-200 transition-all duration-300 scale-105" />
               ) : (
-                <Lock className="w-8 h-8 text-pink-300 transition-all duration-300" />
+                <Lock className="w-7 h-7 md:w-8 md:h-8 text-pink-300 transition-all duration-300" />
               )}
             </div>
           </div>
 
           {/* Heading & Subtitle */}
           <div>
-            <h1 className="text-2xl font-bold text-white tracking-wide flex items-center justify-center gap-2">
+            <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide flex items-center justify-center gap-2">
               {isUnlocking ? (
                 <span>Unlocked... ❤️</span>
               ) : (
@@ -519,69 +541,37 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
                 </>
               )}
             </h1>
-            <p className="text-slate-400 text-sm mt-1.5">
+            <p className="text-slate-400 text-xs md:text-sm mt-1">
               Some memories are meant to be unlocked...
             </p>
           </div>
 
-          {/* OPTIONAL CAMERA PRESENCE EXPERIENCE */}
+          {/* CAMERA CINEMATIC PRESENCE MODE */}
           <div className="w-full">
-            {cameraStatus === 'INACTIVE' && (
-              <div className="flex flex-col items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={handleStartCamera}
-                  disabled={isUnlocking}
-                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/30 text-pink-300 text-xs font-medium tracking-wide transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(244,63,94,0.15)] hover:scale-105"
-                  title="Enable Camera Presence Experience"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-pink-400" />
-                  <span>✨ A little surprise</span>
-                </button>
-                {cameraError && (
-                  <p className="text-rose-300/80 text-[11px] animate-in fade-in duration-300">
-                    {cameraError}
-                  </p>
-                )}
-              </div>
-            )}
-
             {cameraStatus === 'REQUESTING' && (
-              <div className="py-2.5 flex items-center justify-center gap-2 text-pink-300 text-xs font-medium animate-pulse">
+              <div className="py-2 flex items-center justify-center gap-2 text-pink-300 text-xs font-medium animate-pulse">
                 <Loader2 className="w-4 h-4 animate-spin text-pink-400" />
-                <span>Connecting with camera...</span>
+                <span>Preparing presence scanner...</span>
               </div>
             )}
 
-            {cameraStatus === 'DENIED' && (
-              <div className="py-1 flex flex-col items-center gap-1">
-                <p className="text-rose-300/80 text-xs font-medium">
-                  Camera experience skipped.
-                </p>
-                <button
-                  type="button"
-                  onClick={handleStartCamera}
-                  className="text-pink-400/80 hover:text-pink-300 text-[11px] underline underline-offset-4 transition-colors cursor-pointer"
-                >
-                  Try camera again
-                </button>
-              </div>
-            )}
-
+            {/* If camera is active: Small circular scanning area with rose/cyan edge lighting & scanning ring */}
             {cameraStatus === 'ACTIVE' && (
-              <div className="flex flex-col items-center justify-center py-2 animate-in fade-in zoom-in-95 duration-500 relative">
-                {/* Circular Glass Camera Preview Container with 30s Countdown Ring */}
+              <div className="flex flex-col items-center justify-center py-1.5 animate-in fade-in zoom-in-95 duration-500 relative">
                 <div className="relative w-36 h-36 mx-auto rounded-full flex items-center justify-center">
+                  {/* Rotating Rose/Cyan Edge Lighting & Light Aura */}
+                  <div className="absolute inset-0 rounded-full camera-edge-glow pointer-events-none" />
+
                   {/* Ambient Rose Glow Pulse */}
                   <div
                     className={`absolute inset-0 rounded-full transition-all duration-700 pointer-events-none ${
                       isPresenceDetected
-                        ? 'bg-rose-500/25 blur-xl animate-pulse'
-                        : 'bg-pink-500/10 blur-lg'
+                        ? 'bg-rose-500/35 blur-xl animate-pulse'
+                        : 'bg-pink-500/15 blur-lg'
                     }`}
                   />
 
-                  {/* SVG Circular Progress Ring */}
+                  {/* SVG Circular Countdown Progress Ring (15 seconds) */}
                   <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none z-20">
                     <circle
                       cx="72"
@@ -594,7 +584,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
                       cx="72"
                       cy="72"
                       r={ringRadius}
-                      className="stroke-rose-500 transition-all duration-1000 ease-linear fill-none drop-shadow-[0_0_8px_rgba(244,63,94,0.8)]"
+                      className="stroke-rose-500 transition-all duration-1000 ease-linear fill-none drop-shadow-[0_0_8px_rgba(244,63,94,0.85)]"
                       strokeWidth="3.5"
                       strokeDasharray={ringCircumference}
                       strokeDashoffset={ringOffset}
@@ -602,8 +592,8 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
                     />
                   </svg>
 
-                  {/* Rounded Video Frame (Mirrored, local-only, no biometric storage) */}
-                  <div className="w-[124px] h-[124px] rounded-full overflow-hidden relative z-10 bg-slate-950 border border-pink-500/40 shadow-inner">
+                  {/* Rounded Mirrored Video Frame (Local only, zero biometrics, zero frame uploads) */}
+                  <div className="w-[124px] h-[124px] rounded-full overflow-hidden relative z-10 bg-slate-950 border border-pink-400/50 shadow-inner">
                     <video
                       ref={videoRef}
                       playsInline
@@ -612,18 +602,18 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
                       className="w-full h-full object-cover scale-x-[-1]"
                     />
 
-                    {/* Subtle cyan/purple scanning line when searching for presence */}
+                    {/* Rose/Cyan Cinematic Scanning Sweep Line */}
                     {!isPresenceDetected && (
-                      <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent pointer-events-none opacity-70 animate-scanLine blur-[0.5px]" />
+                      <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent pointer-events-none opacity-80 animate-[scanSweep_2s_ease-in-out_infinite] blur-[0.5px]" />
                     )}
 
-                    {/* Gentle rose sweep when presence is detected */}
+                    {/* Bright Rose/Pink Glow Sweep when Face Detected */}
                     {isPresenceDetected && (
-                      <div className="absolute inset-0 bg-gradient-to-tr from-rose-500/15 via-transparent to-pink-500/15 pointer-events-none animate-pulse" />
+                      <div className="absolute inset-0 bg-gradient-to-tr from-rose-500/20 via-transparent to-pink-500/20 pointer-events-none animate-pulse" />
                     )}
                   </div>
 
-                  {/* Floating tiny heart when presence is detected */}
+                  {/* Small Heartbeat Particles */}
                   {isPresenceDetected && (
                     <div className="absolute -top-1 -right-1 text-xs text-rose-400 animate-bounce pointer-events-none z-30">
                       ❤️
@@ -631,61 +621,86 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
                   )}
                 </div>
 
-                {/* Presence Detection Feedback */}
-                <div className="mt-3.5 flex flex-col items-center">
+                {/* CAMERA DETECTION STATUS */}
+                <div className="mt-3 flex flex-col items-center">
                   {!isPresenceDetected ? (
-                    <div className="flex flex-col items-center gap-1">
-                      <p className="text-pink-300 text-xs font-medium tracking-wide flex items-center gap-1.5 animate-pulse">
-                        <Sparkles className="w-3.5 h-3.5 text-pink-400" />
-                        <span>Waiting for you... ✨</span>
-                      </p>
-                      {countdown < 30 && (
-                        <p className="text-slate-500 text-[11px]">
-                          (Paused at {countdown}s — look into camera to resume)
+                    hasDetectedOnce && countdown < 15 ? (
+                      /* Presence Paused during countdown */
+                      <div className="flex flex-col items-center gap-0.5">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-rose-950/70 border border-rose-500/40 text-rose-300 text-xs font-semibold shadow-[0_0_15px_rgba(244,63,94,0.3)] animate-pulse">
+                          <span>Waiting for you... ❤️</span>
+                        </div>
+                        <p className="text-slate-400 text-[11px] mt-0.5">
+                          (Paused at {countdown}s — return into view to resume)
                         </p>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      /* Initial Not Detected state with subtle dark/red/pink glow */
+                      <div className="flex flex-col items-center gap-0.5">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-slate-950/80 border border-rose-500/30 text-rose-400/90 text-xs font-medium shadow-[0_0_12px_rgba(244,63,94,0.2)]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                          <span>Not Detected</span>
+                        </div>
+                        <p className="text-slate-500 text-[11px]">Look gently into the scanning circle</p>
+                      </div>
+                    )
                   ) : countdown > 0 ? (
+                    /* Face Detected state with bright rose/pink cinematic glow */
                     <div className="flex flex-col items-center gap-1">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-semibold shadow-[0_0_12px_rgba(244,63,94,0.3)]">
+                      <div className="inline-flex items-center gap-1.5 px-3.5 py-0.5 rounded-full bg-rose-500/25 border border-pink-400/60 text-pink-200 text-xs font-semibold shadow-[0_0_20px_rgba(244,63,94,0.6)]">
                         <span>Face Detected ❤️</span>
                       </div>
-                      <p className="text-pink-200/90 text-xs italic mt-0.5">
-                        "Something feels familiar..."
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-slate-300 text-xs font-medium">
-                          Stay for a little moment... ❤️
+                          Stay for a moment...
                         </span>
-                        <span className="text-rose-400 font-bold text-sm tracking-wider px-2 py-0.5 rounded-lg bg-rose-950/70 border border-rose-500/40 shadow-[0_0_15px_rgba(244,63,94,0.5)]">
-                          {countdown}
+                        <span className="text-rose-400 font-bold text-sm tracking-widest px-2 py-0.5 rounded-lg bg-rose-950/80 border border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.5)]">
+                          {countdown}s
                         </span>
                       </div>
                     </div>
                   ) : (
+                    /* Auto Unlock at 0s */
                     <div className="flex items-center gap-1.5 text-rose-300 text-sm font-bold tracking-wide animate-pulse">
                       <Sparkles className="w-4 h-4 text-pink-400" />
                       <span>Unlocked... ❤️</span>
                     </div>
                   )}
 
-                  {/* Close camera preview button */}
+                  {/* Small Dismiss button to close camera feed if preferred */}
                   {!isUnlocking && (
                     <button
                       type="button"
                       onClick={handleCloseCamera}
-                      className="mt-2.5 inline-flex items-center gap-1 text-slate-500 hover:text-slate-300 text-[11px] underline underline-offset-4 transition-colors cursor-pointer"
+                      className="mt-2 inline-flex items-center gap-1 text-slate-500 hover:text-slate-300 text-[11px] underline underline-offset-4 transition-colors cursor-pointer"
                     >
                       <X className="w-3 h-3" />
-                      <span>Close camera preview</span>
+                      <span>Close camera</span>
                     </button>
                   )}
                 </div>
               </div>
             )}
+
+            {/* If camera is closed manually, subtle re-open control */}
+            {cameraStatus === 'CLOSED' && (
+              <div className="pt-0.5 pb-1">
+                <button
+                  type="button"
+                  onClick={startCamera}
+                  disabled={isUnlocking}
+                  className="inline-flex items-center gap-1.5 text-pink-400/80 hover:text-pink-300 text-xs font-medium transition-colors cursor-pointer"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span>Enable Camera Presence</span>
+                </button>
+              </div>
+            )}
+
+            {/* When camera permission is denied, camera experience hides gracefully */}
           </div>
 
-          {/* Passcode Form (Always fully functional) */}
+          {/* Passcode Form (Always fully functional with exact layout & SARANYA26 logic) */}
           <form onSubmit={handleSubmit} className="space-y-4 pt-1">
             <div className="relative">
               <input

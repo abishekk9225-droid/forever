@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Music, ArrowRight, Sparkles, Disc3 } from 'lucide-react';
+import { Music, ArrowRight, Sparkles, Disc3, Volume2, VolumeX } from 'lucide-react';
 
 const TAMIL_LYRICS = [
   "உன் ஒற்றைப் பார்வையில் என் உலகம் உறைந்தது...",
@@ -8,7 +8,7 @@ const TAMIL_LYRICS = [
   "உன் இதயத்துடிப்பில் நான் வாழ ஏங்கினேன் சரண்யா... ❤️"
 ];
 
-export default function EmotionalSongLyricScene({ onComplete }) {
+export default function EmotionalSongLyricScene({ audioInstance, onComplete }) {
   const [currentLineIdx, setCurrentLineIdx] = useState(0);
   const [displayText, setDisplayText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
@@ -16,48 +16,51 @@ export default function EmotionalSongLyricScene({ onComplete }) {
   const audioRef = useRef(null);
   const isTransitioningRef = useRef(false);
 
-  // Audio Playback with graceful fallback
+  // Sync with audio instance or initialize fallback
   useEffect(() => {
-    const candidateSources = ['/abi.mp3', '/abi.mp3.mpeg', '/abi.1.mp3'];
-    let currentSrcIdx = 0;
+    let audio = audioInstance;
 
-    const audio = new Audio();
-    audio.loop = false;
-    audio.volume = 1.0;
+    if (!audio) {
+      audio = new Audio('/abi.mp3');
+      audio.preload = 'auto';
+      audio.volume = 1.0;
+      audio.play().catch(() => {
+        const fallback = new Audio('/abi.mp3.mpeg');
+        fallback.preload = 'auto';
+        fallback.volume = 1.0;
+        fallback.play().catch(() => {});
+        audio = fallback;
+      });
+    }
+
     audioRef.current = audio;
 
-    const tryPlaySource = () => {
-      if (currentSrcIdx >= candidateSources.length) return;
-      audio.src = candidateSources[currentSrcIdx];
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsPlayingAudio(true);
-          })
-          .catch(() => {
-            currentSrcIdx++;
-            if (currentSrcIdx < candidateSources.length) {
-              tryPlaySource();
-            }
-          });
+    if (audio) {
+      if (!audio.paused) {
+        setIsPlayingAudio(true);
+      } else {
+        audio.play()
+          .then(() => setIsPlayingAudio(true))
+          .catch(() => setIsPlayingAudio(false));
       }
-    };
 
-    tryPlaySource();
+      const onPlay = () => setIsPlayingAudio(true);
+      const onPause = () => setIsPlayingAudio(false);
+      const onEnded = () => handleComplete();
 
-    // Listen to audio end
-    const handleEnded = () => {
-      handleComplete();
-    };
-    audio.addEventListener('ended', handleEnded);
+      audio.addEventListener('play', onPlay);
+      audio.addEventListener('pause', onPause);
+      audio.addEventListener('ended', onEnded);
 
-    return () => {
-      audio.removeEventListener('ended', handleEnded);
-      audio.pause();
-      audio.src = '';
-    };
-  }, []);
+      return () => {
+        audio.removeEventListener('play', onPlay);
+        audio.removeEventListener('pause', onPause);
+        audio.removeEventListener('ended', onEnded);
+        audio.pause();
+        audio.src = '';
+      };
+    }
+  }, [audioInstance]);
 
   // Cinematic Synced Tamil Typewriter Effect
   useEffect(() => {
@@ -92,6 +95,26 @@ export default function EmotionalSongLyricScene({ onComplete }) {
 
     return () => clearInterval(typeInterval);
   }, [currentLineIdx]);
+
+  const togglePlayPause = () => {
+    if (!audioRef.current) {
+      const newAudio = new Audio('/abi.mp3');
+      audioRef.current = newAudio;
+    }
+    const audio = audioRef.current;
+    if (audio.paused) {
+      audio.play()
+        .then(() => setIsPlayingAudio(true))
+        .catch(() => {
+          const fallback = new Audio('/abi.mp3.mpeg');
+          audioRef.current = fallback;
+          fallback.play().then(() => setIsPlayingAudio(true)).catch(() => {});
+        });
+    } else {
+      audio.pause();
+      setIsPlayingAudio(false);
+    }
+  };
 
   const handleComplete = () => {
     if (isTransitioningRef.current) return;
@@ -151,8 +174,8 @@ export default function EmotionalSongLyricScene({ onComplete }) {
         ))}
       </div>
 
-      {/* Top Header Badge & Vinyl Record */}
-      <header className="relative z-10 flex flex-col items-center gap-4 mt-2">
+      {/* Top Header Badge, Vinyl Record, and Play/Pause Toggle */}
+      <header className="relative z-10 flex flex-col items-center gap-3 mt-2">
         <div className="flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-pink-500/30 text-pink-300 text-xs shadow-[0_0_20px_rgba(244,63,94,0.3)] animate-pulse">
           <Music className="w-3.5 h-3.5 text-rose-400" />
           <span className="tracking-widest uppercase font-semibold">A Melody From My Soul</span>
@@ -161,11 +184,36 @@ export default function EmotionalSongLyricScene({ onComplete }) {
 
         {/* Retro Pulsing Vinyl Icon with spinning glow */}
         <div className="relative flex items-center justify-center">
-          <div className="w-14 h-14 rounded-full bg-slate-950 border-2 border-pink-500/40 flex items-center justify-center shadow-[0_0_25px_rgba(244,63,94,0.4)] animate-spin-slow">
-            <Disc3 className="w-8 h-8 text-pink-400/80 animate-spin" style={{ animationDuration: '8s' }} />
+          <div
+            onClick={togglePlayPause}
+            className="w-14 h-14 rounded-full bg-slate-950 border-2 border-pink-500/40 flex items-center justify-center shadow-[0_0_25px_rgba(244,63,94,0.4)] cursor-pointer hover:scale-105 transition-transform"
+          >
+            <Disc3
+              className={`w-8 h-8 text-pink-400/80 ${isPlayingAudio ? 'animate-spin' : ''}`}
+              style={{ animationDuration: '8s' }}
+            />
           </div>
           <div className="absolute inset-0 rounded-full bg-pink-500/20 blur-md animate-ping pointer-events-none" style={{ animationDuration: '3s' }} />
         </div>
+
+        {/* Fallback Play/Pause Toggle Pill */}
+        <button
+          onClick={togglePlayPause}
+          type="button"
+          className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-pink-500/30 text-pink-200 text-xs transition cursor-pointer shadow-[0_0_12px_rgba(244,63,94,0.25)]"
+        >
+          {isPlayingAudio ? (
+            <>
+              <Volume2 className="w-3.5 h-3.5 text-pink-400 animate-pulse" />
+              <span>Playing 🎵</span>
+            </>
+          ) : (
+            <>
+              <VolumeX className="w-3.5 h-3.5 text-rose-400 animate-bounce" />
+              <span className="text-amber-200 font-medium">Tap to Play Song 🔊</span>
+            </>
+          )}
+        </button>
       </header>
 
       {/* Main Lyric Theater */}

@@ -133,115 +133,48 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
           50% { opacity: 0.6; }
           100% { opacity: 0; transform: scale(1.35); }
         }
-        @keyframes rgbRotate {
-          0% { transform: translate(-50%, -50%) rotate(0deg); }
-          100% { transform: translate(-50%, -50%) rotate(360deg); }
+        @keyframes rgbSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
-        @keyframes rgbBreathe {
-          0%, 100% {
-            opacity: 0.45;
-            transform: scale(0.99);
-          }
-          50% {
-            opacity: 0.75;
-            transform: scale(1.02);
-          }
+        @keyframes rgbPulse {
+          0%, 100% { opacity: 0.7; filter: blur(14px); }
+          50% { opacity: 1; filter: blur(24px); }
         }
-        @keyframes rgbSweepFlash {
-          0% { filter: brightness(1) drop-shadow(0 0 8px rgba(244,63,94,0.5)); }
-          40% { filter: brightness(2.2) drop-shadow(0 0 35px rgba(255,255,255,0.9)); }
-          100% { filter: brightness(1) drop-shadow(0 0 8px rgba(244,63,94,0.5)); }
+        .rgb-border-box {
+          position: relative;
+          border-radius: 1.5rem;
+          overflow: hidden;
+          padding: 3px;
         }
-
-        .rgb-conic-spinner {
+        .rgb-border-box::before {
+          content: '';
           position: absolute;
-          top: 50%;
-          left: 50%;
-          width: max(300%, 160vh);
-          height: max(300%, 160vh);
-          background: conic-gradient(
-            from 0deg,
-            #f43f5e,
-            #d946ef,
-            #a855f7,
-            #6366f1,
-            #06b6d4,
-            #f43f5e
-          );
-          transform-origin: center center;
-          will-change: transform;
+          top: -100%;
+          left: -100%;
+          width: 300%;
+          height: 300%;
+          background: conic-gradient(from 0deg, #f43f5e, #ec4899, #a855f7, #3b82f6, #06b6d4, #f43f5e);
+          animation: rgbSpin 6s linear infinite;
+          z-index: 0;
+        }
+        .rgb-border-aura {
+          position: absolute;
+          inset: -6px;
+          background: conic-gradient(from 0deg, #f43f5e, #ec4899, #a855f7, #3b82f6, #06b6d4, #f43f5e);
+          border-radius: 1.75rem;
+          animation: rgbSpin 6s linear infinite, rgbPulse 3.5s ease-in-out infinite;
+          z-index: 0;
           pointer-events: none;
         }
-
-        .rgb-spinner-left {
-          animation: rgbRotate 8s linear infinite;
+        .rgb-border-box-right::before {
+          animation-delay: -3s;
         }
-
-        .rgb-spinner-right {
-          animation: rgbRotate 8s linear infinite -2.5s;
+        .rgb-border-aura-right {
+          animation-delay: -3s;
         }
-
-        /* Layer 2: Wide Ambient Aura */
-        .rgb-aura-container {
-          position: absolute;
-          inset: -14px;
-          border-radius: 2.25rem;
-          overflow: hidden;
-          filter: blur(28px);
-          opacity: 0.45;
-          z-index: 0;
-          animation: rgbBreathe 3.5s ease-in-out infinite;
-          transition: opacity 0.5s ease, filter 0.5s ease;
-          will-change: opacity, transform;
-        }
-
-        .rgb-aura-right {
-          animation-delay: -1.75s;
-        }
-
-        /* Hover states */
-        .group:hover .rgb-aura-container {
-          opacity: 0.85;
-          filter: blur(34px);
-        }
-
-        .group:hover .rgb-border-wrapper {
-          filter: drop-shadow(0 0 12px rgba(244,63,94,0.75)) drop-shadow(0 0 24px rgba(99,102,241,0.5));
-        }
-
-        /* Typing passcode state */
-        .rgb-aura-typing {
-          opacity: 0.75 !important;
-          filter: blur(32px) !important;
-        }
-
-        /* Unlocking state */
-        .rgb-aura-unlocking {
-          opacity: 0.95 !important;
-          filter: blur(36px) !important;
-        }
-
-        /* Sweep Stage Flash */
-        .rgb-sweep-flash {
-          animation: rgbSweepFlash 0.8s ease-in-out forwards !important;
-        }
-
-        /* Layer 1 + 2.5px LED Border Card */
-        .rgb-border-wrapper {
-          border-radius: 1.5rem;
-          padding: 2.5px;
-          overflow: hidden;
-          position: relative;
-          z-index: 1;
-          filter: drop-shadow(0 0 8px rgba(244,63,94,0.5)) drop-shadow(0 0 16px rgba(168,85,247,0.35));
-          transition: filter 0.5s ease, opacity 0.7s ease;
-        }
-
         @media (prefers-reduced-motion: reduce) {
-          .rgb-conic-spinner {
-            animation: none !important;
-          }
-          .rgb-aura-container {
+          .rgb-border-box::before, .rgb-border-aura {
             animation: none !important;
           }
         }
@@ -288,27 +221,13 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
             stage === 'BLACKOUT' ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         >
-          {/* Layer 2: Wide Ambient Neon Aura (28px - 34px blur, breathing pulse) */}
-          <div
-            className={`rgb-aura-container rgb-aura-left pointer-events-none ${
-              passcode.length > 0 ? 'rgb-aura-typing' : ''
-            } ${isUnlocking ? 'rgb-aura-unlocking' : ''} ${
-              stage === 'SWEEP' ? 'rgb-sweep-flash' : ''
-            }`}
-          >
-            <div className="rgb-conic-spinner rgb-spinner-left" />
-          </div>
+          {/* Ambient Aura */}
+          <div className="rgb-border-aura pointer-events-none" />
 
-          {/* Layer 1: 2.5px Animated RGB Conic Border Container */}
-          <div
-            className={`rgb-border-wrapper rgb-border-left w-full h-full relative ${
-              stage === 'SWEEP' ? 'rgb-sweep-flash' : ''
-            }`}
-          >
-            <div className="rgb-conic-spinner rgb-spinner-left" />
-
-            {/* Original Photo Container - 100% untouched dimensions & contents */}
-            <div className="w-full h-full rounded-[calc(1.5rem-2.5px)] overflow-hidden relative z-10 bg-slate-950 backdrop-blur-md">
+          {/* 3px RGB Border Box */}
+          <div className="rgb-border-box w-full h-full relative z-10">
+            {/* Original Photo Container - relative z-10 bg-slate-950 */}
+            <div className="w-full h-full rounded-[calc(1.5rem-3px)] overflow-hidden relative z-10 bg-slate-950">
               <img
                 src="/sa.jpg"
                 alt="Saranya"
@@ -437,27 +356,13 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
             stage === 'BLACKOUT' ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         >
-          {/* Layer 2: Wide Ambient Neon Aura (28px - 34px blur, breathing pulse) */}
-          <div
-            className={`rgb-aura-container rgb-aura-right pointer-events-none ${
-              passcode.length > 0 ? 'rgb-aura-typing' : ''
-            } ${isUnlocking ? 'rgb-aura-unlocking' : ''} ${
-              stage === 'SWEEP' ? 'rgb-sweep-flash' : ''
-            }`}
-          >
-            <div className="rgb-conic-spinner rgb-spinner-right" />
-          </div>
+          {/* Ambient Aura with -3s delay */}
+          <div className="rgb-border-aura rgb-border-aura-right pointer-events-none" />
 
-          {/* Layer 1: 2.5px Animated RGB Conic Border Container */}
-          <div
-            className={`rgb-border-wrapper rgb-border-right w-full h-full relative ${
-              stage === 'SWEEP' ? 'rgb-sweep-flash' : ''
-            }`}
-          >
-            <div className="rgb-conic-spinner rgb-spinner-right" />
-
-            {/* Original Photo Container - 100% untouched dimensions & contents */}
-            <div className="w-full h-full rounded-[calc(1.5rem-2.5px)] overflow-hidden relative z-10 bg-slate-950 backdrop-blur-md">
+          {/* 3px RGB Border Box with -3s delay */}
+          <div className="rgb-border-box rgb-border-box-right w-full h-full relative z-10">
+            {/* Original Photo Container - relative z-10 bg-slate-950 */}
+            <div className="w-full h-full rounded-[calc(1.5rem-3px)] overflow-hidden relative z-10 bg-slate-950">
               <img
                 src="/sk.jpg"
                 alt="Saranya & Abishek"

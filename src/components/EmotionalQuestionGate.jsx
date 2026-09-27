@@ -12,6 +12,7 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
   // Flow steps: 'QUESTION' -> 'LYRIC_SCENE' -> 'VOICE' -> 'MEMORY_ROOM' -> 'OPEN_WHEN' -> 'CELEBRATION'
   const [step, setStep] = useState('QUESTION');
   const [typedText, setTypedText] = useState('');
+  const [lyricAudio, setLyricAudio] = useState(null);
   const fullText = "நீ எப்போ இதை ஓபன் பண்ணுவனு எனக்குத் தெரியல... ஆனா உன்கிட்ட பேசணும்னு தோணினப்போ இது உருவானது...";
 
   // Typewriter Effect Logic
@@ -43,7 +44,25 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
       message: 'Saranya unlocked the passcode "SARANYA26" and accepted the emotional question by clicking: "Feelings ❤️"!',
     }).catch(() => {});
 
-    // 3. Move to Cinematic Musical Lyric Scene (abi.mp3)
+    // 3. Trigger audio directly on click to bypass browser autoplay blocks
+    let song = new Audio('/abi.mp3');
+    song.preload = 'auto';
+    song.volume = 1.0;
+    const playPromise = song.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        // fallback if file name is abi.mp3.mpeg
+        const fallbackSong = new Audio('/abi.mp3.mpeg');
+        fallbackSong.preload = 'auto';
+        fallbackSong.volume = 1.0;
+        fallbackSong.play().catch((e) => console.log('Audio playback error:', e));
+        song = fallbackSong;
+        setLyricAudio(fallbackSong);
+      });
+    }
+    setLyricAudio(song);
+
+    // 4. Move to Cinematic Musical Lyric Scene (abi.mp3)
     if (typeof onSelectFeelings === 'function') {
       onSelectFeelings();
     } else {
@@ -62,6 +81,7 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
   if (step === 'LYRIC_SCENE') {
     return (
       <EmotionalSongLyricScene
+        audioInstance={lyricAudio}
         onComplete={() => {
           setStep('VOICE');
         }}

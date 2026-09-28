@@ -49,7 +49,7 @@ const TEAR_DROPLETS = Array.from({ length: 14 }).map((_, i) => ({
 }));
 
 export default function EmotionalWaitingScene({ onComplete }) {
-  const { playKaTrack, stopKaTrack, playKkTrack } = useSound();
+  const { playKaTrack, stopKaTrack } = useSound();
   const [currentLineIdx, setCurrentLineIdx] = useState(0);
   const [isClimaxReached, setIsClimaxReached] = useState(false);
   const [showCallPrompt, setShowCallPrompt] = useState(false);
@@ -228,12 +228,6 @@ export default function EmotionalWaitingScene({ onComplete }) {
     }
     if (typeof stopKaTrack === 'function') {
       stopKaTrack(1.0);
-    }
-    // Requirement 1: Start kk.mp3 ONLY AFTER Emotional Waiting Screen is COMPLETELY finished
-    if (typeof playKkTrack === 'function') {
-      playKkTrack();
-    } else if (window.soundController?.playKkTrack) {
-      window.soundController.playKkTrack();
     }
     if (typeof onComplete === 'function') {
       onComplete();

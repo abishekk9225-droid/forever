@@ -316,11 +316,6 @@ export default function StillWaitingCinematicScene({ onComplete }) {
         playKkTrack();
       } else if (window.soundController?.playKkTrack) {
         window.soundController.playKkTrack();
-      } else {
-        const audio = new Audio('/kk.mp3');
-        audio.preload = 'auto';
-        audio.volume = 0.55;
-        audio.play().catch(() => {});
       }
     }, 5000);
 
@@ -356,8 +351,15 @@ export default function StillWaitingCinematicScene({ onComplete }) {
       }
       timersRef.current.forEach((t) => clearTimeout(t));
       timersRef.current = [];
+
+      // If user leaves the page, clean up kk.mp3 according to project's audio behavior
+      if (typeof stopKkTrack === 'function') {
+        stopKkTrack(1.0);
+      } else if (window.soundController?.stopKkTrack) {
+        window.soundController.stopKkTrack(1.0);
+      }
     };
-  }, [playKkTrack, stopKkTrack, stopKaTrack]);
+  }, []);
 
   // 2. Trigger Cinematic Emotional Reaction (Called ONLY after verified EmailJS success)
   const triggerEmotionalReaction = () => {

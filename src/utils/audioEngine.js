@@ -16,8 +16,8 @@ class UnifiedAudioEngine {
     // Heartbeat state
     this.currentBPM = 54;
     this.targetBPM = 54;
-    this.currentVolume = 0.24; // Starting level within suggested 0.20 - 0.30
-    this.targetVolume = 0.24;
+    this.currentVolume = 0.26; // Starting level within 0.20 - 0.30
+    this.targetVolume = 0.26;
     this.isMuted = false;
     this.isPaused = false;
     this.silenceUntil = 0;
@@ -25,9 +25,9 @@ class UnifiedAudioEngine {
     this.schedulerTimer = null;
 
     // Music state
-    this.currentTrack = 'intro'; // 'intro' | 'abi1' | 'celebration'
+    this.currentTrack = 'intro'; // 'intro' | 'abi1' | 'celebration' | 'ka'
     this.isPlayingMusic = false;
-    this.baseMusicVolume = 0.09; // Starting intro level within suggested 0.08 - 0.12
+    this.baseMusicVolume = 0.24; // Medium background level around 20-30% volume
     this.tracks = {};
     this.listeners = new Set();
     this.beatListeners = new Set();
@@ -65,7 +65,7 @@ class UnifiedAudioEngine {
         this.masterCompressor.connect(this.audioCtx.destination);
       }
 
-      // 2. Heartbeat Gain & Lowpass Resonant Filter
+      // 2. Heartbeat Gain & Lowpass Resonant Filter (tuned to 320Hz for rich warmth & punch)
       if (!this.heartbeatGain) {
         this.heartbeatGain = this.audioCtx.createGain();
         this.heartbeatGain.gain.setValueAtTime(this.targetVolume, now);
@@ -73,8 +73,8 @@ class UnifiedAudioEngine {
 
         this.heartbeatFilter = this.audioCtx.createBiquadFilter();
         this.heartbeatFilter.type = 'lowpass';
-        this.heartbeatFilter.frequency.setValueAtTime(180, now);
-        this.heartbeatFilter.Q.setValueAtTime(2.0, now);
+        this.heartbeatFilter.frequency.setValueAtTime(320, now);
+        this.heartbeatFilter.Q.setValueAtTime(1.6, now);
         this.heartbeatFilter.connect(this.heartbeatGain);
       }
 
@@ -89,6 +89,7 @@ class UnifiedAudioEngine {
       this.initTrack('intro', '/bgm-intro.mp3');
       this.initTrack('abi1', '/abi.1.mp3');
       this.initTrack('celebration', '/bgm.mp3');
+      this.initTrack('ka', '/ka.mp3');
 
       this.nextBeatTime = now + 0.1;
 
@@ -113,12 +114,20 @@ class UnifiedAudioEngine {
     if (this.tracks[id] || typeof window === 'undefined') return;
 
     try {
-      const candidates = id === 'ka' ? ['/ka.mpe', '/ka.mp3', '/ka.m4a', '/bgm.mp3'] : [src];
+      const candidates = id === 'ka' ? ['/ka.mp3', '/ka.m4a', '/bgm.mp3'] : [src];
       let currentCandidateIdx = 0;
       const audio = new Audio(candidates[0]);
       audio.loop = true;
       audio.preload = 'auto';
-      audio.volume = 1.0; // Volume is controlled exclusively via Web Audio GainNode
+
+      // Fallback element volume: 20-30% volume range safeguarding direct audio
+      if (id === 'intro') {
+        audio.volume = 0.24;
+      } else if (id === 'ka') {
+        audio.volume = 0.28;
+      } else {
+        audio.volume = 0.35;
+      }
 
       // Gracefully try candidate extensions if initial file fails to load
       audio.addEventListener('error', () => {
@@ -180,7 +189,7 @@ class UnifiedAudioEngine {
     const now = this.audioCtx ? this.audioCtx.currentTime : 0;
 
     // Smoothly fade out any other playing track
-    ['abi1', 'celebration'].forEach((otherId) => {
+    ['abi1', 'celebration', 'ka'].forEach((otherId) => {
       const other = this.tracks[otherId];
       if (other && other.element && !other.element.paused) {
         if (other.trackGain && this.audioCtx) {
@@ -211,10 +220,11 @@ class UnifiedAudioEngine {
       if (this.musicGain && this.audioCtx) {
         this.musicGain.gain.cancelScheduledValues(now);
         this.musicGain.gain.setValueAtTime(this.musicGain.gain.value || 0.0001, now);
-        // Soft starting level: 0.09 (between suggested 0.08 - 0.12)
-        this.musicGain.gain.linearRampToValueAtTime(0.09, now + 2.0);
+        // Medium background level around 20–30% volume (0.24)
+        this.musicGain.gain.linearRampToValueAtTime(0.24, now + 2.0);
       }
 
+      intro.element.volume = 0.24;
       intro.element.play().then(() => {
         this.isPlayingMusic = true;
         this.notifyState();
@@ -345,26 +355,26 @@ class UnifiedAudioEngine {
     this.resumeContext();
 
     if (!this.tracks['ka']) {
-      this.initTrack('ka', '/ka.mpe');
+      this.initTrack('ka', '/ka.mp3');
     }
 
     if (this.currentTrack === 'ka' && this.isPlayingMusic) {
-      return;
+      return Promise.resolve();
     }
 
     const now = this.audioCtx ? this.audioCtx.currentTime : 0;
 
-    // Smoothly fade out any currently playing track over 2 seconds
+    // Smoothly fade out any currently playing track over 1.6 seconds
     ['intro', 'abi1', 'celebration'].forEach((otherId) => {
       const other = this.tracks[otherId];
       if (other && other.element && !other.element.paused) {
         if (other.trackGain && this.audioCtx) {
           other.trackGain.gain.cancelScheduledValues(now);
           other.trackGain.gain.setValueAtTime(other.trackGain.gain.value, now);
-          other.trackGain.gain.linearRampToValueAtTime(0.0001, now + 2.0);
+          other.trackGain.gain.linearRampToValueAtTime(0.0001, now + 1.6);
           setTimeout(() => {
             other.element.pause();
-          }, 2050);
+          }, 1650);
         } else {
           other.element.pause();
         }
@@ -378,22 +388,60 @@ class UnifiedAudioEngine {
       if (ka.trackGain && this.audioCtx) {
         ka.trackGain.gain.cancelScheduledValues(now);
         ka.trackGain.gain.setValueAtTime(0.0001, now);
-        ka.trackGain.gain.linearRampToValueAtTime(1.0, now + 2.5);
+        ka.trackGain.gain.linearRampToValueAtTime(1.0, now + 2.0);
       }
 
       if (this.musicGain && this.audioCtx) {
         this.musicGain.gain.cancelScheduledValues(now);
-        this.musicGain.gain.setValueAtTime(0.04, now);
-        this.musicGain.gain.linearRampToValueAtTime(0.16, now + 3.0);
+        this.musicGain.gain.setValueAtTime(this.musicGain.gain.value || 0.05, now);
+        // User requirement: ka.mp3 primary background music at around 25-35% volume (0.28)
+        this.musicGain.gain.linearRampToValueAtTime(0.28, now + 2.0);
       }
 
+      ka.element.volume = 0.28;
       ka.element.currentTime = 0;
-      ka.element.play().then(() => {
+      return ka.element.play().then(() => {
         this.isPlayingMusic = true;
         this.notifyState();
       }).catch((e) => {
         console.warn('ka track playback notice:', e);
+        throw e;
       });
+    }
+    return Promise.reject(new Error('ka track not found'));
+  }
+
+  // Cleanly stops ka.mp3 when leaving the emotional waiting scene
+  stopKaTrack(fadeDuration = 1.2) {
+    const ka = this.tracks['ka'];
+    if (!ka || !ka.element || ka.element.paused) {
+      if (this.currentTrack === 'ka') {
+        this.isPlayingMusic = false;
+        this.notifyState();
+      }
+      return;
+    }
+
+    const now = this.audioCtx ? this.audioCtx.currentTime : 0;
+    if (ka.trackGain && this.audioCtx) {
+      ka.trackGain.gain.cancelScheduledValues(now);
+      ka.trackGain.gain.setValueAtTime(ka.trackGain.gain.value, now);
+      ka.trackGain.gain.linearRampToValueAtTime(0.0001, now + fadeDuration);
+      setTimeout(() => {
+        ka.element.pause();
+        ka.element.currentTime = 0;
+        if (this.currentTrack === 'ka') {
+          this.isPlayingMusic = false;
+          this.notifyState();
+        }
+      }, fadeDuration * 1000 + 50);
+    } else {
+      ka.element.pause();
+      ka.element.currentTime = 0;
+      if (this.currentTrack === 'ka') {
+        this.isPlayingMusic = false;
+        this.notifyState();
+      }
     }
   }
 
@@ -521,20 +569,16 @@ class UnifiedAudioEngine {
       this.init();
     }
 
-    // AUDIO DUCKING / MIXING RULE:
-    // Priority 1: HEARTBEAT — always audible
-    // Priority 2: BGM / SONG — emotional background layer
-    // When heartbeat becomes stronger: duck the music so heartbeat is always clearly above
+    // Dynamic ducking: When heartbeat becomes very intense (e.g. proposal climax >= 0.48),
+    // smoothly dip music to ~0.12 so heartbeat is unmistakably dominant without silence
     if (this.audioCtx && this.musicGain && !this.isMuted) {
       const now = this.audioCtx.currentTime;
       const currentGain = this.musicGain.gain.value;
 
-      // When heartbeat is very intense (>= 0.45, e.g. proposal / I LOVE YOU),
-      // ceiling for music is strictly capped at 0.08
-      if (this.targetVolume >= 0.45 && currentGain > 0.08) {
+      if (this.targetVolume >= 0.48 && currentGain > 0.14) {
         this.musicGain.gain.cancelScheduledValues(now);
         this.musicGain.gain.setValueAtTime(currentGain, now);
-        this.musicGain.gain.linearRampToValueAtTime(0.075, now + 1.2);
+        this.musicGain.gain.linearRampToValueAtTime(0.12, now + 1.2);
       }
     }
   }
@@ -546,6 +590,8 @@ class UnifiedAudioEngine {
   }
 
   // Precision Web Audio Heartbeat Synthesizer: "LUB" followed by "DUB"
+  // Rich multi-harmonic sound with chest resonance (135Hz punch + 78Hz fundamental)
+  // that is clearly, warmly audible on laptops, phones, and earphones alike.
   playBeat(time, bpm, volume) {
     if (!this.audioCtx || this.audioCtx.state !== 'running' || !this.heartbeatFilter) return;
 
@@ -553,55 +599,86 @@ class UnifiedAudioEngine {
     const lubDubGap = Math.max(0.09, Math.min(0.15, 0.14 * (75 / Math.max(50, bpm))));
 
     try {
-      // 1. "LUB" - Deep low-frequency pulse (55-75 Hz, short attack, exponential decay)
+      // 1. "LUB" - Warm acoustic chest thud & punch
+      // Fundamental sine (78Hz -> 48Hz)
       const oscLub = this.audioCtx.createOscillator();
       const gainLub = this.audioCtx.createGain();
       oscLub.type = 'sine';
-      oscLub.frequency.setValueAtTime(68, time);
-      oscLub.frequency.exponentialRampToValueAtTime(40, time + 0.15);
+      oscLub.frequency.setValueAtTime(78, time);
+      oscLub.frequency.exponentialRampToValueAtTime(48, time + 0.15);
 
       gainLub.gain.setValueAtTime(0.0001, time);
-      gainLub.gain.linearRampToValueAtTime(volume, time + 0.024);
+      gainLub.gain.linearRampToValueAtTime(0.95, time + 0.022);
       gainLub.gain.exponentialRampToValueAtTime(0.0001, time + 0.16);
 
-      // Deep sub-harmonic layer for chest resonance
+      // Acoustic chest punch (135Hz -> 68Hz - provides crisp presence on phone & laptop speakers)
+      const punchLub = this.audioCtx.createOscillator();
+      const punchGainLub = this.audioCtx.createGain();
+      punchLub.type = 'sine';
+      punchLub.frequency.setValueAtTime(135, time);
+      punchLub.frequency.exponentialRampToValueAtTime(68, time + 0.10);
+
+      punchGainLub.gain.setValueAtTime(0.0001, time);
+      punchGainLub.gain.linearRampToValueAtTime(0.55, time + 0.018);
+      punchGainLub.gain.exponentialRampToValueAtTime(0.0001, time + 0.11);
+
+      // Deep sub-harmonic layer for headphone/subwoofer depth (44Hz -> 28Hz)
       const subLub = this.audioCtx.createOscillator();
       const subGainLub = this.audioCtx.createGain();
       subLub.type = 'sine';
-      subLub.frequency.setValueAtTime(38, time);
-      subLub.frequency.exponentialRampToValueAtTime(26, time + 0.16);
+      subLub.frequency.setValueAtTime(44, time);
+      subLub.frequency.exponentialRampToValueAtTime(28, time + 0.16);
 
       subGainLub.gain.setValueAtTime(0.0001, time);
-      subGainLub.gain.linearRampToValueAtTime(volume * 0.35, time + 0.024);
+      subGainLub.gain.linearRampToValueAtTime(0.40, time + 0.024);
       subGainLub.gain.exponentialRampToValueAtTime(0.0001, time + 0.16);
 
       oscLub.connect(gainLub);
       gainLub.connect(this.heartbeatFilter);
+      punchLub.connect(punchGainLub);
+      punchGainLub.connect(this.heartbeatFilter);
       subLub.connect(subGainLub);
       subGainLub.connect(this.heartbeatFilter);
 
       oscLub.start(time);
       oscLub.stop(time + 0.17);
+      punchLub.start(time);
+      punchLub.stop(time + 0.12);
       subLub.start(time);
       subLub.stop(time + 0.17);
 
-      // 2. "DUB" - Slightly higher frequency (75-110 Hz, shorter and softer)
+      // 2. "DUB" - Slightly higher frequency, shorter and crisper
       const tDub = time + lubDubGap;
       const oscDub = this.audioCtx.createOscillator();
       const gainDub = this.audioCtx.createGain();
       oscDub.type = 'sine';
-      oscDub.frequency.setValueAtTime(92, tDub);
-      oscDub.frequency.exponentialRampToValueAtTime(54, tDub + 0.11);
+      oscDub.frequency.setValueAtTime(98, tDub);
+      oscDub.frequency.exponentialRampToValueAtTime(60, tDub + 0.11);
 
       gainDub.gain.setValueAtTime(0.0001, tDub);
-      gainDub.gain.linearRampToValueAtTime(volume * 0.7, tDub + 0.018);
+      gainDub.gain.linearRampToValueAtTime(0.72, tDub + 0.016);
       gainDub.gain.exponentialRampToValueAtTime(0.0001, tDub + 0.12);
+
+      // DUB chest punch (155Hz -> 82Hz)
+      const punchDub = this.audioCtx.createOscillator();
+      const punchGainDub = this.audioCtx.createGain();
+      punchDub.type = 'sine';
+      punchDub.frequency.setValueAtTime(155, tDub);
+      punchDub.frequency.exponentialRampToValueAtTime(82, tDub + 0.08);
+
+      punchGainDub.gain.setValueAtTime(0.0001, tDub);
+      punchGainDub.gain.linearRampToValueAtTime(0.42, tDub + 0.014);
+      punchGainDub.gain.exponentialRampToValueAtTime(0.0001, tDub + 0.09);
 
       oscDub.connect(gainDub);
       gainDub.connect(this.heartbeatFilter);
+      punchDub.connect(punchGainDub);
+      punchGainDub.connect(this.heartbeatFilter);
 
       oscDub.start(tDub);
       oscDub.stop(tDub + 0.13);
+      punchDub.start(tDub);
+      punchDub.stop(tDub + 0.10);
 
       // Broadcast visual triggers
       this.notifyBeatListeners('LUB', bpm, volume);
@@ -618,12 +695,12 @@ class UnifiedAudioEngine {
     const now = this.audioCtx.currentTime;
 
     // Smooth BPM and Volume interpolation
-    this.currentBPM += (this.targetBPM - this.currentBPM) * 0.07;
-    this.currentVolume += (this.targetVolume - this.currentVolume) * 0.07;
+    this.currentBPM += (this.targetBPM - this.currentBPM) * 0.08;
+    this.currentVolume += (this.targetVolume - this.currentVolume) * 0.08;
 
-    // Update heartbeat master gain
+    // Update heartbeat master gain directly and smoothly
     if (this.heartbeatGain && !this.isMuted) {
-      this.heartbeatGain.gain.setValueAtTime(this.currentVolume, now);
+      this.heartbeatGain.gain.setValueAtTime(Math.max(0.0001, this.currentVolume), now);
     }
 
     // Schedule beats within lookahead window (120ms)
@@ -684,4 +761,9 @@ if (typeof window !== 'undefined') {
   window.unifiedAudioEngine = globalAudioEngine;
   window.toggleAudio = () => globalAudioEngine.toggleSound();
   window.toggleSound = () => globalAudioEngine.toggleSound();
+  window.unlockAudio = () => {
+    try {
+      globalAudioEngine.resumeContext();
+    } catch {}
+  };
 }

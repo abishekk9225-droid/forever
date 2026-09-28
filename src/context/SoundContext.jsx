@@ -8,6 +8,7 @@ const defaultSoundState = {
   playIntroTrack: () => {},
   playAbi1Track: () => {},
   playKaTrack: () => {},
+  stopKaTrack: () => {},
   toggleSound: () => globalAudioEngine.toggleSound(),
   toggleAudio: () => globalAudioEngine.toggleSound(),
   fadeToSoftAmbience: () => {},
@@ -47,6 +48,7 @@ export const SoundProvider = ({ children }) => {
       playAbi1Track: () => globalAudioEngine.playAbi1Track(),
       playCelebrationTrack: (startTime) => globalAudioEngine.playCelebrationTrack(startTime),
       playKaTrack: () => globalAudioEngine.playKaTrack(),
+      stopKaTrack: (fadeDuration) => globalAudioEngine.stopKaTrack(fadeDuration),
       fadeToSoftAmbience: (target, duration) => globalAudioEngine.fadeToSoftAmbience(target, duration),
       toggleSound: () => globalAudioEngine.toggleSound(),
       toggleAudio: () => globalAudioEngine.toggleSound(),
@@ -70,7 +72,11 @@ export const SoundProvider = ({ children }) => {
   };
 
   const playKaTrack = () => {
-    globalAudioEngine.playKaTrack();
+    return globalAudioEngine.playKaTrack();
+  };
+
+  const stopKaTrack = (fadeDuration = 1.2) => {
+    globalAudioEngine.stopKaTrack(fadeDuration);
   };
 
   const toggleSound = () => {
@@ -90,6 +96,7 @@ export const SoundProvider = ({ children }) => {
         playIntroTrack,
         playAbi1Track,
         playKaTrack,
+        stopKaTrack,
         toggleSound,
         toggleAudio: toggleSound,
         fadeToSoftAmbience,

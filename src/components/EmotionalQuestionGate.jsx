@@ -7,8 +7,10 @@ import EmotionalSongLyricScene from './EmotionalSongLyricScene';
 import VoiceMessageScene from './VoiceMessageScene';
 import MemoryRoom from './MemoryRoom';
 import OpenWhenLetters from './OpenWhenLetters';
+import { useSound } from '../context/SoundContext';
 
 export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAccept, onReset, onSelectFeelings }) {
+  const { toggleSound, isPlaying } = useSound();
   // Flow steps: 'QUESTION' -> 'LYRIC_SCENE' -> 'VOICE' -> 'MEMORY_ROOM' -> 'OPEN_WHEN' -> 'CELEBRATION'
   const [step, setStep] = useState('QUESTION');
   const [typedText, setTypedText] = useState('');
@@ -135,6 +137,8 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
   if (step === 'MEMORY_ROOM') {
     return (
       <MemoryRoom
+        toggleAudio={toggleSound}
+        isAudioPlaying={isPlaying}
         onProceed={() => {
           setStep('OPEN_WHEN');
         }}

@@ -1,7 +1,24 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { globalAudioEngine } from '../utils/audioEngine';
 
-const SoundContext = createContext();
+const defaultSoundState = {
+  currentTrack: 'intro',
+  isPlaying: false,
+  playCelebrationTrack: () => {},
+  playIntroTrack: () => {},
+  playAbi1Track: () => {},
+  playKaTrack: () => {},
+  toggleSound: () => globalAudioEngine.toggleSound(),
+  toggleAudio: () => globalAudioEngine.toggleSound(),
+  fadeToSoftAmbience: () => {},
+};
+
+const SoundContext = createContext(defaultSoundState);
+
+if (typeof window !== 'undefined') {
+  window.toggleAudio = window.toggleAudio || (() => globalAudioEngine.toggleSound());
+  window.toggleSound = window.toggleSound || (() => globalAudioEngine.toggleSound());
+}
 
 export const SoundProvider = ({ children }) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -22,6 +39,9 @@ export const SoundProvider = ({ children }) => {
       globalAudioEngine.playCelebrationTrack(219);
     };
 
+    window.toggleAudio = () => globalAudioEngine.toggleSound();
+    window.toggleSound = () => globalAudioEngine.toggleSound();
+
     window.soundController = {
       playIntroTrack: () => globalAudioEngine.playIntroTrack(),
       playAbi1Track: () => globalAudioEngine.playAbi1Track(),
@@ -29,6 +49,7 @@ export const SoundProvider = ({ children }) => {
       playKaTrack: () => globalAudioEngine.playKaTrack(),
       fadeToSoftAmbience: (target, duration) => globalAudioEngine.fadeToSoftAmbience(target, duration),
       toggleSound: () => globalAudioEngine.toggleSound(),
+      toggleAudio: () => globalAudioEngine.toggleSound(),
     };
 
     return () => {
@@ -70,6 +91,7 @@ export const SoundProvider = ({ children }) => {
         playAbi1Track,
         playKaTrack,
         toggleSound,
+        toggleAudio: toggleSound,
         fadeToSoftAmbience,
       }}
     >

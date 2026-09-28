@@ -85,11 +85,10 @@ class UnifiedAudioEngine {
         this.musicGain.connect(this.masterCompressor);
       }
 
-      // 4. Initialize Single-Instance HTML Audio Elements for each track
+      // 4. Initialize Single-Instance HTML Audio Elements for core tracks
       this.initTrack('intro', '/bgm-intro.mp3');
       this.initTrack('abi1', '/abi.1.mp3');
       this.initTrack('celebration', '/bgm.mp3');
-      this.initTrack('ka', '/ka.mpe');
 
       this.nextBeatTime = now + 0.1;
 
@@ -344,6 +343,10 @@ class UnifiedAudioEngine {
   playKaTrack() {
     this.init();
     this.resumeContext();
+
+    if (!this.tracks['ka']) {
+      this.initTrack('ka', '/ka.mpe');
+    }
 
     if (this.currentTrack === 'ka' && this.isPlayingMusic) {
       return;
@@ -679,4 +682,6 @@ export const globalAudioEngine = new UnifiedAudioEngine();
 if (typeof window !== 'undefined') {
   window.heartbeatEngine = globalAudioEngine;
   window.unifiedAudioEngine = globalAudioEngine;
+  window.toggleAudio = () => globalAudioEngine.toggleSound();
+  window.toggleSound = () => globalAudioEngine.toggleSound();
 }

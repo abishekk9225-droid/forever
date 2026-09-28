@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Sparkles, BookOpen, Smile, Gift } from 'lucide-react';
+import { Heart, Sparkles, BookOpen, Smile, Gift, X } from 'lucide-react';
 
 export default function InteractiveCaring({ onComplete, onStateChange }) {
   const [clickedCards, setClickedCards] = useState({

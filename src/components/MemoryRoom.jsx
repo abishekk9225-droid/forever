@@ -13,10 +13,29 @@ const LETTER_POSITIONS = [
   { x: 50, y: 14 },  // A
 ];
 
-export default function MemoryRoom({ onProceed }) {
-  const { isPlaying, toggleSound } = useSound();
-  const audioPlaying = isPlaying;
-  const toggleAudio = toggleSound;
+export default function MemoryRoom({
+  onProceed,
+  toggleAudio: propToggleAudio,
+  isPlaying: propIsPlaying,
+  isAudioPlaying,
+}) {
+  const soundContext = useSound();
+
+  const audioPlaying =
+    propIsPlaying !== undefined
+      ? Boolean(propIsPlaying)
+      : isAudioPlaying !== undefined
+      ? Boolean(isAudioPlaying)
+      : Boolean(soundContext?.isPlaying);
+
+  const toggleAudio =
+    propToggleAudio ||
+    soundContext?.toggleAudio ||
+    soundContext?.toggleSound ||
+    window.soundController?.toggleAudio ||
+    window.soundController?.toggleSound ||
+    window.toggleAudio ||
+    (() => {});
 
   const [unlockedDoors, setUnlockedDoors] = useState([]);
   const [selectedMemory, setSelectedMemory] = useState(null);

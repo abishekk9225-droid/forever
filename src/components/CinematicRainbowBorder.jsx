@@ -62,8 +62,8 @@ export default function CinematicRainbowBorder({
         }
 
         @keyframes cardAuraPulse {
-          0%, 100% { filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.5)); }
-          50% { filter: drop-shadow(0 0 22px rgba(217, 70, 239, 0.7)); }
+          0%, 100% { opacity: 0.82; transform: scale3d(1, 1, 1); }
+          50% { opacity: 1; transform: scale3d(1.004, 1.004, 1); }
         }
       `}</style>
 
@@ -176,7 +176,11 @@ export default function CinematicRainbowBorder({
         /* CARD MODE: Laser rainbow border directly framing the card container */
         <div
           className={`absolute inset-0 pointer-events-none z-20 ${className}`}
-          style={{ animation: 'cardAuraPulse 5s ease-in-out infinite' }}
+          style={{
+            animation: 'cardAuraPulse 5s ease-in-out infinite',
+            filter: 'drop-shadow(0 0 16px rgba(244, 63, 94, 0.55))',
+            willChange: 'transform, opacity',
+          }}
         >
           <svg
             className="w-full h-full pointer-events-none"

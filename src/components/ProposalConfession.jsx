@@ -49,7 +49,10 @@ function BlossomCluster({ x, y, scale = 1, rotation = 0, opacity = 1 }) {
 // ==========================================
 function LeftCinematicTree() {
   return (
-    <div className="absolute left-0 bottom-0 top-0 w-[34%] sm:w-[36%] md:w-[38%] max-w-[440px] pointer-events-none z-[12] overflow-visible">
+    <div
+      className="absolute left-0 bottom-0 top-0 w-[34%] sm:w-[36%] md:w-[38%] max-w-[440px] pointer-events-none z-[12] overflow-visible"
+      style={{ transform: 'translateZ(0)' }}
+    >
       {/* Volumetric Pink/Rose Atmospheric Backlight */}
       <div
         className="absolute -inset-10 opacity-60 blur-3xl pointer-events-none"
@@ -61,7 +64,7 @@ function LeftCinematicTree() {
       <svg
         viewBox="0 0 500 900"
         preserveAspectRatio="xMinYMax meet"
-        className="w-full h-full overflow-visible drop-shadow-[0_0_30px_rgba(244,63,94,0.4)]"
+        className="w-full h-full overflow-visible"
       >
         <defs>
           {/* Gradients for Trunk & Bark */}
@@ -198,7 +201,6 @@ function LeftCinematicTree() {
             fill="none"
             strokeLinecap="round"
             strokeDasharray="60 340"
-            filter="url(#fairyGlowFilter)"
             style={{ animation: 'branchLightTravel 6s linear infinite' }}
           />
           <path
@@ -208,7 +210,6 @@ function LeftCinematicTree() {
             fill="none"
             strokeLinecap="round"
             strokeDasharray="50 300"
-            filter="url(#fairyGlowFilter)"
             style={{ animation: 'branchLightTravel 7s linear infinite', animationDelay: '1.5s' }}
           />
         </g>
@@ -252,7 +253,7 @@ function LeftCinematicTree() {
         </g>
 
         {/* DENSE LUXURIOUS BLOSSOM CLUSTERS ACROSS CANOPY */}
-        <g style={{ animation: 'flowerClusterBreathe 5s ease-in-out infinite' }}>
+        <g style={{ animation: 'flowerClusterBreathe 5s ease-in-out infinite', willChange: 'transform, opacity' }}>
           {/* High Canopy Clusters */}
           <BlossomCluster x={120} y={160} scale={1.4} rotation={15} />
           <BlossomCluster x={180} y={130} scale={1.5} rotation={-25} />
@@ -298,7 +299,7 @@ function LeftCinematicTree() {
         </g>
 
         {/* WARM GOLDEN FAIRY LIGHTS & HANGING HEART LANTERNS */}
-        <g filter="url(#fairyGlowFilter)">
+        <g>
           {/* Hanging Golden Heart Lanterns swaying softly */}
           {[
             { x: 210, y: 220, l: 38 },
@@ -380,7 +381,10 @@ function LeftCinematicTree() {
 // ==========================================
 function RightCinematicTree() {
   return (
-    <div className="absolute right-0 bottom-0 top-0 w-[34%] sm:w-[36%] md:w-[38%] max-w-[440px] pointer-events-none z-[12] overflow-visible">
+    <div
+      className="absolute right-0 bottom-0 top-0 w-[34%] sm:w-[36%] md:w-[38%] max-w-[440px] pointer-events-none z-[12] overflow-visible"
+      style={{ transform: 'translateZ(0)' }}
+    >
       {/* Volumetric Purple/Rose Atmospheric Backlight */}
       <div
         className="absolute -inset-10 opacity-60 blur-3xl pointer-events-none"
@@ -392,7 +396,7 @@ function RightCinematicTree() {
       <svg
         viewBox="0 0 500 900"
         preserveAspectRatio="xMaxYMax meet"
-        className="w-full h-full overflow-visible drop-shadow-[0_0_30px_rgba(236,72,153,0.4)]"
+        className="w-full h-full overflow-visible"
       >
         <defs>
           <linearGradient id="rightTrunkGrad" x1="0%" y1="100%" x2="100%" y2="0%">
@@ -518,7 +522,6 @@ function RightCinematicTree() {
             fill="none"
             strokeLinecap="round"
             strokeDasharray="60 340"
-            filter="url(#fairyGlowFilter)"
             style={{ animation: 'branchLightTravel 6s linear infinite' }}
           />
           <path
@@ -528,7 +531,6 @@ function RightCinematicTree() {
             fill="none"
             strokeLinecap="round"
             strokeDasharray="50 300"
-            filter="url(#fairyGlowFilter)"
             style={{ animation: 'branchLightTravel 7s linear infinite', animationDelay: '1.5s' }}
           />
         </g>
@@ -572,7 +574,7 @@ function RightCinematicTree() {
         </g>
 
         {/* DENSE FLOWER BLOSSOM CANOPY */}
-        <g style={{ animation: 'flowerClusterBreathe 5s ease-in-out infinite' }}>
+        <g style={{ animation: 'flowerClusterBreathe 5s ease-in-out infinite', willChange: 'transform, opacity' }}>
           <BlossomCluster x={120} y={160} scale={1.4} rotation={-15} />
           <BlossomCluster x={180} y={130} scale={1.5} rotation={25} />
           <BlossomCluster x={240} y={90} scale={1.3} rotation={-45} />
@@ -613,7 +615,7 @@ function RightCinematicTree() {
         </g>
 
         {/* FAIRY LIGHTS & HANGING HEARTS */}
-        <g filter="url(#fairyGlowFilter)">
+        <g>
           {[
             { x: 210, y: 220, l: 38 },
             { x: 310, y: 180, l: 45 },
@@ -706,6 +708,7 @@ function CinematicNameReveal({ name, side }) {
       } top-[12%] sm:top-[14%] md:top-[16%] pointer-events-none z-[25] flex flex-col items-center justify-center`}
       style={{
         animation: 'wordSynchronizedPulse 9s ease-in-out infinite',
+        willChange: 'transform, opacity',
       }}
     >
       {/* Radiant Atmospheric Backdrop Glow */}
@@ -732,6 +735,7 @@ function CinematicNameReveal({ name, side }) {
               filter:
                 'drop-shadow(0 2px 0 #881337) drop-shadow(0 4px 6px rgba(0,0,0,0.95)) drop-shadow(0 0 18px rgba(244,63,94,0.95)) drop-shadow(0 0 35px rgba(251,191,36,0.8))',
               animation: `${animPrefix}${index} 9s cubic-bezier(0.16, 1, 0.3, 1) infinite`,
+              willChange: 'transform, opacity',
             }}
           >
             {char}
@@ -809,11 +813,13 @@ function OneByOneFallingFlowers() {
           className="absolute text-pink-300 drop-shadow-[0_0_12px_rgba(244,63,94,0.9)] select-none"
           style={{
             left: fl.left,
+            top: 0,
             fontSize: `${fl.size}px`,
             '--dx': `${fl.dx}px`,
             '--rot': `${fl.rot}deg`,
             animation: `oneByOneFlowerFall ${fl.dur}s linear infinite`,
             animationDelay: `${fl.delay}s`,
+            willChange: 'transform, opacity',
           }}
         >
           {fl.icon}
@@ -828,7 +834,7 @@ function OneByOneFallingFlowers() {
 // ==========================================
 function FrameButterflies() {
   return (
-    <div className="absolute inset-0 pointer-events-none z-[22] overflow-hidden">
+    <div className="absolute inset-0 pointer-events-none z-[22] overflow-hidden [container-type:size]">
       <Butterfly
         pathClass="[animation:flyInside1_11s_ease-in-out_infinite]"
         duration={11}
@@ -887,10 +893,11 @@ function FrameButterflies() {
 function Butterfly({ pathClass, duration, delay = '0s', wingGradientId, size = 32 }) {
   return (
     <div
-      className={`absolute pointer-events-none z-[25] ${pathClass}`}
+      className={`absolute top-0 left-0 pointer-events-none z-[25] ${pathClass}`}
       style={{
         animationDuration: `${duration}s`,
         animationDelay: delay,
+        willChange: 'transform',
       }}
     >
       <div className="relative">
@@ -913,6 +920,7 @@ function Butterfly({ pathClass, duration, delay = '0s', wingGradientId, size = 3
             style={{
               transformOrigin: '17px 14px',
               animation: 'wingFlapLeft 0.22s ease-in-out infinite',
+              willChange: 'transform',
             }}
           >
             <path
@@ -950,6 +958,7 @@ function Butterfly({ pathClass, duration, delay = '0s', wingGradientId, size = 3
             style={{
               transformOrigin: '17px 14px',
               animation: 'wingFlapRight 0.22s ease-in-out infinite',
+              willChange: 'transform',
             }}
           >
             <path
@@ -1091,8 +1100,8 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
            Smooth, elegant, premium - No strobe/flashing
         ==================================================== */
         @keyframes rainbowBorderTravel {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          0% { transform: rotate3d(0, 0, 1, 0deg); }
+          100% { transform: rotate3d(0, 0, 1, 360deg); }
         }
         @keyframes rainbowHaloGlow {
           0%, 100% {
@@ -1120,109 +1129,107 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
 
         /* ====================================================
            2. STAGGERED NAME REVEAL FROM TREES (ABISHEK & SARANYA)
-           Left letters emerge from left tree branches
-           Right letters emerge from right tree branches
-           Synchronized climax pulse & name glow
+           GPU-accelerated with translate3d & opacity
         ==================================================== */
-        /* LEFT LETTERS (ABISHEK) EMERGING FROM LEFT TREE BRANCHES */
+        /* LEFT LETTERS (ABISHEK) */
         @keyframes letterDropLeft0 {
-          0% { opacity: 0; transform: translateY(-55px) translateX(-28px) rotate(-10deg) scale(0.5); filter: blur(5px); }
-          7.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
-          100% { opacity: 0; transform: translateY(-55px) scale(0.5); }
+          0% { opacity: 0; transform: translate3d(-28px, -55px, 0) rotate(-10deg) scale3d(0.5, 0.5, 1); }
+          7.0% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          84.5% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          92.0% { opacity: 0; transform: translate3d(0px, -8px, 0) scale3d(0.95, 0.95, 1); }
+          100% { opacity: 0; transform: translate3d(-28px, -55px, 0) scale3d(0.5, 0.5, 1); }
         }
         @keyframes letterDropLeft1 {
-          0%, 8.0% { opacity: 0; transform: translateY(-52px) translateX(-24px) rotate(-8deg) scale(0.5); filter: blur(5px); }
-          15.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          0%, 8.0% { opacity: 0; transform: translate3d(-24px, -52px, 0) rotate(-8deg) scale3d(0.5, 0.5, 1); }
+          15.0% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          84.5% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          92.0% { opacity: 0; transform: translate3d(0px, -8px, 0) scale3d(0.95, 0.95, 1); }
           100% { opacity: 0; }
         }
         @keyframes letterDropLeft2 {
-          0%, 16.0% { opacity: 0; transform: translateY(-50px) translateX(-20px) rotate(-6deg) scale(0.5); filter: blur(5px); }
-          23.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          0%, 16.0% { opacity: 0; transform: translate3d(-20px, -50px, 0) rotate(-6deg) scale3d(0.5, 0.5, 1); }
+          23.0% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          84.5% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          92.0% { opacity: 0; transform: translate3d(0px, -8px, 0) scale3d(0.95, 0.95, 1); }
           100% { opacity: 0; }
         }
         @keyframes letterDropLeft3 {
-          0%, 24.0% { opacity: 0; transform: translateY(-50px) translateX(-16px) rotate(-4deg) scale(0.5); filter: blur(5px); }
-          31.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          0%, 24.0% { opacity: 0; transform: translate3d(-16px, -50px, 0) rotate(-4deg) scale3d(0.5, 0.5, 1); }
+          31.0% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          84.5% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          92.0% { opacity: 0; transform: translate3d(0px, -8px, 0) scale3d(0.95, 0.95, 1); }
           100% { opacity: 0; }
         }
         @keyframes letterDropLeft4 {
-          0%, 32.0% { opacity: 0; transform: translateY(-52px) translateX(-12px) rotate(4deg) scale(0.5); filter: blur(5px); }
-          39.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          0%, 32.0% { opacity: 0; transform: translate3d(-12px, -52px, 0) rotate(4deg) scale3d(0.5, 0.5, 1); }
+          39.0% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          84.5% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          92.0% { opacity: 0; transform: translate3d(0px, -8px, 0) scale3d(0.95, 0.95, 1); }
           100% { opacity: 0; }
         }
         @keyframes letterDropLeft5 {
-          0%, 40.0% { opacity: 0; transform: translateY(-54px) translateX(-8px) rotate(6deg) scale(0.5); filter: blur(5px); }
-          47.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          0%, 40.0% { opacity: 0; transform: translate3d(-8px, -54px, 0) rotate(6deg) scale3d(0.5, 0.5, 1); }
+          47.0% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          84.5% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          92.0% { opacity: 0; transform: translate3d(0px, -8px, 0) scale3d(0.95, 0.95, 1); }
           100% { opacity: 0; }
         }
         @keyframes letterDropLeft6 {
-          0%, 48.0% { opacity: 0; transform: translateY(-56px) translateX(-4px) rotate(8deg) scale(0.5); filter: blur(5px); }
-          55.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          0%, 48.0% { opacity: 0; transform: translate3d(-4px, -56px, 0) rotate(8deg) scale3d(0.5, 0.5, 1); }
+          55.0% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          84.5% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          92.0% { opacity: 0; transform: translate3d(0px, -8px, 0) scale3d(0.95, 0.95, 1); }
           100% { opacity: 0; }
         }
 
-        /* RIGHT LETTERS (SARANYA) EMERGING FROM RIGHT TREE BRANCHES */
+        /* RIGHT LETTERS (SARANYA) */
         @keyframes letterDropRight0 {
-          0%, 4.0% { opacity: 0; transform: translateY(-55px) translateX(28px) rotate(10deg) scale(0.5); filter: blur(5px); }
-          11.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          0%, 4.0% { opacity: 0; transform: translate3d(28px, -55px, 0) rotate(10deg) scale3d(0.5, 0.5, 1); }
+          11.0% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          84.5% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          92.0% { opacity: 0; transform: translate3d(0px, -8px, 0) scale3d(0.95, 0.95, 1); }
           100% { opacity: 0; }
         }
         @keyframes letterDropRight1 {
-          0%, 12.0% { opacity: 0; transform: translateY(-52px) translateX(24px) rotate(8deg) scale(0.5); filter: blur(5px); }
-          19.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          0%, 12.0% { opacity: 0; transform: translate3d(24px, -52px, 0) rotate(8deg) scale3d(0.5, 0.5, 1); }
+          19.0% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          84.5% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          92.0% { opacity: 0; transform: translate3d(0px, -8px, 0) scale3d(0.95, 0.95, 1); }
           100% { opacity: 0; }
         }
         @keyframes letterDropRight2 {
-          0%, 20.0% { opacity: 0; transform: translateY(-50px) translateX(20px) rotate(6deg) scale(0.5); filter: blur(5px); }
-          27.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          0%, 20.0% { opacity: 0; transform: translate3d(20px, -50px, 0) rotate(6deg) scale3d(0.5, 0.5, 1); }
+          27.0% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          84.5% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          92.0% { opacity: 0; transform: translate3d(0px, -8px, 0) scale3d(0.95, 0.95, 1); }
           100% { opacity: 0; }
         }
         @keyframes letterDropRight3 {
-          0%, 28.0% { opacity: 0; transform: translateY(-50px) translateX(16px) rotate(-4deg) scale(0.5); filter: blur(5px); }
-          35.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          0%, 28.0% { opacity: 0; transform: translate3d(16px, -50px, 0) rotate(-4deg) scale3d(0.5, 0.5, 1); }
+          35.0% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          84.5% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          92.0% { opacity: 0; transform: translate3d(0px, -8px, 0) scale3d(0.95, 0.95, 1); }
           100% { opacity: 0; }
         }
         @keyframes letterDropRight4 {
-          0%, 36.0% { opacity: 0; transform: translateY(-52px) translateX(12px) rotate(-6deg) scale(0.5); filter: blur(5px); }
-          43.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          0%, 36.0% { opacity: 0; transform: translate3d(12px, -52px, 0) rotate(-6deg) scale3d(0.5, 0.5, 1); }
+          43.0% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          84.5% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          92.0% { opacity: 0; transform: translate3d(0px, -8px, 0) scale3d(0.95, 0.95, 1); }
           100% { opacity: 0; }
         }
         @keyframes letterDropRight5 {
-          0%, 44.0% { opacity: 0; transform: translateY(-54px) translateX(8px) rotate(-8deg) scale(0.5); filter: blur(5px); }
-          51.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          0%, 44.0% { opacity: 0; transform: translate3d(8px, -54px, 0) rotate(-8deg) scale3d(0.5, 0.5, 1); }
+          51.0% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          84.5% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          92.0% { opacity: 0; transform: translate3d(0px, -8px, 0) scale3d(0.95, 0.95, 1); }
           100% { opacity: 0; }
         }
         @keyframes letterDropRight6 {
-          0%, 52.0% { opacity: 0; transform: translateY(-56px) translateX(4px) rotate(-10deg) scale(0.5); filter: blur(5px); }
-          59.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          0%, 52.0% { opacity: 0; transform: translate3d(4px, -56px, 0) rotate(-10deg) scale3d(0.5, 0.5, 1); }
+          59.0% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          84.5% { opacity: 1; transform: translate3d(0px, 0px, 0) rotate(0deg) scale3d(1, 1, 1); }
+          92.0% { opacity: 0; transform: translate3d(0px, -8px, 0) scale3d(0.95, 0.95, 1); }
           100% { opacity: 0; }
         }
 
@@ -1230,63 +1237,57 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
         @keyframes wordSynchronizedPulse {
           0%, 61% {
             opacity: 0.95;
-            transform: scale(1);
+            transform: scale3d(1, 1, 1);
           }
           63%, 80% {
             opacity: 1;
-            transform: scale(1.08);
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.95)) drop-shadow(0 0 35px rgba(244,63,94,1)) drop-shadow(0 0 65px rgba(251,191,36,0.95)) drop-shadow(0 0 95px rgba(236,72,153,0.85));
+            transform: scale3d(1.06, 1.06, 1);
           }
           84.5% {
             opacity: 1;
-            transform: scale(1);
+            transform: scale3d(1, 1, 1);
           }
           92%, 100% {
             opacity: 0;
-            transform: scale(0.95);
-            filter: blur(4px);
+            transform: scale3d(0.95, 0.95, 1);
           }
         }
         @keyframes filigreeGlow {
-          0%, 45% { opacity: 0; transform: scaleX(0.4); }
-          50%, 82% { opacity: 1; transform: scaleX(1); filter: drop-shadow(0 0 10px rgba(251,191,36,0.95)); }
-          88%, 100% { opacity: 0; transform: scaleX(0.4); }
+          0%, 45% { opacity: 0; transform: scale3d(0.4, 1, 1); }
+          50%, 82% { opacity: 1; transform: scale3d(1, 1, 1); }
+          88%, 100% { opacity: 0; transform: scale3d(0.4, 1, 1); }
         }
 
         @keyframes nameClimaxBurst {
-          0%, 62% { opacity: 0; transform: scale(0.5); }
-          65%, 79% { opacity: 1; transform: scale(1.25); filter: drop-shadow(0 0 14px rgba(251,191,36,0.95)); }
-          83%, 100% { opacity: 0; transform: scale(0.6); }
+          0%, 62% { opacity: 0; transform: scale3d(0.5, 0.5, 1); }
+          65%, 79% { opacity: 1; transform: scale3d(1.2, 1.2, 1); }
+          83%, 100% { opacity: 0; transform: scale3d(0.6, 0.6, 1); }
         }
 
         /* ====================================================
            3. ONE-BY-ONE FALLING FLOWERS FROM UPPER AREA
-           Flowers drift from top to bottom across proposal frame
+           Zero-layout GPU translation from top to bottom
         ==================================================== */
         @keyframes oneByOneFlowerFall {
           0% {
-            top: -8%;
             opacity: 0;
-            transform: translateX(0px) rotate(0deg) scale(0.7);
+            transform: translate3d(0, -40px, 0) rotate(0deg) scale3d(0.7, 0.7, 1);
           }
           12% {
             opacity: 0.95;
-            transform: translateX(calc(var(--dx) * 0.25)) rotate(calc(var(--rot) * 0.25)) scale(0.95);
+            transform: translate3d(calc(var(--dx) * 0.25), 14vh, 0) rotate(calc(var(--rot) * 0.25)) scale3d(0.95, 0.95, 1);
           }
           50% {
             opacity: 1;
-            transform: translateX(calc(var(--dx) * 0.7)) rotate(calc(var(--rot) * 0.65)) scale(1.05);
-            filter: drop-shadow(0 0 12px rgba(244,63,94,0.85));
+            transform: translate3d(calc(var(--dx) * 0.7), 44vh, 0) rotate(calc(var(--rot) * 0.65)) scale3d(1.05, 1.05, 1);
           }
           85% {
             opacity: 0.85;
-            transform: translateX(var(--dx)) rotate(calc(var(--rot) * 0.9)) scale(0.95);
+            transform: translate3d(var(--dx), 72vh, 0) rotate(calc(var(--rot) * 0.9)) scale3d(0.95, 0.95, 1);
           }
           100% {
-            top: 108%;
             opacity: 0;
-            transform: translateX(calc(var(--dx) * 1.25)) rotate(var(--rot)) scale(0.7);
-            filter: drop-shadow(0 0 0px transparent);
+            transform: translate3d(calc(var(--dx) * 1.25), 98vh, 0) rotate(var(--rot)) scale3d(0.7, 0.7, 1);
           }
         }
 
@@ -1298,146 +1299,146 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
           100% { stroke-dashoffset: -400; opacity: 0; }
         }
 
-        /* Flower Clusters Subtle Breathing Pulse */
+        /* Flower Clusters Subtle Breathing Pulse (Pure GPU scale/opacity) */
         @keyframes flowerClusterBreathe {
-          0%, 100% { opacity: 0.88; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.04); filter: drop-shadow(0 0 12px rgba(244,63,94,0.85)); }
+          0%, 100% { opacity: 0.88; transform: scale3d(1, 1, 1); }
+          50% { opacity: 1; transform: scale3d(1.025, 1.025, 1); }
         }
 
-        /* Frame Internal Butterflies Flight Curves (Smooth percentage waypoint interpolation) */
+        /* Frame Internal Butterflies Flight Curves (Zero top/left - Pure GPU translate3d) */
         @keyframes flyInside1 {
-          0% { left: 6%; top: 68%; transform: rotate(18deg) scale(0.85); }
-          25% { left: 24%; top: 32%; transform: rotate(-8deg) scale(0.98); }
-          50% { left: 16%; top: 16%; transform: rotate(22deg) scale(1.05); }
-          75% { left: 9%; top: 42%; transform: rotate(-15deg) scale(0.9); }
-          100% { left: 6%; top: 68%; transform: rotate(18deg) scale(0.85); }
+          0% { transform: translate3d(6cqi, 68cqh, 0) rotate(18deg) scale3d(0.85, 0.85, 1); }
+          25% { transform: translate3d(24cqi, 32cqh, 0) rotate(-8deg) scale3d(0.98, 0.98, 1); }
+          50% { transform: translate3d(16cqi, 16cqh, 0) rotate(22deg) scale3d(1.05, 1.05, 1); }
+          75% { transform: translate3d(9cqi, 42cqh, 0) rotate(-15deg) scale3d(0.9, 0.9, 1); }
+          100% { transform: translate3d(6cqi, 68cqh, 0) rotate(18deg) scale3d(0.85, 0.85, 1); }
         }
         @keyframes flyInside2 {
-          0% { left: 88%; top: 65%; transform: rotate(-16deg) scale(0.88); }
-          30% { left: 72%; top: 28%; transform: rotate(14deg) scale(1); }
-          60% { left: 84%; top: 15%; transform: rotate(-24deg) scale(0.95); }
-          85% { left: 91%; top: 44%; transform: rotate(18deg) scale(0.85); }
-          100% { left: 88%; top: 65%; transform: rotate(-16deg) scale(0.88); }
+          0% { transform: translate3d(88cqi, 65cqh, 0) rotate(-16deg) scale3d(0.88, 0.88, 1); }
+          30% { transform: translate3d(72cqi, 28cqh, 0) rotate(14deg) scale3d(1, 1, 1); }
+          60% { transform: translate3d(84cqi, 15cqh, 0) rotate(-24deg) scale3d(0.95, 0.95, 1); }
+          85% { transform: translate3d(91cqi, 44cqh, 0) rotate(18deg) scale3d(0.85, 0.85, 1); }
+          100% { transform: translate3d(88cqi, 65cqh, 0) rotate(-16deg) scale3d(0.88, 0.88, 1); }
         }
         @keyframes flyInside3 {
-          0% { left: 14%; top: 40%; transform: rotate(-14deg) scale(0.8); }
-          35% { left: 26%; top: 18%; transform: rotate(12deg) scale(0.92); }
-          65% { left: 18%; top: 58%; transform: rotate(-18deg) scale(1); }
-          85% { left: 8%; top: 30%; transform: rotate(15deg) scale(0.85); }
-          100% { left: 14%; top: 40%; transform: rotate(-14deg) scale(0.8); }
+          0% { transform: translate3d(14cqi, 40cqh, 0) rotate(-14deg) scale3d(0.8, 0.8, 1); }
+          35% { transform: translate3d(26cqi, 18cqh, 0) rotate(12deg) scale3d(0.92, 0.92, 1); }
+          65% { transform: translate3d(18cqi, 58cqh, 0) rotate(-18deg) scale3d(1, 1, 1); }
+          85% { transform: translate3d(8cqi, 30cqh, 0) rotate(15deg) scale3d(0.85, 0.85, 1); }
+          100% { transform: translate3d(14cqi, 40cqh, 0) rotate(-14deg) scale3d(0.8, 0.8, 1); }
         }
         @keyframes flyInside4 {
-          0% { left: 82%; top: 42%; transform: rotate(14deg) scale(0.82); }
-          30% { left: 68%; top: 22%; transform: rotate(-10deg) scale(0.94); }
-          65% { left: 80%; top: 55%; transform: rotate(20deg) scale(1); }
-          85% { left: 89%; top: 28%; transform: rotate(-15deg) scale(0.88); }
-          100% { left: 82%; top: 42%; transform: rotate(14deg) scale(0.82); }
+          0% { transform: translate3d(82cqi, 42cqh, 0) rotate(14deg) scale3d(0.82, 0.82, 1); }
+          30% { transform: translate3d(68cqi, 22cqh, 0) rotate(-10deg) scale3d(0.94, 0.94, 1); }
+          65% { transform: translate3d(80cqi, 55cqh, 0) rotate(20deg) scale3d(1, 1, 1); }
+          85% { transform: translate3d(89cqi, 28cqh, 0) rotate(-15deg) scale3d(0.88, 0.88, 1); }
+          100% { transform: translate3d(82cqi, 42cqh, 0) rotate(14deg) scale3d(0.82, 0.82, 1); }
         }
         @keyframes flyInside5 {
-          0% { left: 22%; top: 12%; transform: rotate(8deg) scale(0.75); }
-          35% { left: 45%; top: 7%; transform: rotate(-6deg) scale(0.85); }
-          70% { left: 72%; top: 11%; transform: rotate(10deg) scale(0.8); }
-          85% { left: 52%; top: 8%; transform: rotate(-8deg) scale(0.78); }
-          100% { left: 22%; top: 12%; transform: rotate(8deg) scale(0.75); }
+          0% { transform: translate3d(22cqi, 12cqh, 0) rotate(8deg) scale3d(0.75, 0.75, 1); }
+          35% { transform: translate3d(45cqi, 7cqh, 0) rotate(-6deg) scale3d(0.85, 0.85, 1); }
+          70% { transform: translate3d(72cqi, 11cqh, 0) rotate(10deg) scale3d(0.8, 0.8, 1); }
+          85% { transform: translate3d(52cqi, 8cqh, 0) rotate(-8deg) scale3d(0.78, 0.78, 1); }
+          100% { transform: translate3d(22cqi, 12cqh, 0) rotate(8deg) scale3d(0.75, 0.75, 1); }
         }
         @keyframes flyInside6 {
-          0% { left: 10%; top: 22%; transform: rotate(-10deg) scale(0.78); }
-          30% { left: 20%; top: 14%; transform: rotate(15deg) scale(0.88); }
-          60% { left: 28%; top: 26%; transform: rotate(-12deg) scale(0.82); }
-          85% { left: 15%; top: 34%; transform: rotate(8deg) scale(0.75); }
-          100% { left: 10%; top: 22%; transform: rotate(-10deg) scale(0.78); }
+          0% { transform: translate3d(10cqi, 22cqh, 0) rotate(-10deg) scale3d(0.78, 0.78, 1); }
+          30% { transform: translate3d(20cqi, 14cqh, 0) rotate(15deg) scale3d(0.88, 0.88, 1); }
+          60% { transform: translate3d(28cqi, 26cqh, 0) rotate(-12deg) scale3d(0.82, 0.82, 1); }
+          85% { transform: translate3d(15cqi, 34cqh, 0) rotate(8deg) scale3d(0.75, 0.75, 1); }
+          100% { transform: translate3d(10cqi, 22cqh, 0) rotate(-10deg) scale3d(0.78, 0.78, 1); }
         }
         @keyframes flyInside7 {
-          0% { left: 86%; top: 24%; transform: rotate(12deg) scale(0.78); }
-          30% { left: 76%; top: 15%; transform: rotate(-15deg) scale(0.88); }
-          60% { left: 68%; top: 28%; transform: rotate(10deg) scale(0.82); }
-          85% { left: 80%; top: 35%; transform: rotate(-8deg) scale(0.75); }
-          100% { left: 86%; top: 24%; transform: rotate(12deg) scale(0.78); }
+          0% { transform: translate3d(86cqi, 24cqh, 0) rotate(12deg) scale3d(0.78, 0.78, 1); }
+          30% { transform: translate3d(76cqi, 15cqh, 0) rotate(-15deg) scale3d(0.88, 0.88, 1); }
+          60% { transform: translate3d(68cqi, 28cqh, 0) rotate(10deg) scale3d(0.82, 0.82, 1); }
+          85% { transform: translate3d(80cqi, 35cqh, 0) rotate(-8deg) scale3d(0.75, 0.75, 1); }
+          100% { transform: translate3d(86cqi, 24cqh, 0) rotate(12deg) scale3d(0.78, 0.78, 1); }
         }
 
         /* ====================================================
            3. TREE DECORATIONS: SWAYING LANTERNS & FAIRY LIGHTS
         ==================================================== */
         @keyframes lanternSway {
-          0%, 100% { transform: rotate(-5deg); }
-          50% { transform: rotate(5deg); }
+          0%, 100% { transform: rotate3d(0, 0, 1, -5deg); }
+          50% { transform: rotate3d(0, 0, 1, 5deg); }
         }
         @keyframes fairyTwinkle {
-          0%, 100% { opacity: 0.35; transform: scale(0.8); }
-          50% { opacity: 1; transform: scale(1.25); filter: drop-shadow(0 0 8px rgba(254,240,138,0.95)); }
+          0%, 100% { opacity: 0.35; transform: scale3d(0.8, 0.8, 1); }
+          50% { opacity: 1; transform: scale3d(1.25, 1.25, 1); }
         }
 
         /* ====================================================
            4. ANIMATED BUTTERFLIES: WING FLAPS & FLIGHT PATHS
         ==================================================== */
         @keyframes wingFlapLeft {
-          0%, 100% { transform: scaleX(1) rotate(0deg); }
-          50% { transform: scaleX(0.18) rotate(16deg); }
+          0%, 100% { transform: scale3d(1, 1, 1) rotate(0deg); }
+          50% { transform: scale3d(0.18, 1, 1) rotate(16deg); }
         }
         @keyframes wingFlapRight {
-          0%, 100% { transform: scaleX(1) rotate(0deg); }
-          50% { transform: scaleX(0.18) rotate(-16deg); }
+          0%, 100% { transform: scale3d(1, 1, 1) rotate(0deg); }
+          50% { transform: scale3d(0.18, 1, 1) rotate(-16deg); }
         }
 
         @keyframes flyPath1 {
-          0% { transform: translate(5vw, 16vh) rotate(12deg) scale(0.85); }
-          25% { transform: translate(16vw, 26vh) rotate(24deg) scale(0.95); }
-          50% { transform: translate(9vw, 40vh) rotate(-10deg) scale(1); }
-          75% { transform: translate(3vw, 28vh) rotate(-22deg) scale(0.9); }
-          100% { transform: translate(5vw, 16vh) rotate(12deg) scale(0.85); }
+          0% { transform: translate3d(5vw, 16vh, 0) rotate(12deg) scale3d(0.85, 0.85, 1); }
+          25% { transform: translate3d(16vw, 26vh, 0) rotate(24deg) scale3d(0.95, 0.95, 1); }
+          50% { transform: translate3d(9vw, 40vh, 0) rotate(-10deg) scale3d(1, 1, 1); }
+          75% { transform: translate3d(3vw, 28vh, 0) rotate(-22deg) scale3d(0.9, 0.9, 1); }
+          100% { transform: translate3d(5vw, 16vh, 0) rotate(12deg) scale3d(0.85, 0.85, 1); }
         }
         @keyframes flyPath2 {
-          0% { transform: translate(88vw, 20vh) rotate(-14deg) scale(0.9); }
-          30% { transform: translate(77vw, 34vh) rotate(-28deg) scale(1); }
-          60% { transform: translate(85vw, 48vh) rotate(15deg) scale(0.95); }
-          85% { transform: translate(93vw, 32vh) rotate(22deg) scale(0.88); }
-          100% { transform: translate(88vw, 20vh) rotate(-14deg) scale(0.9); }
+          0% { transform: translate3d(88vw, 20vh, 0) rotate(-14deg) scale3d(0.9, 0.9, 1); }
+          30% { transform: translate3d(77vw, 34vh, 0) rotate(-28deg) scale3d(1, 1, 1); }
+          60% { transform: translate3d(85vw, 48vh, 0) rotate(15deg) scale3d(0.95, 0.95, 1); }
+          85% { transform: translate3d(93vw, 32vh, 0) rotate(22deg) scale3d(0.88, 0.88, 1); }
+          100% { transform: translate3d(88vw, 20vh, 0) rotate(-14deg) scale3d(0.9, 0.9, 1); }
         }
         @keyframes flyPath3 {
-          0% { transform: translate(7vw, 76vh) rotate(-15deg) scale(0.8); }
-          35% { transform: translate(13vw, 54vh) rotate(8deg) scale(0.92); }
-          65% { transform: translate(17vw, 34vh) rotate(-12deg) scale(1); }
-          85% { transform: translate(9vw, 58vh) rotate(18deg) scale(0.85); }
-          100% { transform: translate(7vw, 76vh) rotate(-15deg) scale(0.8); }
+          0% { transform: translate3d(7vw, 76vh, 0) rotate(-15deg) scale3d(0.8, 0.8, 1); }
+          35% { transform: translate3d(13vw, 54vh, 0) rotate(8deg) scale3d(0.92, 0.92, 1); }
+          65% { transform: translate3d(17vw, 34vh, 0) rotate(-12deg) scale3d(1, 1, 1); }
+          85% { transform: translate3d(9vw, 58vh, 0) rotate(18deg) scale3d(0.85, 0.85, 1); }
+          100% { transform: translate3d(7vw, 76vh, 0) rotate(-15deg) scale3d(0.8, 0.8, 1); }
         }
         @keyframes flyPath4 {
-          0% { transform: translate(91vw, 74vh) rotate(14deg) scale(0.85); }
-          30% { transform: translate(83vw, 50vh) rotate(-10deg) scale(0.95); }
-          65% { transform: translate(87vw, 30vh) rotate(18deg) scale(1); }
-          85% { transform: translate(93vw, 54vh) rotate(-14deg) scale(0.9); }
-          100% { transform: translate(91vw, 74vh) rotate(14deg) scale(0.85); }
+          0% { transform: translate3d(91vw, 74vh, 0) rotate(14deg) scale3d(0.85, 0.85, 1); }
+          30% { transform: translate3d(83vw, 50vh, 0) rotate(-10deg) scale3d(0.95, 0.95, 1); }
+          65% { transform: translate3d(87vw, 30vh, 0) rotate(18deg) scale3d(1, 1, 1); }
+          85% { transform: translate3d(93vw, 54vh, 0) rotate(-14deg) scale3d(0.9, 0.9, 1); }
+          100% { transform: translate3d(91vw, 74vh, 0) rotate(14deg) scale3d(0.85, 0.85, 1); }
         }
         @keyframes flyPath5 {
-          0% { transform: translate(22vw, 8vh) rotate(10deg) scale(0.75); }
-          30% { transform: translate(42vw, 6vh) rotate(-5deg) scale(0.85); }
-          60% { transform: translate(68vw, 8vh) rotate(12deg) scale(0.8); }
-          80% { transform: translate(46vw, 10vh) rotate(-8deg) scale(0.78); }
-          100% { transform: translate(22vw, 8vh) rotate(10deg) scale(0.75); }
+          0% { transform: translate3d(22vw, 8vh, 0) rotate(10deg) scale3d(0.75, 0.75, 1); }
+          30% { transform: translate3d(42vw, 6vh, 0) rotate(-5deg) scale3d(0.85, 0.85, 1); }
+          60% { transform: translate3d(68vw, 8vh, 0) rotate(12deg) scale3d(0.8, 0.8, 1); }
+          80% { transform: translate3d(46vw, 10vh, 0) rotate(-8deg) scale3d(0.78, 0.78, 1); }
+          100% { transform: translate3d(22vw, 8vh, 0) rotate(10deg) scale3d(0.75, 0.75, 1); }
         }
         @keyframes flyPath6 {
-          0% { transform: translate(14vw, 24vh) rotate(-8deg) scale(0.95); }
-          25% { transform: translate(16vw, 20vh) rotate(6deg) scale(1.05); }
-          50% { transform: translate(12vw, 26vh) rotate(-14deg) scale(0.9); }
-          75% { transform: translate(15vw, 28vh) rotate(10deg) scale(1); }
-          100% { transform: translate(14vw, 24vh) rotate(-8deg) scale(0.95); }
+          0% { transform: translate3d(14vw, 24vh, 0) rotate(-8deg) scale3d(0.95, 0.95, 1); }
+          25% { transform: translate3d(16vw, 20vh, 0) rotate(6deg) scale3d(1.05, 1.05, 1); }
+          50% { transform: translate3d(12vw, 26vh, 0) rotate(-14deg) scale3d(0.9, 0.9, 1); }
+          75% { transform: translate3d(15vw, 28vh, 0) rotate(10deg) scale3d(1, 1, 1); }
+          100% { transform: translate3d(14vw, 24vh, 0) rotate(-8deg) scale3d(0.95, 0.95, 1); }
         }
 
         /* ====================================================
            5. FLOATING HEARTS & DRAPING SAKURA PETALS
         ==================================================== */
         @keyframes floatingHeartDrift {
-          0% { transform: translateY(105vh) translateX(0px) scale(0.7) rotate(-6deg); opacity: 0; }
+          0% { transform: translate3d(0px, 105vh, 0) scale3d(0.7, 0.7, 1) rotate(-6deg); opacity: 0; }
           15% { opacity: 0.85; }
-          50% { transform: translateY(52vh) translateX(24px) scale(0.92) rotate(8deg); }
+          50% { transform: translate3d(24px, 52vh, 0) scale3d(0.92, 0.92, 1) rotate(8deg); }
           85% { opacity: 0.85; }
-          100% { transform: translateY(-10vh) translateX(-18px) scale(1.08) rotate(-12deg); opacity: 0; }
+          100% { transform: translate3d(-18px, -10vh, 0) scale3d(1.08, 1.08, 1) rotate(-12deg); opacity: 0; }
         }
         @keyframes petalCascadingTwirl {
-          0% { transform: translateY(-8vh) translateX(0px) rotate(0deg) scale(0.75); opacity: 0; }
+          0% { transform: translate3d(0px, -8vh, 0) rotate(0deg) scale3d(0.75, 0.75, 1); opacity: 0; }
           15% { opacity: 0.85; }
-          50% { transform: translateY(52vh) translateX(36px) rotate(190deg) scale(0.95); }
+          50% { transform: translate3d(36px, 52vh, 0) rotate(190deg) scale3d(0.95, 0.95, 1); }
           85% { opacity: 0.75; }
-          100% { transform: translateY(108vh) translateX(12px) rotate(380deg) scale(1.1); opacity: 0; }
+          100% { transform: translate3d(12px, 108vh, 0) rotate(380deg) scale3d(1.1, 1.1, 1); opacity: 0; }
         }
 
         /* ====================================================
@@ -1450,32 +1451,33 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
           100% { box-shadow: inset 0 0 90px rgba(244,63,94,0.32), inset 0 0 170px rgba(251,191,36,0.18); }
         }
         @keyframes ambientBackdropPulse {
-          0%, 100% { opacity: 0.35; transform: scale(1); }
-          50% { opacity: 0.58; transform: scale(1.03); }
+          0%, 100% { opacity: 0.35; transform: scale3d(1, 1, 1); }
+          50% { opacity: 0.58; transform: scale3d(1.03, 1.03, 1); }
         }
         @keyframes lensFlareSweep {
-          0% { transform: translateX(-150%) skewX(-25deg); opacity: 0; }
+          0% { transform: translate3d(-150%, 0, 0) skewX(-25deg); opacity: 0; }
           40% { opacity: 0.9; }
-          100% { transform: translateX(200%) skewX(-25deg); opacity: 0; }
+          100% { transform: translate3d(200%, 0, 0) skewX(-25deg); opacity: 0; }
         }
         @keyframes shimmerText {
           0% { background-position: -200% center; }
           100% { background-position: 200% center; }
         }
         @keyframes lightRayDrift {
-          0%, 100% { transform: rotate(14deg) translateY(0px) scale(1); opacity: 0.18; }
-          50% { transform: rotate(18deg) translateY(-20px) scale(1.05); opacity: 0.28; }
+          0%, 100% { transform: rotate(14deg) translate3d(0, 0px, 0) scale3d(1, 1, 1); opacity: 0.18; }
+          50% { transform: rotate(18deg) translate3d(0, -20px, 0) scale3d(1.05, 1.05, 1); opacity: 0.28; }
         }
         @keyframes lightLeakDrift {
-          0%, 100% { opacity: 0.22; transform: translate(0, 0) scale(1); }
-          50% { opacity: 0.38; transform: translate(25px, -15px) scale(1.1); }
+          0%, 100% { opacity: 0.22; transform: translate3d(0, 0, 0) scale3d(1, 1, 1); }
+          50% { opacity: 0.38; transform: translate3d(25px, -15px, 0) scale3d(1.1, 1.1, 1); }
         }
         @keyframes breathingAura {
-          0%, 100% { box-shadow: 0 0 35px rgba(244,63,94,0.65), 0 0 70px rgba(251,191,36,0.35); transform: scale(1); }
-          50% { box-shadow: 0 0 55px rgba(244,63,94,0.9), 0 0 90px rgba(251,191,36,0.55); transform: scale(1.03); }
+          0%, 100% { box-shadow: 0 0 35px rgba(244,63,94,0.65), 0 0 70px rgba(251,191,36,0.35); transform: scale3d(1, 1, 1); }
+          50% { box-shadow: 0 0 55px rgba(244,63,94,0.9), 0 0 90px rgba(251,191,36,0.55); transform: scale3d(1.03, 1.03, 1); }
         }
         .cinematic-edge {
           animation: edgeGlowCycle 10s ease-in-out infinite;
+          will-change: box-shadow;
         }
         .hero-text-shimmer {
           background-size: 200% auto;
@@ -1483,12 +1485,15 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
         }
         .ray-drift {
           animation: lightRayDrift 12s ease-in-out infinite;
+          will-change: transform, opacity;
         }
         .light-leak-glow {
           animation: lightLeakDrift 9s ease-in-out infinite;
+          will-change: transform, opacity;
         }
         .breathing-yes {
           animation: breathingAura 3s ease-in-out infinite;
+          will-change: transform, box-shadow;
         }
       `}</style>
 
@@ -1501,7 +1506,7 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
       </svg>
       <div
         className="absolute inset-0 pointer-events-none z-30 opacity-[0.035] mix-blend-overlay"
-        style={{ filter: 'url(#cinematic-film-grain)' }}
+        style={{ filter: 'url(#cinematic-film-grain)', transform: 'translateZ(0)' }}
       />
 
       {/* 1. CINEMATIC AMBIENT LIGHTING & SCREEN-EDGE VIGNETTE */}
@@ -1596,6 +1601,7 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
               left: heart.left,
               animation: `floatingHeartDrift ${heart.dur} linear infinite`,
               animationDelay: heart.delay,
+              willChange: 'transform, opacity',
             }}
           >
             ❤️
@@ -1618,6 +1624,7 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
           className="relative w-full h-full rounded-2xl sm:rounded-3xl p-[3px] md:p-[3.5px] overflow-hidden"
           style={{
             animation: 'rainbowHaloGlow 8s ease-in-out infinite',
+            transform: 'translateZ(0)',
           }}
         >
           {/* Laser Travelling Rainbow Border */}
@@ -1629,6 +1636,7 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
               background:
                 'conic-gradient(from 0deg, #f43f5e 0deg, #ec4899 45deg, #d946ef 90deg, #a855f7 135deg, #3b82f6 180deg, #06b6d4 225deg, #8b5cf6 270deg, #fbbf24 315deg, #f43f5e 360deg)',
               animation: 'rainbowBorderTravel 6s linear infinite',
+              willChange: 'transform',
             }}
           />
 
@@ -1639,6 +1647,7 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
               background:
                 'conic-gradient(from 0deg, transparent 0deg, transparent 270deg, rgba(255,255,255,0.3) 315deg, rgba(255,255,255,0.98) 348deg, #f43f5e 360deg)',
               animation: 'rainbowBorderTravel 6s linear infinite',
+              willChange: 'transform',
             }}
           />
 

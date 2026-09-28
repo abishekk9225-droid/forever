@@ -14,9 +14,9 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
   };
 
   useEffect(() => {
-    // Initial Climax Heartbeat (BPM: 138, Volume: 0.52)
+    // Initial Climax Heartbeat (BPM: 138, Volume: 0.54)
     if (window.heartbeatEngine) {
-      window.heartbeatEngine.setTargetBPM(138, 0.52);
+      window.heartbeatEngine.setTargetBPM(138, 0.54);
     }
     triggerHeartbeat();
 
@@ -33,15 +33,15 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
       setEchoPhoto(null);
       setStage('PHOTO');
       if (window.heartbeatEngine) {
-        window.heartbeatEngine.setTargetBPM(142, 0.54);
+        window.heartbeatEngine.setTargetBPM(142, 0.56);
       }
     }, 2500);
 
-    // Phase 3 (4.5s): SARANYA text appears (Fastest point: 145 BPM)
+    // Phase 3 (4.5s): SARANYA text appears (BPM: 145)
     const tSaranya = setTimeout(() => {
       setStage('SARANYA');
       if (window.heartbeatEngine) {
-        window.heartbeatEngine.setTargetBPM(145, 0.55);
+        window.heartbeatEngine.setTargetBPM(145, 0.58);
       }
     }, 4500);
 
@@ -53,17 +53,20 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
     }, 6550);
 
     // Phase 4 (6.8s): Grand Climax "I LOVE YOU" + Lens Flare
-    // After text appears: Heartbeat settles into a slower emotional rhythm (~75-85 BPM)
+    // Requirement 8: "I LOVE YOU" reaches its strongest cinematic point, without clipping
     const tClimax = setTimeout(() => {
       setStage('ILOVEYOU');
       if (window.heartbeatEngine) {
-        window.heartbeatEngine.setTargetBPM(80, 0.22);
+        window.heartbeatEngine.setTargetBPM(148, 0.60);
       }
     }, 6800);
 
     // Phase 5 (9.8s): Buttons Fade in
     const tButtons = setTimeout(() => {
       setStage('BUTTONS');
+      if (window.heartbeatEngine) {
+        window.heartbeatEngine.setTargetBPM(142, 0.52);
+      }
     }, 9800);
 
     return () => {
@@ -79,7 +82,10 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
 
   const handleYesClick = (e) => {
     setCelebratingYes(true);
-    triggerHeartbeat();
+    if (window.heartbeatEngine) {
+      window.heartbeatEngine.setTargetBPM(88, 0.35);
+      window.heartbeatEngine.start();
+    }
     setTimeout(() => {
       if (typeof onAccept === 'function') {
         onAccept(e);

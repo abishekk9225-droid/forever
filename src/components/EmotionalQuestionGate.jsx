@@ -34,22 +34,22 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
     if (window.heartbeatEngine) {
       switch (step) {
         case 'QUESTION':
-          window.heartbeatEngine.setTargetBPM(66, 0.16);
+          window.heartbeatEngine.setTargetBPM(64, 0.25);
           break;
         case 'LYRIC_SCENE':
-          window.heartbeatEngine.setTargetBPM(68, 0.18);
+          window.heartbeatEngine.setTargetBPM(68, 0.26);
           break;
         case 'VOICE':
-          window.heartbeatEngine.setTargetBPM(74, 0.20);
+          window.heartbeatEngine.setTargetBPM(72, 0.28);
           break;
         case 'MEMORY_ROOM':
-          window.heartbeatEngine.setTargetBPM(82, 0.23);
+          window.heartbeatEngine.setTargetBPM(78, 0.30);
           break;
         case 'OPEN_WHEN':
-          window.heartbeatEngine.setTargetBPM(90, 0.27);
+          window.heartbeatEngine.setTargetBPM(84, 0.32);
           break;
         case 'CELEBRATION':
-          window.heartbeatEngine.setTargetBPM(102, 0.32);
+          window.heartbeatEngine.setTargetBPM(90, 0.34);
           break;
         default:
           break;
@@ -75,14 +75,14 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
     // 3. Trigger audio directly on click to bypass browser autoplay blocks
     let song = new Audio('/abi.mp3');
     song.preload = 'auto';
-    song.volume = 1.0;
+    song.volume = 0.18;
     const playPromise = song.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {
         // fallback if file name is abi.mp3.mpeg
         const fallbackSong = new Audio('/abi.mp3.mpeg');
         fallbackSong.preload = 'auto';
-        fallbackSong.volume = 1.0;
+        fallbackSong.volume = 0.18;
         fallbackSong.play().catch((e) => console.log('Audio playback error:', e));
         song = fallbackSong;
         setLyricAudio(fallbackSong);
@@ -122,6 +122,9 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
     return (
       <VoiceMessageScene
         onComplete={() => {
+          if (window.soundController?.fadeToSoftAmbience) {
+            window.soundController.fadeToSoftAmbience(0.045, 3.5);
+          }
           setStep('MEMORY_ROOM');
         }}
       />

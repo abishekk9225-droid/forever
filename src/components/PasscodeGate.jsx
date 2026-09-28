@@ -61,7 +61,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   const playHeartbeatAudio = () => {
     if (window.heartbeatEngine) {
       window.heartbeatEngine.start();
-      window.heartbeatEngine.setTargetBPM(56, 0.12);
+      window.heartbeatEngine.setTargetBPM(56, 0.24);
     }
   };
 
@@ -75,7 +75,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
 
     // Gradually increase heartbeat over 2-3s upon unlock
     if (window.heartbeatEngine) {
-      window.heartbeatEngine.setTargetBPM(64, 0.15);
+      window.heartbeatEngine.setTargetBPM(62, 0.26);
     }
 
     // 0.0s: successful unlock triggered

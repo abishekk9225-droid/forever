@@ -18,7 +18,7 @@ export default function HeartbeatIntro({ onUnlock }) {
   const handleTap = () => {
     if (window.heartbeatEngine) {
       window.heartbeatEngine.start();
-      window.heartbeatEngine.setTargetBPM(56, 0.12);
+      window.heartbeatEngine.setTargetBPM(54, 0.24);
     }
     confetti({
       particleCount: 80,

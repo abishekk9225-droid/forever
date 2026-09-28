@@ -1,126 +1,72 @@
-import React, { createContext, useContext, useRef, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { globalAudioEngine } from '../utils/audioEngine';
 
 const SoundContext = createContext();
 
 export const SoundProvider = ({ children }) => {
-  const introAudioRef = useRef(null);
-  const abi1AudioRef = useRef(null);
-  const celebrationAudioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState('intro'); // 'intro' | 'abi1' | 'celebration'
-
-  const playIntroTrack = () => {
-    if (abi1AudioRef.current) {
-      abi1AudioRef.current.pause();
-      abi1AudioRef.current.currentTime = 0;
-    }
-    if (celebrationAudioRef.current) {
-      celebrationAudioRef.current.pause();
-      celebrationAudioRef.current.currentTime = 0;
-    }
-    if (introAudioRef.current) {
-      introAudioRef.current.play().then(() => {
-        setIsPlaying(true);
-        setCurrentTrack('intro');
-      }).catch(() => {});
-    }
-  };
-
-  const playAbi1Track = () => {
-    if (introAudioRef.current) {
-      introAudioRef.current.pause();
-      introAudioRef.current.currentTime = 0;
-    }
-    if (celebrationAudioRef.current) {
-      celebrationAudioRef.current.pause();
-      celebrationAudioRef.current.currentTime = 0;
-    }
-    if (abi1AudioRef.current) {
-      abi1AudioRef.current.play().then(() => {
-        setIsPlaying(true);
-        setCurrentTrack('abi1');
-      }).catch(() => {});
-    }
-  };
-
-  const playCelebrationTrack = (startTime = 0) => {
-    if (introAudioRef.current) {
-      introAudioRef.current.pause();
-      introAudioRef.current.currentTime = 0;
-    }
-    if (abi1AudioRef.current) {
-      abi1AudioRef.current.pause();
-      abi1AudioRef.current.currentTime = 0;
-    }
-    if (celebrationAudioRef.current) {
-      if (startTime > 0) {
-        celebrationAudioRef.current.currentTime = startTime;
-      }
-      celebrationAudioRef.current.play().then(() => {
-        setIsPlaying(true);
-        setCurrentTrack('celebration');
-      }).catch(() => {});
-    }
-  };
-
-  const toggleSound = () => {
-    let active = null;
-    if (currentTrack === 'intro') active = introAudioRef.current;
-    else if (currentTrack === 'abi1') active = abi1AudioRef.current;
-    else active = celebrationAudioRef.current;
-
-    if (!active) return;
-    if (isPlaying) {
-      active.pause();
-      setIsPlaying(false);
-    } else {
-      active.play().then(() => setIsPlaying(true)).catch(() => {});
-    }
-  };
+  const [currentTrack, setCurrentTrack] = useState('intro');
 
   useEffect(() => {
-    introAudioRef.current = new Audio('/bgm-intro.mp3');
-    introAudioRef.current.loop = true;
-    introAudioRef.current.volume = 0.5;
+    // Initialize engine upon mount
+    globalAudioEngine.init();
 
-    abi1AudioRef.current = new Audio('/abi.1.mp3');
-    abi1AudioRef.current.loop = true;
-    abi1AudioRef.current.volume = 0.5;
+    // Subscribe to engine music state changes
+    const unsubscribe = globalAudioEngine.subscribe(({ currentTrack: track, isPlaying: playing }) => {
+      setCurrentTrack(track);
+      setIsPlaying(playing);
+    });
 
-    celebrationAudioRef.current = new Audio('/bgm.mp3');
-    celebrationAudioRef.current.loop = true;
-    celebrationAudioRef.current.volume = 0.6;
-
-    // Define triggerClimaxAudio globally to match original logic
+    // Provide global climax audio trigger to match existing flow
     window.triggerClimaxAudio = () => {
-      playCelebrationTrack(219);
+      globalAudioEngine.playCelebrationTrack(219);
     };
 
-    // Handle initial browser user gesture unlock for audio
-    const handleGlobalTap = () => {
-      if (introAudioRef.current && !isPlaying) {
-        introAudioRef.current.play().then(() => {
-          setIsPlaying(true);
-        }).catch((err) => console.warn("Initial playback failed:", err));
-      }
-      window.removeEventListener('click', handleGlobalTap);
-      window.removeEventListener('touchstart', handleGlobalTap);
+    window.soundController = {
+      playIntroTrack: () => globalAudioEngine.playIntroTrack(),
+      playAbi1Track: () => globalAudioEngine.playAbi1Track(),
+      playCelebrationTrack: (startTime) => globalAudioEngine.playCelebrationTrack(startTime),
+      fadeToSoftAmbience: (target, duration) => globalAudioEngine.fadeToSoftAmbience(target, duration),
+      toggleSound: () => globalAudioEngine.toggleSound(),
     };
-
-    window.addEventListener('click', handleGlobalTap, { once: true });
-    window.addEventListener('touchstart', handleGlobalTap, { once: true });
 
     return () => {
-      if (introAudioRef.current) introAudioRef.current.pause();
-      if (abi1AudioRef.current) abi1AudioRef.current.pause();
-      if (celebrationAudioRef.current) celebrationAudioRef.current.pause();
-      window.removeEventListener('click', handleGlobalTap);
-      window.removeEventListener('touchstart', handleGlobalTap);
+      unsubscribe();
     };
   }, []);
 
+  const playIntroTrack = () => {
+    globalAudioEngine.playIntroTrack();
+  };
+
+  const playAbi1Track = () => {
+    globalAudioEngine.playAbi1Track();
+  };
+
+  const playCelebrationTrack = (startTime = 0) => {
+    globalAudioEngine.playCelebrationTrack(startTime);
+  };
+
+  const toggleSound = () => {
+    globalAudioEngine.toggleSound();
+  };
+
+  const fadeToSoftAmbience = (targetGain = 0.045, durationSec = 3.5) => {
+    globalAudioEngine.fadeToSoftAmbience(targetGain, durationSec);
+  };
+
   return (
-    <SoundContext.Provider value={{ currentTrack, isPlaying, playCelebrationTrack, playIntroTrack, playAbi1Track, toggleSound }}>
+    <SoundContext.Provider
+      value={{
+        currentTrack,
+        isPlaying,
+        playCelebrationTrack,
+        playIntroTrack,
+        playAbi1Track,
+        toggleSound,
+        fadeToSoftAmbience,
+      }}
+    >
       {children}
     </SoundContext.Provider>
   );

@@ -23,11 +23,11 @@ export default function EmotionalSongLyricScene({ audioInstance, onComplete }) {
     if (!audio) {
       audio = new Audio('/abi.mp3');
       audio.preload = 'auto';
-      audio.volume = 1.0;
+      audio.volume = 0.18;
       audio.play().catch(() => {
         const fallback = new Audio('/abi.mp3.mpeg');
         fallback.preload = 'auto';
-        fallback.volume = 1.0;
+        fallback.volume = 0.18;
         fallback.play().catch(() => {});
         audio = fallback;
       });
@@ -123,15 +123,21 @@ export default function EmotionalSongLyricScene({ audioInstance, onComplete }) {
     // Smooth audio fade out before scene change
     if (audioRef.current) {
       const audio = audioRef.current;
-      const fadeInterval = setInterval(() => {
-        if (audio.volume > 0.1) {
-          audio.volume = Math.max(0, audio.volume - 0.2);
+      const startVol = audio.volume;
+      const startTime = performance.now();
+      const fadeDuration = 1200;
+      const fadeStep = () => {
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(1, elapsed / fadeDuration);
+        audio.volume = Math.max(0, startVol * (1 - progress));
+        if (progress < 1) {
+          requestAnimationFrame(fadeStep);
         } else {
-          clearInterval(fadeInterval);
           audio.pause();
           if (typeof onComplete === 'function') onComplete();
         }
-      }, 50);
+      };
+      requestAnimationFrame(fadeStep);
     } else {
       if (typeof onComplete === 'function') onComplete();
     }

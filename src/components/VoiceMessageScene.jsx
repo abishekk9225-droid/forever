@@ -497,6 +497,9 @@ export default function VoiceMessageScene({ onComplete }) {
     }
 
     if (typeof onComplete === 'function') {
+      if (typeof window !== 'undefined' && window.soundController?.fadeToSoftAmbience) {
+        window.soundController.fadeToSoftAmbience(0.045, 3.5);
+      }
       onComplete();
     }
   };

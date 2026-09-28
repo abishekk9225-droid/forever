@@ -51,34 +51,36 @@ function MainApp() {
 
   React.useEffect(() => {
     if (showHeartbeat) {
-      setTargetBPM(54, 0.12);
+      setTargetBPM(54, 0.24);
     } else if (!isUnlocked) {
-      setTargetBPM(56, 0.12);
+      setTargetBPM(56, 0.24);
     } else if (!hasConfirmedFeelings) {
       // Dynamic progression inside EmotionalQuestionGate steps
     } else {
       switch (currentScene) {
         case SCENES.INTRO:
+          setTargetBPM(92, 0.34);
+          break;
         case SCENES.ASK_DIALOGUE:
-          setTargetBPM(104, 0.32);
+          setTargetBPM(96, 0.36);
           break;
         case SCENES.MEMORIES:
-          setTargetBPM(108, 0.35);
+          setTargetBPM(102, 0.38);
           break;
         case SCENES.GAME:
-          setTargetBPM(110, 0.38);
+          setTargetBPM(108, 0.40);
           break;
         case SCENES.LETTER:
-          setTargetBPM(114, 0.40);
+          setTargetBPM(114, 0.42);
           break;
         case SCENES.MELT:
-          setTargetBPM(118, 0.42);
+          setTargetBPM(120, 0.45);
           break;
         case SCENES.CONFESSION:
           // Handled inside SuspenseProposalFlow and ProposalConfession
           break;
         default:
-          setTargetBPM(80, 0.20);
+          setTargetBPM(88, 0.32);
           break;
       }
     }

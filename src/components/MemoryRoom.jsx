@@ -16,50 +16,12 @@ export default function MemoryRoom({ onProceed }) {
   const [unlockedDoors, setUnlockedDoors] = useState([]);
   const [selectedMemory, setSelectedMemory] = useState(null);
   const [selectedDeskItem, setSelectedDeskItem] = useState(null);
-  const [audioPlaying, setAudioPlaying] = useState(false);
   const [butterflies, setButterflies] = useState([]);
   const [isCombined, setIsCombined] = useState(false);
   const [showBurst, setShowBurst] = useState(false);
 
-  const audioRef = useRef(null);
   const canvasRef = useRef(null);
   const animFrameRef = useRef(null);
-
-  useEffect(() => {
-    try {
-      const audio = new Audio('/bgm.mp3');
-      audio.loop = true;
-      audio.volume = 0.35;
-      audioRef.current = audio;
-    } catch (e) {
-      console.warn('Audio init error:', e);
-    }
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
-
-  const toggleAudio = () => {
-    if (!audioRef.current) {
-      setAudioPlaying(!audioPlaying);
-      return;
-    }
-    if (audioPlaying) {
-      audioRef.current.pause();
-      setAudioPlaying(false);
-    } else {
-      audioRef.current.play().then(() => {
-        setAudioPlaying(true);
-      }).catch((e) => {
-        console.warn('Playback error:', e);
-        setAudioPlaying(true);
-      });
-    }
-  };
 
   // Trigger Flying Butterflies from Click Position on opened doors
   const triggerButterflies = (e) => {

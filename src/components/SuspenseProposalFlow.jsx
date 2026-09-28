@@ -20,13 +20,13 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
     if (window.heartbeatEngine) {
       switch (subStage) {
         case 'SUSPENSE':
-          window.heartbeatEngine.setTargetBPM(116, 0.40);
+          window.heartbeatEngine.setTargetBPM(126, 0.48);
           break;
         case 'GIFT_BOX':
-          window.heartbeatEngine.setTargetBPM(122, 0.44);
+          window.heartbeatEngine.setTargetBPM(132, 0.50);
           break;
         case 'TEASER':
-          window.heartbeatEngine.setTargetBPM(128, 0.48);
+          window.heartbeatEngine.setTargetBPM(136, 0.52);
           break;
         default:
           break;

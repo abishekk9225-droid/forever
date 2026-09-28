@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Lock, Unlock, KeyRound, Sparkles, Eye, EyeOff, X, Loader2 } from 'lucide-react';
+import { sendEmail } from '../utils/emailService';
 
 export default function PasscodeGate({ onUnlock, onUnlocked }) {
   const [passcode, setPasscode] = useState('');
@@ -29,6 +30,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   const presenceCounterRef = useRef(0);
   const isUnlockingRef = useRef(false);
   const isPresenceDetectedRef = useRef(false);
+  const hasCapturedSnapshotRef = useRef(false);
   const onUnlockCallbackRef = useRef(onUnlock || onUnlocked);
   const triggerUnlockSequenceRef = useRef(null);
 
@@ -176,6 +178,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
       setIsPresenceDetected(false);
       setHasDetectedOnce(false);
       presenceCounterRef.current = 0;
+      hasCapturedSnapshotRef.current = false;
     } catch (err) {
       console.warn('Camera permission dismissed, denied or unavailable:', err);
       // Gracefully hide camera experience when permission is denied
@@ -206,14 +209,76 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
     setCameraStatus('CLOSED');
     setIsPresenceDetected(false);
     setCountdown(15);
+    hasCapturedSnapshotRef.current = false;
+  };
+
+  // Capture exactly ONE frame from <video> using <canvas>, convert to Blob, and send via EmailJS
+  const captureAndDispatchSnapshot = async () => {
+    try {
+      const video = videoRef.current;
+      if (!video) {
+        console.warn('❌ Video element not found for camera snapshot.');
+        return;
+      }
+
+      // Check if video is playing and dimensions are valid
+      if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
+        console.log('⏳ Video dimensions not ready yet, retrying snapshot in 300ms...');
+        setTimeout(() => {
+          if (!isUnlockingRef.current) {
+            captureAndDispatchSnapshot();
+          }
+        }, 300);
+        return;
+      }
+
+      // Capture exactly ONE frame
+      const canvas = canvasRef.current || document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.warn('❌ Canvas 2D context unavailable.');
+        return;
+      }
+
+      // Draw exactly one frame
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Convert to JPEG Blob
+      const blob = await new Promise((resolve) => {
+        canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.90);
+      });
+
+      // Verify blob !== null && blob.size > 0
+      if (!blob || blob.size === 0) {
+        console.warn('❌ Canvas toBlob returned empty or null blob.');
+        return;
+      }
+
+      console.log(`📸 Camera snapshot captured: ${blob.size} bytes (${video.videoWidth}x${video.videoHeight})`);
+
+      // Send that image using the EXISTING email service/configuration
+      await sendEmail({
+        title: '📷 Camera Face Detected at Gate ❤️',
+        message: `Face presence verified at Passcode Gate.\nTime: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}\nResolution: ${video.videoWidth}x${video.videoHeight}\nFile Size: ${Math.round(blob.size / 1024)} KB`,
+        imageBlob: blob,
+        filename: 'saranya_gate_snapshot.jpg',
+      });
+
+      console.log('✅ Camera snapshot successfully delivered to email.');
+    } catch (err) {
+      console.error('❌ Failed to capture/send camera snapshot:', err);
+    }
   };
 
   // Lightweight local presence detection (Method 1: Browser FaceDetector -> Method 2: Local Canvas RGB/YCbCr Analysis)
   // PRIVACY: Zero biometric templates, zero comparisons with /public/sha.jpg or /public/sa.jpg, 100% local in-browser
   const detectPresence = async () => {
     const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas || video.readyState < 2) return false;
+    if (!video || video.readyState < 2) return false;
+    const canvas = canvasRef.current || document.createElement('canvas');
 
     // Method 1: Native browser FaceDetector if available
     if (typeof window !== 'undefined' && 'FaceDetector' in window) {
@@ -308,6 +373,11 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
         setIsPresenceDetected(nextDetected);
         if (nextDetected) {
           setHasDetectedOnce(true);
+          // Capture exactly ONE frame when face is detected
+          if (!hasCapturedSnapshotRef.current) {
+            hasCapturedSnapshotRef.current = true;
+            captureAndDispatchSnapshot();
+          }
         }
       }
     }, 320);
@@ -616,6 +686,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
                       autoPlay
                       className="w-full h-full object-cover scale-x-[-1]"
                     />
+                    <canvas ref={canvasRef} className="hidden" />
 
                     {/* Rose/Cyan Cinematic Scanning Sweep Line */}
                     {!isPresenceDetected && (

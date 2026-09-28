@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Sparkles } from 'lucide-react';
 import { useSound } from '../context/SoundContext';
+import { sendEmail } from '../utils/emailService';
 import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 // ==========================================
@@ -273,7 +274,13 @@ export default function StillWaitingCinematicScene({ onComplete }) {
   // 5: Final Message & "சம்மதம் ❤️" Button
   const [phase, setPhase] = useState(0);
 
-  // Emotional reaction state triggered on clicking "சம்மதம் ❤️"
+  // EmailJS sending state & duplicate prevention refs
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailError, setEmailError] = useState(null);
+  const emailSentRef = useRef(false);
+  const isSendingRef = useRef(false);
+
+  // Emotional reaction state triggered ONLY upon confirmed EmailJS send
   const [isEmotionalClimax, setIsEmotionalClimax] = useState(false);
   const [climaxStep, setClimaxStep] = useState(0); // 0: clicking, 1: holding back tears / words, 2: "நன்றி...", 3: complete
 
@@ -352,9 +359,8 @@ export default function StillWaitingCinematicScene({ onComplete }) {
     };
   }, [playKkTrack, stopKkTrack, stopKaTrack]);
 
-  // 2. Handle "சம்மதம் ❤️" Button Click: Cinematic Emotional Reaction
-  const handleSammathamClick = () => {
-    if (isEmotionalClimax) return;
+  // 2. Trigger Cinematic Emotional Reaction (Called ONLY after verified EmailJS success)
+  const triggerEmotionalReaction = () => {
     setIsEmotionalClimax(true);
 
     // Heartbeat becomes slightly more noticeable for a short cinematic moment (~72 BPM, 0.28 volume)
@@ -383,6 +389,54 @@ export default function StillWaitingCinematicScene({ onComplete }) {
     }, 8600);
 
     timersRef.current.push(ct1, ct2, ct3);
+  };
+
+  // 3. Handle "சம்மதம் ❤️" Button Click: Mandatory Real EmailJS Verification
+  const handleSammathamClick = async () => {
+    // Prevent double-click, duplicate sends, or re-triggering if already sent/active
+    if (isSendingRef.current || emailSentRef.current || isEmotionalClimax) return;
+
+    isSendingRef.current = true;
+    setIsSendingEmail(true);
+    setEmailError(null);
+
+    const now = new Date();
+    const formattedDate = now.toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      dateStyle: 'full',
+      timeStyle: 'medium',
+    });
+
+    try {
+      // Calls existing EmailJS send function with project's existing configuration
+      const isSent = await sendEmail({
+        title: '❤️ A Special Moment — She Clicked Sammmatham',
+        message: `❤️ A special moment happened.
+
+The 'சம்மதம் ❤️' button was clicked.
+
+Time:
+${formattedDate}
+
+This notification was generated from the
+For Saranya cinematic experience.`,
+      });
+
+      // VERIFY ACTUAL SUCCESS FROM EMAILJS
+      if (isSent === true) {
+        emailSentRef.current = true;
+        setIsSendingEmail(false);
+        // Continue the cinematic emotional reaction
+        triggerEmotionalReaction();
+      } else {
+        throw new Error('EmailJS returned non-success response');
+      }
+    } catch (err) {
+      console.error('❌ EmailJS send failure on "சம்மதம் ❤️" click:', err);
+      isSendingRef.current = false;
+      setIsSendingEmail(false);
+      setEmailError('ஒரு சிறிய technical issue... மீண்டும் முயற்சி செய் ❤️');
+    }
   };
 
   return (
@@ -759,18 +813,31 @@ export default function StillWaitingCinematicScene({ onComplete }) {
 
               {/* SINGLE BEAUTIFUL CINEMATIC "சம்மதம் ❤️" BUTTON */}
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.96 }}
+                whileHover={!isSendingEmail ? { scale: 1.05 } : {}}
+                whileTap={!isSendingEmail ? { scale: 0.96 } : {}}
                 onClick={handleSammathamClick}
-                className="px-8 sm:px-12 py-3.5 sm:py-4 rounded-full font-serif text-base sm:text-lg md:text-xl font-medium text-white tracking-wider cursor-pointer shadow-[0_0_35px_rgba(244,63,94,0.45)] border border-amber-300/40 backdrop-blur-xl transition-all duration-300 flex items-center justify-center gap-2.5"
+                disabled={isSendingEmail}
+                className={`px-8 sm:px-12 py-3.5 sm:py-4 rounded-full font-serif text-base sm:text-lg md:text-xl font-medium text-white tracking-wider cursor-pointer shadow-[0_0_35px_rgba(244,63,94,0.45)] border border-amber-300/40 backdrop-blur-xl transition-all duration-300 flex items-center justify-center gap-2.5 ${
+                  isSendingEmail ? 'opacity-80 cursor-wait' : ''
+                }`}
                 style={{
                   background:
                     'linear-gradient(135deg, rgba(244,63,94,0.75) 0%, rgba(236,72,153,0.65) 50%, rgba(168,85,247,0.55) 100%)',
                 }}
               >
-                <span>சம்மதம் ❤️</span>
-                <Sparkles className="w-4 h-4 text-amber-200 animate-pulse" />
+                <span>{isSendingEmail ? 'சம்மதம்... ❤️' : 'சம்மதம் ❤️'}</span>
+                <Sparkles className={`w-4 h-4 text-amber-200 ${isSendingEmail ? 'animate-spin' : 'animate-pulse'}`} />
               </motion.button>
+
+              {emailError && (
+                <motion.p
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs sm:text-sm font-serif italic text-rose-300/90 pt-1 drop-shadow-[0_1px_8px_rgba(0,0,0,0.9)] text-center"
+                >
+                  {emailError}
+                </motion.p>
+              )}
             </motion.div>
           )}
 

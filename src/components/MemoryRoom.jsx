@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { memoriesData, deskObjects } from '../data/memories';
 import { Sparkles, ArrowRight, X, Volume2, VolumeX, Lock } from 'lucide-react';
+import { useSound } from '../context/SoundContext';
 
 const LETTER_POSITIONS = [
   { x: 12, y: 22 },  // S
@@ -13,6 +14,10 @@ const LETTER_POSITIONS = [
 ];
 
 export default function MemoryRoom({ onProceed }) {
+  const { isPlaying, toggleSound } = useSound();
+  const audioPlaying = isPlaying;
+  const toggleAudio = toggleSound;
+
   const [unlockedDoors, setUnlockedDoors] = useState([]);
   const [selectedMemory, setSelectedMemory] = useState(null);
   const [selectedDeskItem, setSelectedDeskItem] = useState(null);
@@ -121,11 +126,6 @@ export default function MemoryRoom({ onProceed }) {
   }, [showBurst]);
 
   const handleProceed = () => {
-    if (audioRef.current && audioPlaying) {
-      try {
-        audioRef.current.pause();
-      } catch (e) {}
-    }
     if (typeof onProceed === 'function') {
       onProceed();
     }

@@ -25,9 +25,10 @@ class UnifiedAudioEngine {
     this.schedulerTimer = null;
 
     // Music state
-    this.currentTrack = 'intro'; // 'intro' | 'abi1' | 'celebration' | 'ka'
+    this.currentTrack = 'intro'; // 'intro' | 'abi1' | 'celebration' | 'ka' | 'kk'
     this.isPlayingMusic = false;
     this.baseMusicVolume = 0.24; // Medium background level around 20-30% volume
+    this.bgmBreathingTimer = null;
     this.tracks = {};
     this.listeners = new Set();
     this.beatListeners = new Set();
@@ -90,6 +91,7 @@ class UnifiedAudioEngine {
       this.initTrack('abi1', '/abi.1.mp3');
       this.initTrack('celebration', '/bgm.mp3');
       this.initTrack('ka', '/ka.mp3');
+      this.initTrack('kk', '/kk.mp3');
 
       this.nextBeatTime = now + 0.1;
 
@@ -125,6 +127,10 @@ class UnifiedAudioEngine {
         audio.volume = 0.24;
       } else if (id === 'ka') {
         audio.volume = 0.28;
+      } else if (id === 'kk') {
+        audio.volume = 0.35;
+      } else if (id === 'celebration') {
+        audio.volume = 0.40;
       } else {
         audio.volume = 0.35;
       }
@@ -303,7 +309,7 @@ class UnifiedAudioEngine {
 
     const now = this.audioCtx ? this.audioCtx.currentTime : 0;
 
-    ['intro', 'abi1'].forEach((otherId) => {
+    ['intro', 'abi1', 'ka', 'kk'].forEach((otherId) => {
       const other = this.tracks[otherId];
       if (other && other.element && !other.element.paused) {
         if (other.trackGain && this.audioCtx) {
@@ -327,25 +333,66 @@ class UnifiedAudioEngine {
 
       if (celebration.trackGain && this.audioCtx) {
         celebration.trackGain.gain.cancelScheduledValues(now);
-        celebration.trackGain.gain.setValueAtTime(1.0, now);
+        // Requirement 2: Start with medium-low volume (~0.26)
+        celebration.trackGain.gain.setValueAtTime(0.26, now);
       }
 
       if (this.musicGain && this.audioCtx) {
         this.musicGain.gain.cancelScheduledValues(now);
-        // Controlled volume for celebration music so heartbeat remains audible
-        this.musicGain.gain.setValueAtTime(0.16, now);
+        // Slightly more audible than before, smooth baseline so heartbeat remains clearly dominant
+        this.musicGain.gain.setValueAtTime(0.28, now);
       }
+
+      // Smooth cinematic breathing/pulsing volume curve for bgm.mp3
+      this.startBgmBreathingGain();
 
       if (startTime > 0) {
         celebration.element.currentTime = startTime;
       }
 
+      celebration.element.volume = 0.40;
       celebration.element.play().then(() => {
         this.isPlayingMusic = true;
         this.notifyState();
       }).catch((e) => {
         console.warn('Celebration playback error:', e);
       });
+    }
+  }
+
+  // Smooth cinematic breathing/pulsing volume effect for bgm.mp3
+  // START: medium-low volume -> slowly increase -> slowly decrease -> increase slightly again
+  startBgmBreathingGain() {
+    this.stopBgmBreathingGain();
+    if (!this.audioCtx) return;
+
+    const scheduleBreathing = () => {
+      if (this.currentTrack !== 'celebration' || !this.isPlayingMusic || !this.audioCtx) return;
+      const celebration = this.tracks['celebration'];
+      if (!celebration || !celebration.trackGain) return;
+
+      const now = this.audioCtx.currentTime;
+      const gain = celebration.trackGain.gain;
+      gain.cancelScheduledValues(now);
+      gain.setValueAtTime(gain.value || 0.26, now);
+      // 1. Slowly increase volume: 0.26 -> 0.36 over 6.0s
+      gain.linearRampToValueAtTime(0.36, now + 6.0);
+      // 2. Slowly decrease volume: 0.36 -> 0.24 over 6.0s
+      gain.linearRampToValueAtTime(0.24, now + 12.0);
+      // 3. Increase slightly again: 0.24 -> 0.32 over 5.0s
+      gain.linearRampToValueAtTime(0.32, now + 17.0);
+      // 4. Return to medium-low baseline: 0.32 -> 0.26 over 5.0s
+      gain.linearRampToValueAtTime(0.26, now + 22.0);
+    };
+
+    scheduleBreathing();
+    this.bgmBreathingTimer = setInterval(scheduleBreathing, 21800);
+  }
+
+  stopBgmBreathingGain() {
+    if (this.bgmBreathingTimer) {
+      clearInterval(this.bgmBreathingTimer);
+      this.bgmBreathingTimer = null;
     }
   }
 
@@ -362,10 +409,11 @@ class UnifiedAudioEngine {
       return Promise.resolve();
     }
 
+    this.stopBgmBreathingGain();
     const now = this.audioCtx ? this.audioCtx.currentTime : 0;
 
     // Smoothly fade out any currently playing track over 1.6 seconds
-    ['intro', 'abi1', 'celebration'].forEach((otherId) => {
+    ['intro', 'abi1', 'celebration', 'kk'].forEach((otherId) => {
       const other = this.tracks[otherId];
       if (other && other.element && !other.element.paused) {
         if (other.trackGain && this.audioCtx) {
@@ -394,7 +442,6 @@ class UnifiedAudioEngine {
       if (this.musicGain && this.audioCtx) {
         this.musicGain.gain.cancelScheduledValues(now);
         this.musicGain.gain.setValueAtTime(this.musicGain.gain.value || 0.05, now);
-        // User requirement: ka.mp3 primary background music at around 25-35% volume (0.28)
         this.musicGain.gain.linearRampToValueAtTime(0.28, now + 2.0);
       }
 
@@ -439,6 +486,103 @@ class UnifiedAudioEngine {
       ka.element.pause();
       ka.element.currentTime = 0;
       if (this.currentTrack === 'ka') {
+        this.isPlayingMusic = false;
+        this.notifyState();
+      }
+    }
+  }
+
+  // Requirement 1: Play kk.mp3 after Emotional Waiting Screen is completely finished
+  playKkTrack() {
+    this.init();
+    this.resumeContext();
+
+    if (!this.tracks['kk']) {
+      this.initTrack('kk', '/kk.mp3');
+    }
+
+    if (this.currentTrack === 'kk' && this.isPlayingMusic) {
+      return Promise.resolve();
+    }
+
+    this.stopBgmBreathingGain();
+    const now = this.audioCtx ? this.audioCtx.currentTime : 0;
+
+    // Smoothly fade out any currently playing track over 1.4 seconds
+    ['intro', 'abi1', 'celebration', 'ka'].forEach((otherId) => {
+      const other = this.tracks[otherId];
+      if (other && other.element && !other.element.paused) {
+        if (other.trackGain && this.audioCtx) {
+          other.trackGain.gain.cancelScheduledValues(now);
+          other.trackGain.gain.setValueAtTime(other.trackGain.gain.value, now);
+          other.trackGain.gain.linearRampToValueAtTime(0.0001, now + 1.4);
+          setTimeout(() => {
+            other.element.pause();
+            other.element.currentTime = 0;
+          }, 1450);
+        } else {
+          other.element.pause();
+          other.element.currentTime = 0;
+        }
+      }
+    });
+
+    const kk = this.tracks['kk'];
+    if (kk && kk.element) {
+      this.currentTrack = 'kk';
+
+      if (kk.trackGain && this.audioCtx) {
+        kk.trackGain.gain.cancelScheduledValues(now);
+        kk.trackGain.gain.setValueAtTime(0.0001, now);
+        kk.trackGain.gain.linearRampToValueAtTime(1.0, now + 1.8);
+      }
+
+      if (this.musicGain && this.audioCtx) {
+        this.musicGain.gain.cancelScheduledValues(now);
+        this.musicGain.gain.setValueAtTime(this.musicGain.gain.value || 0.05, now);
+        this.musicGain.gain.linearRampToValueAtTime(0.35, now + 1.8);
+      }
+
+      kk.element.volume = 0.35;
+      kk.element.currentTime = 0;
+      return kk.element.play().then(() => {
+        this.isPlayingMusic = true;
+        this.notifyState();
+      }).catch((e) => {
+        console.warn('kk track playback notice:', e);
+      });
+    }
+    return Promise.resolve();
+  }
+
+  // Cleanly stops kk.mp3 when leaving the post-waiting flow
+  stopKkTrack(fadeDuration = 1.0) {
+    const kk = this.tracks['kk'];
+    if (!kk || !kk.element || kk.element.paused) {
+      if (this.currentTrack === 'kk') {
+        this.isPlayingMusic = false;
+        this.notifyState();
+      }
+      return;
+    }
+
+    const now = this.audioCtx ? this.audioCtx.currentTime : 0;
+    if (kk.trackGain && this.audioCtx) {
+      kk.trackGain.gain.cancelScheduledValues(now);
+      kk.trackGain.gain.setValueAtTime(kk.trackGain.gain.value, now);
+      kk.trackGain.gain.linearRampToValueAtTime(0.0001, now + fadeDuration);
+      setTimeout(() => {
+        kk.element.pause();
+        kk.element.currentTime = 0;
+        if (this.currentTrack === 'kk') {
+          this.isPlayingMusic = false;
+          this.notifyState();
+        }
+      }, fadeDuration * 1000 + 50);
+    } else {
+      kk.element.pause();
+      kk.element.currentTime = 0;
+      if (this.currentTrack === 'kk') {
         this.isPlayingMusic = false;
         this.notifyState();
       }

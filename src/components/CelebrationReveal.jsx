@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
 import { Mail, Sparkles, Heart } from 'lucide-react';
+import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 export default function CelebrationReveal({
   onComplete,
@@ -26,6 +27,8 @@ export default function CelebrationReveal({
 
   return (
     <div className="min-h-screen w-full bg-[#030712] flex flex-col items-center justify-center p-4 md:p-6 text-center relative overflow-hidden select-none">
+      {/* Screen-level Travelling Rainbow Border */}
+      <CinematicRainbowBorder mode="screen" />
       
       {/* Background Ambient Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-pink-600/15 rounded-full blur-[140px] pointer-events-none"></div>
@@ -50,7 +53,9 @@ export default function CelebrationReveal({
       </div>
 
       {/* Glassmorphic Envelope Container */}
-      <div className="max-w-md w-full bg-slate-900/80 backdrop-blur-md p-8 rounded-[2.5rem] border border-pink-500/50 shadow-[0_0_50px_rgba(244,63,94,0.35)] relative z-10 space-y-6">
+      <div className="max-w-md w-full bg-slate-900/80 backdrop-blur-md p-8 rounded-[2.5rem] border border-pink-500/50 shadow-[0_0_50px_rgba(244,63,94,0.35)] relative z-10 space-y-6 overflow-hidden">
+        {/* Card-level Travelling Rainbow Border */}
+        <CinematicRainbowBorder mode="card" borderRadius={40} />
         
         <div className="flex justify-center">
           <div className="w-16 h-16 rounded-2xl bg-pink-500/20 border border-pink-400/40 flex items-center justify-center text-pink-400 shadow-[0_0_20px_rgba(244,63,94,0.4)] animate-bounce">

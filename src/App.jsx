@@ -39,6 +39,7 @@ import PromiseVault from './components/PromiseVault';
 import AskDialogueScene from './components/AskDialogueScene';
 import HeartbeatIntro from './components/HeartbeatIntro';
 import EmotionalQuestionGate from './components/EmotionalQuestionGate';
+import CinematicRainbowBorder from './components/CinematicRainbowBorder';
 
 
 
@@ -120,6 +121,9 @@ function MainApp() {
 
   return (
     <main className="relative w-full min-h-screen overflow-hidden bg-[#05020a] text-white select-none flex items-center justify-center font-sans">
+      {/* Universal Continuous Travelling Rainbow Border for all Main Scenes */}
+      <CinematicRainbowBorder mode="screen" />
+
       <AudioPlayer />
       
       {/* Reusable Canvas Heart Burst System */}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { memoriesData, deskObjects } from '../data/memories';
 import { Sparkles, ArrowRight, X, Volume2, VolumeX, Lock } from 'lucide-react';
 import { useSound } from '../context/SoundContext';
+import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 const LETTER_POSITIONS = [
   { x: 12, y: 22 },  // S
@@ -152,6 +153,8 @@ export default function MemoryRoom({
 
   return (
     <div className="min-h-screen w-full bg-[#030712] text-slate-100 flex flex-col justify-between p-4 md:p-8 relative overflow-hidden select-none animate-in fade-in duration-700">
+      {/* Screen-level Travelling Rainbow Border */}
+      <CinematicRainbowBorder mode="screen" />
       
       {/* 1. Continuous Rising Neon Hearts */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">

@@ -12,6 +12,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { sendEmail } from '../utils/emailService';
+import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 const MAX_RECORD_SECONDS = 40;
 const TARGET_EMAIL = 'abishekk9225@gmail.com';
@@ -506,11 +507,15 @@ export default function VoiceMessageScene({ onComplete }) {
 
   return (
     <div className="min-h-screen w-full bg-[#030712] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden select-none animate-in fade-in zoom-in-95 duration-700">
+      {/* Screen-level Travelling Rainbow Border */}
+      <CinematicRainbowBorder mode="screen" />
       {/* Background Ambient Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-pink-600/15 rounded-full blur-[150px] pointer-events-none"></div>
 
       {/* Main Glassmorphic Container (preserves exact dimensions & aesthetic) */}
-      <div className="max-w-md w-full bg-slate-900/85 backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] border border-pink-500/40 shadow-[0_0_60px_rgba(244,63,94,0.3)] relative z-10 space-y-8">
+      <div className="max-w-md w-full bg-slate-900/85 backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] border border-pink-500/40 shadow-[0_0_60px_rgba(244,63,94,0.3)] relative z-10 space-y-8 overflow-hidden">
+        {/* Card-level Travelling Rainbow Border */}
+        <CinematicRainbowBorder mode="card" borderRadius={40} />
         <div>
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-400 text-xs font-semibold uppercase tracking-widest">
             <Sparkles className="w-3.5 h-3.5" /> Speak Your Heart

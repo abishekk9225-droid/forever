@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Phone, ArrowRight, Heart, Sparkles, Volume2 } from 'lucide-react';
 import { sendEmail } from '../utils/emailService';
 import { useSound } from '../context/SoundContext';
+import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 const ADMIN_PHONE = '6380404055';
 
@@ -48,7 +49,7 @@ const TEAR_DROPLETS = Array.from({ length: 14 }).map((_, i) => ({
 }));
 
 export default function EmotionalWaitingScene({ onComplete }) {
-  const { playKaTrack, stopKaTrack } = useSound();
+  const { playKaTrack, stopKaTrack, playKkTrack } = useSound();
   const [currentLineIdx, setCurrentLineIdx] = useState(0);
   const [isClimaxReached, setIsClimaxReached] = useState(false);
   const [showCallPrompt, setShowCallPrompt] = useState(false);
@@ -228,6 +229,12 @@ export default function EmotionalWaitingScene({ onComplete }) {
     if (typeof stopKaTrack === 'function') {
       stopKaTrack(1.0);
     }
+    // Requirement 1: Start kk.mp3 ONLY AFTER Emotional Waiting Screen is COMPLETELY finished
+    if (typeof playKkTrack === 'function') {
+      playKkTrack();
+    } else if (window.soundController?.playKkTrack) {
+      window.soundController.playKkTrack();
+    }
     if (typeof onComplete === 'function') {
       onComplete();
     }
@@ -238,6 +245,9 @@ export default function EmotionalWaitingScene({ onComplete }) {
       onClick={isAutoplayBlocked ? handleUnblockAudio : undefined}
       className="fixed inset-0 w-full h-full bg-[#050208] text-slate-100 flex flex-col items-center justify-center p-6 md:p-12 overflow-hidden select-none z-[120] animate-in fade-in duration-1000"
     >
+      {/* SCREEN-LEVEL CONTINUOUS TRAVELLING RAINBOW BORDER */}
+      <CinematicRainbowBorder mode="screen" />
+
       {/* INLINE CSS FOR KEN BURNS SLOW ZOOM, LIGHT RAYS & FILM GRAIN */}
       <style>{`
         @keyframes kenBurnsSlow {

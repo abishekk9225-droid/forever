@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Sparkles, Activity } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 export default function HeartbeatIntro({ onUnlock }) {
   const [loadingText, setLoadingText] = useState("Synchronizing heartbeats...");
@@ -31,6 +32,8 @@ export default function HeartbeatIntro({ onUnlock }) {
 
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-4 bg-black/95 text-center select-none overflow-hidden z-30">
+      {/* Screen-level Travelling Rainbow Border */}
+      <CinematicRainbowBorder mode="screen" />
       
       {/* Background Floating Butterflies & Glow */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Gift, Sparkles, Heart } from 'lucide-react';
+import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 // AUTHORIZED / CUSTOMIZABLE LYRIC STRUCTURE (Synchronized via audio.currentTime)
 // The project owner can customize the start, end, and text entries below
@@ -237,6 +238,9 @@ export default function SecretGiftCinematicScene({ onComplete }) {
         fontFamily: "'Playfair Display', 'Noto Sans Tamil', 'Tamil Sangam MN', 'Mukta Malar', 'Latha', serif",
       }}
     >
+      {/* Screen-level Travelling Rainbow Border */}
+      <CinematicRainbowBorder mode="screen" />
+
       {/* INLINE CSS FOR CINEMATIC LIGHTING, PARTICLES & GLOWS */}
       <style>{`
         @keyframes softBloom {

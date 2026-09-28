@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Lock, Unlock, KeyRound, Sparkles, Eye, EyeOff, X, Loader2 } from 'lucide-react';
 import { sendEmail } from '../utils/emailService';
+import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 export default function PasscodeGate({ onUnlock, onUnlocked }) {
   const [passcode, setPasscode] = useState('');
@@ -439,6 +440,8 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
 
   return (
     <div className="min-h-screen w-full bg-[#030712] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden select-none">
+      {/* Screen-level Continuous Travelling Rainbow Border */}
+      <CinematicRainbowBorder mode="screen" />
       <style>{`
         @keyframes photoSweep {
           0% { transform: translateX(-100%); opacity: 0; }
@@ -592,7 +595,9 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
         </div>
 
         {/* Central Elevated Glassmorphic Passcode Box (Preserves layout & dimensions) */}
-        <div className="relative z-20 w-full max-w-md shrink-0 bg-slate-900/85 backdrop-blur-3xl p-6 sm:p-8 md:p-10 rounded-[2.5rem] border border-pink-500/40 shadow-[0_0_60px_rgba(244,63,94,0.3)] text-center space-y-4 mx-auto animate-fade-in">
+        <div className="relative z-20 w-full max-w-md shrink-0 bg-slate-900/85 backdrop-blur-3xl p-6 sm:p-8 md:p-10 rounded-[2.5rem] border border-pink-500/40 shadow-[0_0_60px_rgba(244,63,94,0.3)] text-center space-y-4 mx-auto animate-fade-in overflow-hidden">
+          {/* Travelling Rainbow Border on Passcode Card */}
+          <CinematicRainbowBorder mode="card" borderRadius={40} />
           {/* Lock Icon Container */}
           <div className="flex justify-center">
             <div

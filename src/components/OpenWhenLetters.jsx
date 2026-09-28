@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { lettersData, secretLetterData } from '../data/letters';
 import { Mail, Lock, Unlock, Sparkles, X, ArrowRight } from 'lucide-react';
+import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 export default function OpenWhenLetters({ onComplete }) {
   const [openedLetters, setOpenedLetters] = useState([]);
@@ -23,6 +24,8 @@ export default function OpenWhenLetters({ onComplete }) {
 
   return (
     <div className="min-h-screen w-full bg-[#030712] text-slate-100 flex flex-col justify-between p-6 md:p-10 relative overflow-hidden select-none animate-in fade-in duration-700">
+      {/* Screen-level Travelling Rainbow Border */}
+      <CinematicRainbowBorder mode="screen" />
       
       {/* Ambient background */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-600/10 rounded-full blur-[160px] pointer-events-none"></div>

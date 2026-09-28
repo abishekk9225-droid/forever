@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 // ==========================================
 // CINEMATIC SVG CHERRY BLOSSOM FLOWER HELPER
@@ -48,7 +49,7 @@ function BlossomCluster({ x, y, scale = 1, rotation = 0, opacity = 1 }) {
 // ==========================================
 function LeftCinematicTree() {
   return (
-    <div className="absolute left-0 bottom-0 top-0 w-[240px] sm:w-[300px] md:w-[380px] lg:w-[440px] xl:w-[500px] pointer-events-none z-[15] overflow-visible">
+    <div className="absolute left-0 bottom-0 top-0 w-[34%] sm:w-[36%] md:w-[38%] max-w-[440px] pointer-events-none z-[12] overflow-visible">
       {/* Volumetric Pink/Rose Atmospheric Backlight */}
       <div
         className="absolute -inset-10 opacity-60 blur-3xl pointer-events-none"
@@ -188,6 +189,28 @@ function LeftCinematicTree() {
             strokeLinecap="round"
             fill="none"
           />
+
+          {/* BRANCH TRAVELLING LIGHT RUNNERS (Energy Pulse Through Branches) */}
+          <path
+            d="M 60,370 C 75,270 120,210 180,150 C 230,100 290,70 370,45"
+            stroke="#fef08a"
+            strokeWidth="3.5"
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray="60 340"
+            filter="url(#fairyGlowFilter)"
+            style={{ animation: 'branchLightTravel 6s linear infinite' }}
+          />
+          <path
+            d="M 180,150 C 240,110 320,100 410,115 C 445,120 480,140 500,165"
+            stroke="#f472b6"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray="50 300"
+            filter="url(#fairyGlowFilter)"
+            style={{ animation: 'branchLightTravel 7s linear infinite', animationDelay: '1.5s' }}
+          />
         </g>
 
         {/* HANGING WEEPING BLOSSOM GARLANDS & DELICATE TENDRILS */}
@@ -229,7 +252,7 @@ function LeftCinematicTree() {
         </g>
 
         {/* DENSE LUXURIOUS BLOSSOM CLUSTERS ACROSS CANOPY */}
-        <g>
+        <g style={{ animation: 'flowerClusterBreathe 5s ease-in-out infinite' }}>
           {/* High Canopy Clusters */}
           <BlossomCluster x={120} y={160} scale={1.4} rotation={15} />
           <BlossomCluster x={180} y={130} scale={1.5} rotation={-25} />
@@ -357,7 +380,7 @@ function LeftCinematicTree() {
 // ==========================================
 function RightCinematicTree() {
   return (
-    <div className="absolute right-0 bottom-0 top-0 w-[240px] sm:w-[300px] md:w-[380px] lg:w-[440px] xl:w-[500px] pointer-events-none z-[15] overflow-visible">
+    <div className="absolute right-0 bottom-0 top-0 w-[34%] sm:w-[36%] md:w-[38%] max-w-[440px] pointer-events-none z-[12] overflow-visible">
       {/* Volumetric Purple/Rose Atmospheric Backlight */}
       <div
         className="absolute -inset-10 opacity-60 blur-3xl pointer-events-none"
@@ -370,7 +393,6 @@ function RightCinematicTree() {
         viewBox="0 0 500 900"
         preserveAspectRatio="xMaxYMax meet"
         className="w-full h-full overflow-visible drop-shadow-[0_0_30px_rgba(236,72,153,0.4)]"
-        style={{ transform: 'scaleX(-1)' }}
       >
         <defs>
           <linearGradient id="rightTrunkGrad" x1="0%" y1="100%" x2="100%" y2="0%">
@@ -380,7 +402,56 @@ function RightCinematicTree() {
             <stop offset="90%" stopColor="#5c1e38" />
             <stop offset="100%" stopColor="#831843" />
           </linearGradient>
+
+          <linearGradient id="rightGoldRimGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#fef08a" stopOpacity="0.9" />
+            <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+          </linearGradient>
+
+          <radialGradient id="rightSakuraPetalDeep" cx="30%" cy="30%" r="70%">
+            <stop offset="0%" stopColor="#fbcfe8" />
+            <stop offset="45%" stopColor="#ec4899" />
+            <stop offset="85%" stopColor="#be185d" />
+            <stop offset="100%" stopColor="#831843" />
+          </radialGradient>
+
+          <radialGradient id="rightSakuraPetalLight" cx="30%" cy="30%" r="70%">
+            <stop offset="0%" stopColor="#fff1f2" />
+            <stop offset="40%" stopColor="#f472b6" />
+            <stop offset="80%" stopColor="#d946ef" />
+            <stop offset="100%" stopColor="#a21caf" />
+          </radialGradient>
+
+          <radialGradient id="rightBlossomAmbientGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ec4899" stopOpacity="0.8" />
+            <stop offset="60%" stopColor="#a855f7" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+          </radialGradient>
+
+          <radialGradient id="rightFairyLightRadial" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="30%" stopColor="#fef08a" />
+            <stop offset="70%" stopColor="#ec4899" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+          </radialGradient>
+
+          <filter id="rightSakuraDropShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#000000" floodOpacity="0.5" />
+          </filter>
+
+          <filter id="rightFairyGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
+
+        {/* Mirrored container group: flips coordinates so trunk sits at bottom-right and branches reach inward toward center */}
+        <g transform="translate(500, 0) scale(-1, 1)">
 
         {/* Mirrored background masses, organic trunk, dense clusters, lanterns & lights */}
         <g opacity="0.55" filter="url(#sakuraDropShadow)">
@@ -438,6 +509,28 @@ function RightCinematicTree() {
             strokeLinecap="round"
             fill="none"
           />
+
+          {/* BRANCH TRAVELLING LIGHT RUNNERS (Energy Pulse Through Branches) */}
+          <path
+            d="M 60,370 C 75,270 120,210 180,150 C 230,100 290,70 370,45"
+            stroke="#fef08a"
+            strokeWidth="3.5"
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray="60 340"
+            filter="url(#fairyGlowFilter)"
+            style={{ animation: 'branchLightTravel 6s linear infinite' }}
+          />
+          <path
+            d="M 180,150 C 240,110 320,100 410,115 C 445,120 480,140 500,165"
+            stroke="#ec4899"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray="50 300"
+            filter="url(#fairyGlowFilter)"
+            style={{ animation: 'branchLightTravel 7s linear infinite', animationDelay: '1.5s' }}
+          />
         </g>
 
         {/* WEEPING GARLANDS */}
@@ -479,7 +572,7 @@ function RightCinematicTree() {
         </g>
 
         {/* DENSE FLOWER BLOSSOM CANOPY */}
-        <g>
+        <g style={{ animation: 'flowerClusterBreathe 5s ease-in-out infinite' }}>
           <BlossomCluster x={120} y={160} scale={1.4} rotation={-15} />
           <BlossomCluster x={180} y={130} scale={1.5} rotation={25} />
           <BlossomCluster x={240} y={90} scale={1.3} rotation={-45} />
@@ -590,6 +683,7 @@ function RightCinematicTree() {
             />
           ))}
         </g>
+        </g>
       </svg>
     </div>
   );
@@ -601,41 +695,43 @@ function RightCinematicTree() {
 function CinematicNameReveal({ name, side }) {
   const letters = name.split('');
   const isLeft = side === 'left';
+  const animPrefix = isLeft ? 'letterDropLeft' : 'letterDropRight';
 
   return (
     <div
       className={`absolute ${
         isLeft
-          ? 'left-2 sm:left-4 md:left-8 lg:left-12 xl:left-16'
-          : 'right-2 sm:right-4 md:right-8 lg:right-12 xl:right-16'
-      } top-[10%] sm:top-[12%] md:top-[15%] pointer-events-none z-[25] flex flex-col items-center justify-center`}
+          ? 'left-0 w-[32%] sm:w-[35%] md:w-[37%]'
+          : 'right-0 w-[32%] sm:w-[35%] md:w-[37%]'
+      } top-[12%] sm:top-[14%] md:top-[16%] pointer-events-none z-[25] flex flex-col items-center justify-center`}
       style={{
-        animation: 'wordSynchronizedPulse 6s ease-in-out infinite',
+        animation: 'wordSynchronizedPulse 9s ease-in-out infinite',
       }}
     >
       {/* Radiant Atmospheric Backdrop Glow */}
       <div
-        className="absolute -inset-8 rounded-full blur-2xl pointer-events-none opacity-70"
+        className="absolute -inset-10 rounded-full blur-2xl pointer-events-none opacity-85"
         style={{
           background: isLeft
-            ? 'radial-gradient(ellipse at center, rgba(244,63,94,0.45) 0%, rgba(251,191,36,0.3) 50%, transparent 80%)'
-            : 'radial-gradient(ellipse at center, rgba(236,72,153,0.45) 0%, rgba(168,85,247,0.3) 50%, transparent 80%)',
+            ? 'radial-gradient(ellipse at center, rgba(244,63,94,0.6) 0%, rgba(251,191,36,0.35) 50%, transparent 80%)'
+            : 'radial-gradient(ellipse at center, rgba(236,72,153,0.6) 0%, rgba(168,85,247,0.35) 50%, transparent 80%)',
         }}
       />
 
-      {/* Letters Staggered Sequence */}
+      {/* Letters Staggered Sequence Emerging From Tree Branches */}
       <div className="relative flex items-center justify-center space-x-1 sm:space-x-1.5 md:space-x-2">
         {letters.map((char, index) => (
           <span
             key={`${name}-${index}`}
-            className="inline-block font-serif font-black tracking-wider text-xl sm:text-2xl md:text-3xl lg:text-5xl select-none"
+            className="inline-block font-serif font-black tracking-wide sm:tracking-wider md:tracking-widest text-2xl sm:text-3xl md:text-4xl lg:text-5xl select-none"
             style={{
-              background: 'linear-gradient(180deg, #fffbeb 0%, #fde68a 25%, #f472b6 65%, #e11d48 100%)',
+              background:
+                'linear-gradient(180deg, #ffffff 0%, #fffbeb 18%, #fef08a 38%, #f472b6 68%, #e11d48 88%, #881337 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               filter:
-                'drop-shadow(0 2px 4px rgba(0,0,0,0.95)) drop-shadow(0 0 16px rgba(244,63,94,0.9)) drop-shadow(0 0 32px rgba(251,191,36,0.65))',
-              animation: `letterDrop${index} 6s cubic-bezier(0.16, 1, 0.3, 1) infinite`,
+                'drop-shadow(0 2px 0 #881337) drop-shadow(0 4px 6px rgba(0,0,0,0.95)) drop-shadow(0 0 18px rgba(244,63,94,0.95)) drop-shadow(0 0 35px rgba(251,191,36,0.8))',
+              animation: `${animPrefix}${index} 9s cubic-bezier(0.16, 1, 0.3, 1) infinite`,
             }}
           >
             {char}
@@ -645,13 +741,142 @@ function CinematicNameReveal({ name, side }) {
 
       {/* Romantic Golden Filigree Underline with Star */}
       <div
-        className="relative flex items-center justify-center space-x-2 mt-1 sm:mt-1.5 text-amber-200/80 text-[10px] sm:text-xs md:text-sm tracking-widest"
-        style={{ animation: 'filigreeGlow 6s ease-in-out infinite' }}
+        className="relative flex items-center justify-center space-x-1 sm:space-x-1.5 mt-1 sm:mt-1.5 text-amber-200/90 text-[10px] sm:text-xs md:text-sm tracking-widest"
+        style={{ animation: 'filigreeGlow 9s ease-in-out infinite' }}
       >
-        <span className="w-5 sm:w-8 md:w-12 h-[1px] bg-gradient-to-r from-transparent via-rose-400 to-amber-300" />
+        <span className="w-6 sm:w-10 md:w-14 h-[1.5px] bg-gradient-to-r from-transparent via-rose-400 to-amber-300" />
         <span className="text-amber-200 animate-pulse text-xs sm:text-sm">✨</span>
-        <span className="w-5 sm:w-8 md:w-12 h-[1px] bg-gradient-to-l from-transparent via-rose-400 to-amber-300" />
+        <span className="w-6 sm:w-10 md:w-14 h-[1.5px] bg-gradient-to-l from-transparent via-rose-400 to-amber-300" />
       </div>
+
+      {/* Subtle 3D Glass Mirrored Reflection */}
+      <div
+        className="relative flex items-center justify-center space-x-1 sm:space-x-1.5 md:space-x-2 opacity-25 blur-[1px] select-none pointer-events-none -mt-1 sm:-mt-2 scale-y-[-0.5]"
+        aria-hidden="true"
+      >
+        {letters.map((char, index) => (
+          <span
+            key={`refl-${name}-${index}`}
+            className="inline-block font-serif font-black tracking-wide sm:tracking-wider md:tracking-widest text-xl sm:text-2xl md:text-3xl lg:text-4xl select-none text-rose-300"
+          >
+            {char}
+          </span>
+        ))}
+      </div>
+
+      {/* Climax Synchronized Glow Burst Accents (Flowers, sparkles, hearts) */}
+      <div
+        className="absolute -inset-6 pointer-events-none flex items-center justify-center"
+        style={{ animation: 'nameClimaxBurst 9s ease-in-out infinite' }}
+      >
+        <span className="absolute -top-3 -left-3 text-pink-300 text-sm sm:text-base drop-shadow-[0_0_8px_rgba(244,63,94,0.9)]">✨</span>
+        <span className="absolute -top-3 -right-3 text-amber-300 text-sm sm:text-base drop-shadow-[0_0_8px_rgba(251,191,36,0.9)]">🌸</span>
+        <span className="absolute -bottom-3 -left-2 text-rose-400 text-xs sm:text-sm drop-shadow-[0_0_8px_rgba(244,63,94,0.9)]">❤️</span>
+        <span className="absolute -bottom-3 -right-2 text-pink-400 text-sm sm:text-base drop-shadow-[0_0_8px_rgba(236,72,153,0.9)]">✨</span>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// ONE-BY-ONE FALLING FLOWERS FROM TOP AREA
+// ==========================================
+const FALLING_FLOWERS = [
+  { id: 0, left: '8%', delay: 0.0, dur: 7.8, dx: -45, rot: -220, size: 24, icon: '🌸' },
+  { id: 1, left: '22%', delay: 0.55, dur: 8.2, dx: -30, rot: 190, size: 22, icon: '🌺' },
+  { id: 2, left: '76%', delay: 1.10, dur: 7.6, dx: 40, rot: -180, size: 26, icon: '🌸' },
+  { id: 3, left: '88%', delay: 1.65, dur: 8.4, dx: 35, rot: 240, size: 22, icon: '🌺' },
+  { id: 4, left: '14%', delay: 2.20, dur: 8.8, dx: -55, rot: -300, size: 25, icon: '🌸' },
+  { id: 5, left: '34%', delay: 2.75, dur: 8.0, dx: 30, rot: 180, size: 20, icon: '✨' },
+  { id: 6, left: '68%', delay: 3.30, dur: 8.5, dx: -35, rot: -260, size: 22, icon: '🌸' },
+  { id: 7, left: '82%', delay: 3.85, dur: 8.1, dx: 45, rot: 210, size: 24, icon: '🌺' },
+  { id: 8, left: '6%', delay: 4.40, dur: 7.9, dx: -25, rot: 160, size: 24, icon: '🌸' },
+  { id: 9, left: '92%', delay: 4.95, dur: 8.3, dx: 30, rot: -190, size: 26, icon: '🌸' },
+  { id: 10, left: '26%', delay: 5.50, dur: 8.6, dx: 25, rot: 280, size: 22, icon: '🌺' },
+  { id: 11, left: '72%', delay: 6.05, dur: 8.0, dx: -30, rot: -220, size: 22, icon: '✨' },
+  { id: 12, left: '18%', delay: 6.60, dur: 8.4, dx: -45, rot: 190, size: 25, icon: '🌸' },
+  { id: 13, left: '84%', delay: 7.15, dur: 8.7, dx: 40, rot: -240, size: 24, icon: '🌺' },
+  { id: 14, left: '11%', delay: 7.70, dur: 8.2, dx: -35, rot: -180, size: 23, icon: '🌸' },
+  { id: 15, left: '79%', delay: 8.25, dur: 8.5, dx: 35, rot: 200, size: 25, icon: '🌸' },
+];
+
+function OneByOneFallingFlowers() {
+  return (
+    <div className="absolute inset-0 pointer-events-none z-[18] overflow-hidden">
+      {FALLING_FLOWERS.map((fl) => (
+        <div
+          key={`falling-flower-${fl.id}`}
+          className="absolute text-pink-300 drop-shadow-[0_0_12px_rgba(244,63,94,0.9)] select-none"
+          style={{
+            left: fl.left,
+            fontSize: `${fl.size}px`,
+            '--dx': `${fl.dx}px`,
+            '--rot': `${fl.rot}deg`,
+            animation: `oneByOneFlowerFall ${fl.dur}s linear infinite`,
+            animationDelay: `${fl.delay}s`,
+          }}
+        >
+          {fl.icon}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ==========================================
+// FLYING BUTTERFLIES INSIDE PROPOSAL FRAME
+// ==========================================
+function FrameButterflies() {
+  return (
+    <div className="absolute inset-0 pointer-events-none z-[22] overflow-hidden">
+      <Butterfly
+        pathClass="[animation:flyInside1_11s_ease-in-out_infinite]"
+        duration={11}
+        wingGradientId="bfGrad1"
+        size={28}
+      />
+      <Butterfly
+        pathClass="[animation:flyInside2_13s_ease-in-out_infinite]"
+        duration={13}
+        delay="1.2s"
+        wingGradientId="bfGrad2"
+        size={26}
+      />
+      <Butterfly
+        pathClass="[animation:flyInside3_9s_ease-in-out_infinite]"
+        duration={9}
+        delay="0.6s"
+        wingGradientId="bfGrad3"
+        size={24}
+      />
+      <Butterfly
+        pathClass="[animation:flyInside4_10s_ease-in-out_infinite]"
+        duration={10}
+        delay="1.8s"
+        wingGradientId="bfGrad4"
+        size={25}
+      />
+      <Butterfly
+        pathClass="[animation:flyInside5_15s_ease-in-out_infinite]"
+        duration={15}
+        delay="2.5s"
+        wingGradientId="bfGrad5"
+        size={22}
+      />
+      <Butterfly
+        pathClass="[animation:flyInside6_8.5s_ease-in-out_infinite]"
+        duration={8.5}
+        delay="0.9s"
+        wingGradientId="bfGrad6"
+        size={24}
+      />
+      <Butterfly
+        pathClass="[animation:flyInside7_9.5s_ease-in-out_infinite]"
+        duration={9.5}
+        delay="2.1s"
+        wingGradientId="bfGrad7"
+        size={23}
+      />
     </div>
   );
 }
@@ -668,82 +893,86 @@ function Butterfly({ pathClass, duration, delay = '0s', wingGradientId, size = 3
         animationDelay: delay,
       }}
     >
-      <svg
-        width={size}
-        height={Math.round(size * 0.85)}
-        viewBox="0 0 34 28"
-        className="overflow-visible drop-shadow-[0_0_10px_rgba(236,72,153,0.9)]"
-      >
-        <defs>
-          <linearGradient id={wingGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f472b6" />
-            <stop offset="50%" stopColor="#c084fc" />
-            <stop offset="100%" stopColor="#38bdf8" />
-          </linearGradient>
-        </defs>
-
-        {/* Left Wing with rapid 3D fluttering */}
-        <g
-          style={{
-            transformOrigin: '17px 14px',
-            animation: 'wingFlapLeft 0.24s ease-in-out infinite',
-          }}
+      <div className="relative">
+        <svg
+          width={size}
+          height={Math.round(size * 0.85)}
+          viewBox="0 0 34 28"
+          className="overflow-visible drop-shadow-[0_0_10px_rgba(236,72,153,0.9)]"
         >
+          <defs>
+            <linearGradient id={wingGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#f472b6" />
+              <stop offset="50%" stopColor="#c084fc" />
+              <stop offset="100%" stopColor="#38bdf8" />
+            </linearGradient>
+          </defs>
+
+          {/* Left Wing with rapid 3D fluttering */}
+          <g
+            style={{
+              transformOrigin: '17px 14px',
+              animation: 'wingFlapLeft 0.22s ease-in-out infinite',
+            }}
+          >
+            <path
+              d="M 16,14 C 11,3 3,2 1,7 C -1,13 4,20 16,16 Z"
+              fill={`url(#${wingGradientId})`}
+              opacity="0.95"
+            />
+            <path
+              d="M 16,15 C 9,18 4,24 6,26 C 9,28 14,24 16,17 Z"
+              fill={`url(#${wingGradientId})`}
+              opacity="0.85"
+            />
+            {/* Delicate wing veins */}
+            <path
+              d="M 16,14 Q 8,8 3,8 M 16,15 Q 9,14 4,16"
+              stroke="rgba(255,255,255,0.75)"
+              strokeWidth="0.6"
+              fill="none"
+            />
+          </g>
+
+          {/* Central Thorax & Antennae */}
+          <ellipse cx="17" cy="15" rx="1.2" ry="7" fill="#ffffff" />
+          <circle cx="17" cy="8" r="1.5" fill="#fef08a" />
           <path
-            d="M 16,14 C 11,3 3,2 1,7 C -1,13 4,20 16,16 Z"
-            fill={`url(#${wingGradientId})`}
-            opacity="0.95"
-          />
-          <path
-            d="M 16,15 C 9,18 4,24 6,26 C 9,28 14,24 16,17 Z"
-            fill={`url(#${wingGradientId})`}
-            opacity="0.85"
-          />
-          {/* Delicate wing veins */}
-          <path
-            d="M 16,14 Q 8,8 3,8 M 16,15 Q 9,14 4,16"
-            stroke="rgba(255,255,255,0.75)"
+            d="M 17,7 Q 15,3 13,2 M 17,7 Q 19,3 21,2"
+            stroke="#fef08a"
             strokeWidth="0.6"
+            strokeLinecap="round"
             fill="none"
           />
-        </g>
 
-        {/* Central Thorax & Antennae */}
-        <ellipse cx="17" cy="15" rx="1.2" ry="7" fill="#ffffff" />
-        <circle cx="17" cy="8" r="1.5" fill="#fef08a" />
-        <path
-          d="M 17,7 Q 15,3 13,2 M 17,7 Q 19,3 21,2"
-          stroke="#fef08a"
-          strokeWidth="0.6"
-          strokeLinecap="round"
-          fill="none"
-        />
-
-        {/* Right Wing with synchronized 3D fluttering */}
-        <g
-          style={{
-            transformOrigin: '17px 14px',
-            animation: 'wingFlapRight 0.24s ease-in-out infinite',
-          }}
-        >
-          <path
-            d="M 18,14 C 23,3 31,2 33,7 C 35,13 30,20 18,16 Z"
-            fill={`url(#${wingGradientId})`}
-            opacity="0.95"
-          />
-          <path
-            d="M 18,15 C 25,18 30,24 28,26 C 25,28 20,24 18,17 Z"
-            fill={`url(#${wingGradientId})`}
-            opacity="0.85"
-          />
-          <path
-            d="M 18,14 Q 26,8 31,8 M 18,15 Q 25,14 30,16"
-            stroke="rgba(255,255,255,0.75)"
-            strokeWidth="0.6"
-            fill="none"
-          />
-        </g>
-      </svg>
+          {/* Right Wing with synchronized 3D fluttering */}
+          <g
+            style={{
+              transformOrigin: '17px 14px',
+              animation: 'wingFlapRight 0.22s ease-in-out infinite',
+            }}
+          >
+            <path
+              d="M 18,14 C 23,3 31,2 33,7 C 35,13 30,20 18,16 Z"
+              fill={`url(#${wingGradientId})`}
+              opacity="0.95"
+            />
+            <path
+              d="M 18,15 C 25,18 30,24 28,26 C 25,28 20,24 18,17 Z"
+              fill={`url(#${wingGradientId})`}
+              opacity="0.85"
+            />
+            <path
+              d="M 18,14 Q 26,8 31,8 M 18,15 Q 25,14 30,16"
+              stroke="rgba(255,255,255,0.75)"
+              strokeWidth="0.6"
+              fill="none"
+            />
+          </g>
+        </svg>
+        {/* Tiny trailing sparkle */}
+        <span className="absolute -bottom-1 -left-1 text-[8px] text-amber-200 opacity-70 animate-ping">✨</span>
+      </div>
     </div>
   );
 }
@@ -890,87 +1119,240 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
         }
 
         /* ====================================================
-           2. STAGGERED NAME REVEAL (ABISHEK & SARANYA)
-           Timing: 0.0s, 0.35s, 0.70s, 1.05s, 1.40s, 1.75s, 2.10s
-           Letters descend gracefully, then full name blooms,
-           synchronized pulse, resets and loops forever.
+           2. STAGGERED NAME REVEAL FROM TREES (ABISHEK & SARANYA)
+           Left letters emerge from left tree branches
+           Right letters emerge from right tree branches
+           Synchronized climax pulse & name glow
         ==================================================== */
-        @keyframes letterDrop0 {
-          0% { opacity: 0; transform: translateY(-42px) rotate(-6deg) scale(0.75); filter: blur(3px); }
-          6% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          74% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84% { opacity: 0; transform: translateY(-12px) rotate(2deg) scale(0.9); filter: blur(2px); }
-          100% { opacity: 0; transform: translateY(-42px) rotate(-6deg) scale(0.75); }
+        /* LEFT LETTERS (ABISHEK) EMERGING FROM LEFT TREE BRANCHES */
+        @keyframes letterDropLeft0 {
+          0% { opacity: 0; transform: translateY(-55px) translateX(-28px) rotate(-10deg) scale(0.5); filter: blur(5px); }
+          7.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          100% { opacity: 0; transform: translateY(-55px) scale(0.5); }
         }
-        @keyframes letterDrop1 {
-          0%, 5.8% { opacity: 0; transform: translateY(-42px) rotate(5deg) scale(0.75); filter: blur(3px); }
-          11.8% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          74% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84% { opacity: 0; transform: translateY(-12px) rotate(-2deg) scale(0.9); filter: blur(2px); }
-          100% { opacity: 0; transform: translateY(-42px) rotate(5deg) scale(0.75); }
+        @keyframes letterDropLeft1 {
+          0%, 8.0% { opacity: 0; transform: translateY(-52px) translateX(-24px) rotate(-8deg) scale(0.5); filter: blur(5px); }
+          15.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          100% { opacity: 0; }
         }
-        @keyframes letterDrop2 {
-          0%, 11.6% { opacity: 0; transform: translateY(-42px) rotate(-4deg) scale(0.75); filter: blur(3px); }
-          17.6% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          74% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84% { opacity: 0; transform: translateY(-12px) rotate(2deg) scale(0.9); filter: blur(2px); }
-          100% { opacity: 0; transform: translateY(-42px) rotate(-4deg) scale(0.75); }
+        @keyframes letterDropLeft2 {
+          0%, 16.0% { opacity: 0; transform: translateY(-50px) translateX(-20px) rotate(-6deg) scale(0.5); filter: blur(5px); }
+          23.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          100% { opacity: 0; }
         }
-        @keyframes letterDrop3 {
-          0%, 17.5% { opacity: 0; transform: translateY(-42px) rotate(6deg) scale(0.75); filter: blur(3px); }
-          23.5% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          74% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84% { opacity: 0; transform: translateY(-12px) rotate(-2deg) scale(0.9); filter: blur(2px); }
-          100% { opacity: 0; transform: translateY(-42px) rotate(6deg) scale(0.75); }
+        @keyframes letterDropLeft3 {
+          0%, 24.0% { opacity: 0; transform: translateY(-50px) translateX(-16px) rotate(-4deg) scale(0.5); filter: blur(5px); }
+          31.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          100% { opacity: 0; }
         }
-        @keyframes letterDrop4 {
-          0%, 23.3% { opacity: 0; transform: translateY(-42px) rotate(-5deg) scale(0.75); filter: blur(3px); }
-          29.3% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          74% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84% { opacity: 0; transform: translateY(-12px) rotate(2deg) scale(0.9); filter: blur(2px); }
-          100% { opacity: 0; transform: translateY(-42px) rotate(-5deg) scale(0.75); }
+        @keyframes letterDropLeft4 {
+          0%, 32.0% { opacity: 0; transform: translateY(-52px) translateX(-12px) rotate(4deg) scale(0.5); filter: blur(5px); }
+          39.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          100% { opacity: 0; }
         }
-        @keyframes letterDrop5 {
-          0%, 29.1% { opacity: 0; transform: translateY(-42px) rotate(4deg) scale(0.75); filter: blur(3px); }
-          35.1% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          74% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84% { opacity: 0; transform: translateY(-12px) rotate(-2deg) scale(0.9); filter: blur(2px); }
-          100% { opacity: 0; transform: translateY(-42px) rotate(4deg) scale(0.75); }
+        @keyframes letterDropLeft5 {
+          0%, 40.0% { opacity: 0; transform: translateY(-54px) translateX(-8px) rotate(6deg) scale(0.5); filter: blur(5px); }
+          47.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          100% { opacity: 0; }
         }
-        @keyframes letterDrop6 {
-          0%, 35.0% { opacity: 0; transform: translateY(-42px) rotate(-3deg) scale(0.75); filter: blur(3px); }
-          41.0% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          74% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
-          84% { opacity: 0; transform: translateY(-12px) rotate(2deg) scale(0.9); filter: blur(2px); }
-          100% { opacity: 0; transform: translateY(-42px) rotate(-3deg) scale(0.75); }
+        @keyframes letterDropLeft6 {
+          0%, 48.0% { opacity: 0; transform: translateY(-56px) translateX(-4px) rotate(8deg) scale(0.5); filter: blur(5px); }
+          55.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          100% { opacity: 0; }
+        }
+
+        /* RIGHT LETTERS (SARANYA) EMERGING FROM RIGHT TREE BRANCHES */
+        @keyframes letterDropRight0 {
+          0%, 4.0% { opacity: 0; transform: translateY(-55px) translateX(28px) rotate(10deg) scale(0.5); filter: blur(5px); }
+          11.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          100% { opacity: 0; }
+        }
+        @keyframes letterDropRight1 {
+          0%, 12.0% { opacity: 0; transform: translateY(-52px) translateX(24px) rotate(8deg) scale(0.5); filter: blur(5px); }
+          19.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          100% { opacity: 0; }
+        }
+        @keyframes letterDropRight2 {
+          0%, 20.0% { opacity: 0; transform: translateY(-50px) translateX(20px) rotate(6deg) scale(0.5); filter: blur(5px); }
+          27.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          100% { opacity: 0; }
+        }
+        @keyframes letterDropRight3 {
+          0%, 28.0% { opacity: 0; transform: translateY(-50px) translateX(16px) rotate(-4deg) scale(0.5); filter: blur(5px); }
+          35.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          100% { opacity: 0; }
+        }
+        @keyframes letterDropRight4 {
+          0%, 36.0% { opacity: 0; transform: translateY(-52px) translateX(12px) rotate(-6deg) scale(0.5); filter: blur(5px); }
+          43.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          100% { opacity: 0; }
+        }
+        @keyframes letterDropRight5 {
+          0%, 44.0% { opacity: 0; transform: translateY(-54px) translateX(8px) rotate(-8deg) scale(0.5); filter: blur(5px); }
+          51.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          100% { opacity: 0; }
+        }
+        @keyframes letterDropRight6 {
+          0%, 52.0% { opacity: 0; transform: translateY(-56px) translateX(4px) rotate(-10deg) scale(0.5); filter: blur(5px); }
+          59.0% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84.5% { opacity: 1; transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          92.0% { opacity: 0; transform: translateY(-8px) scale(0.95); filter: blur(4px); }
+          100% { opacity: 0; }
         }
 
         /* Synchronized Radiance Pulse for Assembled Name */
         @keyframes wordSynchronizedPulse {
-          0%, 40% {
+          0%, 61% {
             opacity: 0.95;
             transform: scale(1);
           }
-          45%, 70% {
+          63%, 80% {
             opacity: 1;
-            transform: scale(1.05);
-            filter: drop-shadow(0 0 35px rgba(244,63,94,1)) drop-shadow(0 0 65px rgba(251,191,36,0.85)) drop-shadow(0 0 95px rgba(236,72,153,0.75));
+            transform: scale(1.08);
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.95)) drop-shadow(0 0 35px rgba(244,63,94,1)) drop-shadow(0 0 65px rgba(251,191,36,0.95)) drop-shadow(0 0 95px rgba(236,72,153,0.85));
           }
-          74%, 84% {
+          84.5% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          92%, 100% {
             opacity: 0;
             transform: scale(0.95);
             filter: blur(4px);
           }
-          85%, 100% {
-            opacity: 0;
-            transform: scale(0.95);
-          }
         }
         @keyframes filigreeGlow {
-          0%, 41% { opacity: 0; transform: scaleX(0.4); }
-          45%, 70% { opacity: 1; transform: scaleX(1); filter: drop-shadow(0 0 10px rgba(251,191,36,0.9)); }
-          74%, 84% { opacity: 0; transform: scaleX(0.4); }
-          85%, 100% { opacity: 0; }
+          0%, 45% { opacity: 0; transform: scaleX(0.4); }
+          50%, 82% { opacity: 1; transform: scaleX(1); filter: drop-shadow(0 0 10px rgba(251,191,36,0.95)); }
+          88%, 100% { opacity: 0; transform: scaleX(0.4); }
+        }
+
+        @keyframes nameClimaxBurst {
+          0%, 62% { opacity: 0; transform: scale(0.5); }
+          65%, 79% { opacity: 1; transform: scale(1.25); filter: drop-shadow(0 0 14px rgba(251,191,36,0.95)); }
+          83%, 100% { opacity: 0; transform: scale(0.6); }
+        }
+
+        /* ====================================================
+           3. ONE-BY-ONE FALLING FLOWERS FROM UPPER AREA
+           Flowers drift from top to bottom across proposal frame
+        ==================================================== */
+        @keyframes oneByOneFlowerFall {
+          0% {
+            top: -8%;
+            opacity: 0;
+            transform: translateX(0px) rotate(0deg) scale(0.7);
+          }
+          12% {
+            opacity: 0.95;
+            transform: translateX(calc(var(--dx) * 0.25)) rotate(calc(var(--rot) * 0.25)) scale(0.95);
+          }
+          50% {
+            opacity: 1;
+            transform: translateX(calc(var(--dx) * 0.7)) rotate(calc(var(--rot) * 0.65)) scale(1.05);
+            filter: drop-shadow(0 0 12px rgba(244,63,94,0.85));
+          }
+          85% {
+            opacity: 0.85;
+            transform: translateX(var(--dx)) rotate(calc(var(--rot) * 0.9)) scale(0.95);
+          }
+          100% {
+            top: 108%;
+            opacity: 0;
+            transform: translateX(calc(var(--dx) * 1.25)) rotate(var(--rot)) scale(0.7);
+            filter: drop-shadow(0 0 0px transparent);
+          }
+        }
+
+        /* Branch Travelling Light Runner */
+        @keyframes branchLightTravel {
+          0% { stroke-dashoffset: 400; opacity: 0; }
+          20% { opacity: 1; }
+          80% { opacity: 1; }
+          100% { stroke-dashoffset: -400; opacity: 0; }
+        }
+
+        /* Flower Clusters Subtle Breathing Pulse */
+        @keyframes flowerClusterBreathe {
+          0%, 100% { opacity: 0.88; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.04); filter: drop-shadow(0 0 12px rgba(244,63,94,0.85)); }
+        }
+
+        /* Frame Internal Butterflies Flight Curves (Smooth percentage waypoint interpolation) */
+        @keyframes flyInside1 {
+          0% { left: 6%; top: 68%; transform: rotate(18deg) scale(0.85); }
+          25% { left: 24%; top: 32%; transform: rotate(-8deg) scale(0.98); }
+          50% { left: 16%; top: 16%; transform: rotate(22deg) scale(1.05); }
+          75% { left: 9%; top: 42%; transform: rotate(-15deg) scale(0.9); }
+          100% { left: 6%; top: 68%; transform: rotate(18deg) scale(0.85); }
+        }
+        @keyframes flyInside2 {
+          0% { left: 88%; top: 65%; transform: rotate(-16deg) scale(0.88); }
+          30% { left: 72%; top: 28%; transform: rotate(14deg) scale(1); }
+          60% { left: 84%; top: 15%; transform: rotate(-24deg) scale(0.95); }
+          85% { left: 91%; top: 44%; transform: rotate(18deg) scale(0.85); }
+          100% { left: 88%; top: 65%; transform: rotate(-16deg) scale(0.88); }
+        }
+        @keyframes flyInside3 {
+          0% { left: 14%; top: 40%; transform: rotate(-14deg) scale(0.8); }
+          35% { left: 26%; top: 18%; transform: rotate(12deg) scale(0.92); }
+          65% { left: 18%; top: 58%; transform: rotate(-18deg) scale(1); }
+          85% { left: 8%; top: 30%; transform: rotate(15deg) scale(0.85); }
+          100% { left: 14%; top: 40%; transform: rotate(-14deg) scale(0.8); }
+        }
+        @keyframes flyInside4 {
+          0% { left: 82%; top: 42%; transform: rotate(14deg) scale(0.82); }
+          30% { left: 68%; top: 22%; transform: rotate(-10deg) scale(0.94); }
+          65% { left: 80%; top: 55%; transform: rotate(20deg) scale(1); }
+          85% { left: 89%; top: 28%; transform: rotate(-15deg) scale(0.88); }
+          100% { left: 82%; top: 42%; transform: rotate(14deg) scale(0.82); }
+        }
+        @keyframes flyInside5 {
+          0% { left: 22%; top: 12%; transform: rotate(8deg) scale(0.75); }
+          35% { left: 45%; top: 7%; transform: rotate(-6deg) scale(0.85); }
+          70% { left: 72%; top: 11%; transform: rotate(10deg) scale(0.8); }
+          85% { left: 52%; top: 8%; transform: rotate(-8deg) scale(0.78); }
+          100% { left: 22%; top: 12%; transform: rotate(8deg) scale(0.75); }
+        }
+        @keyframes flyInside6 {
+          0% { left: 10%; top: 22%; transform: rotate(-10deg) scale(0.78); }
+          30% { left: 20%; top: 14%; transform: rotate(15deg) scale(0.88); }
+          60% { left: 28%; top: 26%; transform: rotate(-12deg) scale(0.82); }
+          85% { left: 15%; top: 34%; transform: rotate(8deg) scale(0.75); }
+          100% { left: 10%; top: 22%; transform: rotate(-10deg) scale(0.78); }
+        }
+        @keyframes flyInside7 {
+          0% { left: 86%; top: 24%; transform: rotate(12deg) scale(0.78); }
+          30% { left: 76%; top: 15%; transform: rotate(-15deg) scale(0.88); }
+          60% { left: 68%; top: 28%; transform: rotate(10deg) scale(0.82); }
+          85% { left: 80%; top: 35%; transform: rotate(-8deg) scale(0.75); }
+          100% { left: 86%; top: 24%; transform: rotate(12deg) scale(0.78); }
         }
 
         /* ====================================================
@@ -1150,19 +1532,7 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
       />
 
       {/* ====================================================
-          2. LEFT CINEMATIC TREE + ABISHEK NAME REVEAL
-      ==================================================== */}
-      <LeftCinematicTree />
-      <CinematicNameReveal name="ABISHEK" side="left" />
-
-      {/* ====================================================
-          3. RIGHT CINEMATIC TREE + SARANYA NAME REVEAL
-      ==================================================== */}
-      <RightCinematicTree />
-      <CinematicNameReveal name="SARANYA" side="right" />
-
-      {/* ====================================================
-          4. CINEMATIC FLYING BUTTERFLIES (Real Wing Flutter)
+          2. CINEMATIC FLYING BUTTERFLIES (Real Wing Flutter)
       ==================================================== */}
       <Butterfly
         pathClass="[animation:flyPath1_13s_ease-in-out_infinite]"
@@ -1231,28 +1601,6 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
             ❤️
           </div>
         ))}
-
-        {/* Cascading Cherry Blossom Petals from Trees */}
-        {[
-          { left: '6%', delay: '0.4s', dur: '8s' },
-          { left: '14%', delay: '1.8s', dur: '10s' },
-          { left: '22%', delay: '3.2s', dur: '9s' },
-          { left: '76%', delay: '0.8s', dur: '8.5s' },
-          { left: '84%', delay: '2.4s', dur: '10.5s' },
-          { left: '92%', delay: '4.0s', dur: '9.5s' },
-        ].map((petal, pi) => (
-          <div
-            key={`tree-petal-${pi}`}
-            className="absolute text-pink-300/80 text-lg md:text-xl drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]"
-            style={{
-              left: petal.left,
-              animation: `petalCascadingTwirl ${petal.dur} linear infinite`,
-              animationDelay: petal.delay,
-            }}
-          >
-            🌸
-          </div>
-        ))}
       </div>
 
       {/* ====================================================
@@ -1272,6 +1620,8 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
             animation: 'rainbowHaloGlow 8s ease-in-out infinite',
           }}
         >
+          {/* Laser Travelling Rainbow Border */}
+          <CinematicRainbowBorder mode="card" borderRadius={24} />
           {/* Continuous Rotating Rainbow Conic Gradient Base */}
           <div
             className="absolute -inset-[150%] pointer-events-none opacity-85"
@@ -1311,8 +1661,25 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
               />
             )}
 
+            {/* ====================================================
+                TREES & NAME REVEALS POSITIONED INSIDE PROPOSAL FRAME
+            ==================================================== */}
+            {/* LEFT TREE + ABISHEK NAME REVEAL (Inside Left Empty Space) */}
+            <LeftCinematicTree />
+            <CinematicNameReveal name="ABISHEK" side="left" />
+
+            {/* RIGHT TREE + SARANYA NAME REVEAL (Inside Right Empty Space) */}
+            <RightCinematicTree />
+            <CinematicNameReveal name="SARANYA" side="right" />
+
+            {/* FLOWERS FALLING FROM TOP ONE-BY-ONE */}
+            <OneByOneFallingFlowers />
+
+            {/* FLYING BUTTERFLIES INSIDE FRAME */}
+            <FrameButterflies />
+
             {/* Crystal-Clear Sharp Foreground Photograph (Zero blur, both faces clearly visible & preserved) */}
-            <div className="relative z-10 w-full h-full flex items-center justify-center pointer-events-none p-1 sm:p-3">
+            <div className="relative z-20 w-full h-full flex items-center justify-center pointer-events-none p-1 sm:p-3">
               <img
                 src="/as.jpg"
                 alt="Saranya & Abishek"

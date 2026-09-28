@@ -5,6 +5,7 @@ import { Gift, AlertCircle, Eye } from 'lucide-react';
 import ProposalConfession from './ProposalConfession';
 import SecretGiftCinematicScene from './SecretGiftCinematicScene';
 import EmotionalWaitingScene from './EmotionalWaitingScene';
+import StillWaitingCinematicScene from './StillWaitingCinematicScene';
 import CinematicSecretGiftBackground from './CinematicSecretGiftBackground';
 import { sendEmail } from '../utils/emailService';
 
@@ -12,7 +13,7 @@ const ADMIN_PHONE = '6380404055';
 const FAST2SMS_API_KEY = 'tOA5S8nMw6IXZRiUzEcNBb93a7xuh2qTYeVsjLgyfQCkWmDl4dTOpwGi2XmRsMJIV5Be4hFk1PaHWfAU';
 
 export default function SuspenseProposalFlow({ onYesAccepted }) {
-  const [subStage, setSubStage] = useState('SUSPENSE'); // 'SUSPENSE' | 'GIFT_BOX' | 'TEASER' | 'GRAND_PROPOSAL' | 'EMOTIONAL_WAITING'
+  const [subStage, setSubStage] = useState('SUSPENSE'); // 'SUSPENSE' | 'GIFT_BOX' | 'TEASER' | 'GRAND_PROPOSAL' | 'EMOTIONAL_WAITING' | 'STILL_WAITING'
   const [isBoxOpen, setIsBoxOpen] = useState(false);
   const [noPos, setNoPos] = useState({ x: 0, y: 0 });
   const [dodgeCount, setDodgeCount] = useState(0);
@@ -224,10 +225,18 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
           <ProposalConfession key="grand_proposal" onAccept={handleYes} onReject={() => setSubStage('SUSPENSE')} />
         )}
 
-        {/* SUBSTAGE 5: NEW EMOTIONAL WAITING SCENE ("100 ஜென்மம் காத்திருப்பேன்...") */}
+        {/* SUBSTAGE 5: EXISTING EMOTIONAL WAITING SCENE ("100 ஜென்மம் காத்திருப்பேன்...") */}
         {subStage === 'EMOTIONAL_WAITING' && (
           <EmotionalWaitingScene
             key="emotional_waiting"
+            onComplete={() => setSubStage('STILL_WAITING')}
+          />
+        )}
+
+        {/* SUBSTAGE 6: NEW REALISTIC CINEMATIC "STILL WAITING" SCENE */}
+        {subStage === 'STILL_WAITING' && (
+          <StillWaitingCinematicScene
+            key="still_waiting"
             onComplete={() => {
               if (onYesAccepted) onYesAccepted();
             }}

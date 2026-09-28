@@ -28,6 +28,13 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   const countdownIntervalRef = useRef(null);
   const presenceCounterRef = useRef(0);
   const isUnlockingRef = useRef(false);
+  const isPresenceDetectedRef = useRef(false);
+  const onUnlockCallbackRef = useRef(onUnlock || onUnlocked);
+  const triggerUnlockSequenceRef = useRef(null);
+
+  useEffect(() => {
+    onUnlockCallbackRef.current = onUnlock || onUnlocked;
+  }, [onUnlock, onUnlocked]);
 
   // Stop camera tracks and intervals safely
   const stopCamera = useCallback(() => {
@@ -129,13 +136,15 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
     // 2.3s: call existing onUnlock / onUnlocked callback
     timersRef.current.push(
       setTimeout(() => {
-        const callback = onUnlock || onUnlocked;
+        const callback = onUnlockCallbackRef.current;
         if (typeof callback === 'function') {
           callback();
         }
       }, 2300)
     );
-  }, [onUnlock, onUnlocked, stopCamera]);
+  }, [stopCamera]);
+
+  triggerUnlockSequenceRef.current = triggerUnlockSequence;
 
   // Handle manual passcode submit
   const handleSubmit = (e) => {
@@ -280,15 +289,26 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
 
       const detected = await detectPresence();
       if (detected) {
-        presenceCounterRef.current = Math.min(presenceCounterRef.current + 1, 4);
+        presenceCounterRef.current = Math.min(presenceCounterRef.current + 1, 6);
       } else {
         presenceCounterRef.current = Math.max(presenceCounterRef.current - 1, 0);
       }
 
-      const nowPresent = presenceCounterRef.current >= 2;
-      setIsPresenceDetected(nowPresent);
-      if (nowPresent) {
-        setHasDetectedOnce(true);
+      // Schmitt-trigger hysteresis: enter detected at >= 2, leave detected only at <= 0
+      const currentDetected = isPresenceDetectedRef.current;
+      let nextDetected = currentDetected;
+      if (!currentDetected && presenceCounterRef.current >= 2) {
+        nextDetected = true;
+      } else if (currentDetected && presenceCounterRef.current === 0) {
+        nextDetected = false;
+      }
+
+      if (nextDetected !== currentDetected) {
+        isPresenceDetectedRef.current = nextDetected;
+        setIsPresenceDetected(nextDetected);
+        if (nextDetected) {
+          setHasDetectedOnce(true);
+        }
       }
     }, 320);
 
@@ -301,24 +321,36 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   }, [cameraStatus]);
 
   // 15-SECOND COUNTDOWN:
-  // - When presence is detected continuously: counts down 15, 14, 13, ... 1
-  // - If presence disappears: PAUSES countdown and shows "Waiting for you... ❤️"
-  // - When presence returns: RESUMES countdown from remaining time
-  // - At 0s: triggers auto unlock sequence
+  // - Starts when presence is detected: 15 -> 14 -> 13 -> ... -> 0
+  // - Pauses if presence is lost, resumes when returned
+  // - Auto unlocks at 0s
+  // - Isolated from external re-renders via triggerUnlockSequenceRef
   useEffect(() => {
-    if (cameraStatus !== 'ACTIVE' || !isPresenceDetected || stage !== 'IDLE') return;
+    if (cameraStatus !== 'ACTIVE' || !isPresenceDetected || stage !== 'IDLE') {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
+      return;
+    }
 
-    countdownIntervalRef.current = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(countdownIntervalRef.current);
-          countdownIntervalRef.current = null;
-          triggerUnlockSequence();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    if (!countdownIntervalRef.current) {
+      countdownIntervalRef.current = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            if (countdownIntervalRef.current) {
+              clearInterval(countdownIntervalRef.current);
+              countdownIntervalRef.current = null;
+            }
+            if (triggerUnlockSequenceRef.current) {
+              triggerUnlockSequenceRef.current();
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
 
     return () => {
       if (countdownIntervalRef.current) {
@@ -326,7 +358,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
         countdownIntervalRef.current = null;
       }
     };
-  }, [cameraStatus, isPresenceDetected, stage, triggerUnlockSequence]);
+  }, [cameraStatus, isPresenceDetected, stage]);
 
   const isUnlocking = stage !== 'IDLE';
 
@@ -610,8 +642,9 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
                     hasDetectedOnce && countdown < 15 ? (
                       /* Presence Paused during countdown */
                       <div className="flex flex-col items-center gap-0.5">
-                        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-rose-950/70 border border-rose-500/40 text-rose-300 text-xs font-semibold shadow-[0_0_15px_rgba(244,63,94,0.3)] animate-pulse">
-                          <span>Waiting for you... ❤️</span>
+                        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-slate-950/80 border border-rose-500/30 text-rose-400/90 text-xs font-medium shadow-[0_0_12px_rgba(244,63,94,0.2)]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                          <span>Not detected</span>
                         </div>
                         <p className="text-slate-400 text-[11px] mt-0.5">
                           (Paused at {countdown}s — return into view to resume)
@@ -622,7 +655,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
                       <div className="flex flex-col items-center gap-0.5">
                         <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-slate-950/80 border border-rose-500/30 text-rose-400/90 text-xs font-medium shadow-[0_0_12px_rgba(244,63,94,0.2)]">
                           <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-                          <span>Not Detected</span>
+                          <span>Not detected</span>
                         </div>
                         <p className="text-slate-500 text-[11px]">Look gently into the scanning circle</p>
                       </div>
@@ -631,7 +664,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
                     /* Face Detected state with bright rose/pink cinematic glow */
                     <div className="flex flex-col items-center gap-1">
                       <div className="inline-flex items-center gap-1.5 px-3.5 py-0.5 rounded-full bg-rose-500/25 border border-pink-400/60 text-pink-200 text-xs font-semibold shadow-[0_0_20px_rgba(244,63,94,0.6)]">
-                        <span>Face Detected ❤️</span>
+                        <span>Face detected ❤️</span>
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-slate-300 text-xs font-medium">

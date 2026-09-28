@@ -102,7 +102,7 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
   };
 
   return (
-    <div className="fixed inset-0 w-full h-full bg-black text-slate-100 flex flex-col items-center justify-center overflow-hidden select-none z-[100]">
+    <div className="fixed inset-0 w-full h-full bg-[#03050c] text-slate-100 flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 overflow-hidden select-none z-[100]">
       
       {/* INLINE CSS FOR MOVIE LIGHTING & EFFECTS */}
       <style>{`
@@ -111,6 +111,32 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
           33% { box-shadow: inset 0 0 90px rgba(168,85,247,0.32), inset 0 0 170px rgba(236,72,153,0.22); }
           66% { box-shadow: inset 0 0 90px rgba(6,182,212,0.28), inset 0 0 170px rgba(99,102,241,0.22); }
           100% { box-shadow: inset 0 0 90px rgba(244,63,94,0.32), inset 0 0 170px rgba(251,191,36,0.18); }
+        }
+        @keyframes cinematicBorderGlow {
+          0%, 100% {
+            box-shadow:
+              0 0 0 1px rgba(251, 191, 36, 0.4),
+              0 0 18px rgba(244, 63, 94, 0.35),
+              0 0 38px rgba(236, 72, 153, 0.28),
+              0 0 70px rgba(168, 85, 247, 0.18),
+              0 0 110px rgba(251, 191, 36, 0.14);
+          }
+          50% {
+            box-shadow:
+              0 0 0 1.5px rgba(251, 191, 36, 0.7),
+              0 0 30px rgba(244, 63, 94, 0.65),
+              0 0 60px rgba(236, 72, 153, 0.45),
+              0 0 100px rgba(168, 85, 247, 0.3),
+              0 0 145px rgba(251, 191, 36, 0.24);
+          }
+        }
+        @keyframes cinematicBorderSweep {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes ambientBackdropPulse {
+          0%, 100% { opacity: 0.35; transform: scale(1); }
+          50% { opacity: 0.58; transform: scale(1.03); }
         }
         @keyframes lensFlareSweep {
           0% { transform: translateX(-150%) skewX(-25deg); opacity: 0; }
@@ -172,11 +198,11 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
       {/* 1. CINEMATIC AMBIENT LIGHTING & SCREEN-EDGE VIGNETTE */}
       <div className="absolute inset-0 cinematic-edge pointer-events-none z-20" />
       
-      {/* Radial Vignette */}
+      {/* Radial Vignette outside the photo */}
       <div
         className="absolute inset-0 pointer-events-none z-20"
         style={{
-          background: 'radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.95) 100%)',
+          background: 'radial-gradient(ellipse at center, transparent 40%, rgba(3,5,12,0.6) 75%, rgba(3,5,12,0.98) 100%)',
         }}
       />
       
@@ -188,32 +214,143 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
       <div className="absolute -inset-20 opacity-20 pointer-events-none z-20 mix-blend-screen bg-gradient-to-tr from-transparent via-rose-300/15 to-amber-200/25 blur-3xl ray-drift" />
       <div className="absolute -inset-10 opacity-15 pointer-events-none z-20 mix-blend-screen bg-gradient-to-bl from-transparent via-pink-400/10 to-indigo-300/15 blur-2xl ray-drift [animation-delay:4s]" />
 
-      {/* 2. BACKGROUND PHOTO & MEMORY ECHOES */}
-      <div className={`absolute inset-0 transition-opacity duration-1000 z-10 ${stage === 'BLACKOUT' ? 'opacity-0' : 'opacity-100'}`}>
-        
-        {/* Ambient Blurred Base */}
-        <img
-          src="/as.jpg"
-          alt="Ambient Background"
-          className="w-full h-full object-cover filter blur-3xl scale-110 opacity-35 pointer-events-none"
-        />
+      {/* Subtle Ambient Rose/Gold Light behind the Photo Frame */}
+      <div
+        className={`absolute w-full max-w-5xl lg:max-w-6xl h-[60vh] sm:h-[66vh] md:h-[72vh] rounded-[36px] bg-gradient-to-r from-rose-600/20 via-amber-500/15 to-pink-600/20 blur-3xl pointer-events-none transition-opacity duration-1000 -z-10 ${
+          stage === 'BLACKOUT' ? 'opacity-0' : 'opacity-100'
+        }`}
+        style={{ animation: 'ambientBackdropPulse 4s ease-in-out infinite' }}
+      />
 
-        {/* Memory Flash Echoes (/sa.jpg & /sk.jpg) */}
-        {echoPhoto && (
-          <img
-            src={echoPhoto}
-            alt="Echo Memory"
-            className="absolute inset-0 w-full h-full object-cover filter blur-lg opacity-30 mix-blend-screen transition-opacity duration-300 animate-pulse pointer-events-none"
+      {/* 2. WIDE LANDSCAPE CINEMATIC PHOTO FRAME WITH MULTI-LAYER BORDER LIGHTING */}
+      <div
+        className={`relative w-[96vw] max-w-5xl lg:max-w-6xl h-[60vh] sm:h-[66vh] md:h-[72vh] max-h-[720px] transition-all duration-1000 z-10 ${
+          stage === 'BLACKOUT' ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+        }`}
+      >
+        {/* Animated Multi-Layer Cinematic Border Glow (Rose, Gold, Pink, Purple) */}
+        <div
+          className="relative w-full h-full rounded-2xl sm:rounded-3xl p-[2px] md:p-[2.5px] overflow-hidden"
+          style={{
+            animation: 'cinematicBorderGlow 4s ease-in-out infinite',
+            background: 'linear-gradient(135deg, rgba(251,191,36,0.65), rgba(244,63,94,0.75), rgba(236,72,153,0.65), rgba(168,85,247,0.45), rgba(251,191,36,0.6))',
+          }}
+        >
+          {/* Subtle Slow Light Sweep along the Border Perimeter */}
+          <div
+            className="absolute -inset-[150%] pointer-events-none opacity-45 mix-blend-screen"
+            style={{
+              background: 'conic-gradient(from 0deg, transparent 0deg, rgba(251,191,36,0.4) 60deg, rgba(244,63,94,0.8) 120deg, rgba(236,72,153,0.6) 180deg, rgba(168,85,247,0.4) 240deg, transparent 330deg)',
+              animation: 'cinematicBorderSweep 10s linear infinite',
+            }}
           />
-        )}
 
-        {/* Center Main Photograph /as.jpg (Uncropped, High Clarity) */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <img
-            src="/as.jpg"
-            alt="Saranya & Abishek"
-            className="h-full w-auto max-w-none md:max-w-4xl object-contain object-top opacity-95 drop-shadow-[0_0_60px_rgba(0,0,0,0.9)]"
-          />
+          {/* Inner Photo Stage */}
+          <div className="relative w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-[#04060e] flex items-center justify-center">
+            
+            {/* Ambient Blurred Base (Fills wide landscape aspect ratio with matching atmosphere) */}
+            <img
+              src="/as.jpg"
+              alt="Ambient Landscape Fill"
+              className="absolute inset-0 w-full h-full object-cover filter blur-2xl md:blur-3xl scale-110 opacity-35 select-none pointer-events-none"
+            />
+
+            {/* Memory Flash Echoes (/sa.jpg & /sk.jpg) */}
+            {echoPhoto && (
+              <img
+                src={echoPhoto}
+                alt="Echo Memory"
+                className="absolute inset-0 w-full h-full object-cover filter blur-lg opacity-30 mix-blend-screen transition-opacity duration-300 animate-pulse pointer-events-none z-10"
+              />
+            )}
+
+            {/* Crystal-Clear Sharp Foreground Photograph (Zero blur, both faces clearly visible & preserved) */}
+            <div className="relative z-10 w-full h-full flex items-center justify-center pointer-events-none p-1 sm:p-3">
+              <img
+                src="/as.jpg"
+                alt="Saranya & Abishek"
+                className="w-full h-full object-contain object-center select-none"
+                style={{
+                  filter: 'contrast(1.05) brightness(1.02) saturate(1.06)',
+                  dropShadow: '0 0 40px rgba(0,0,0,0.85)',
+                }}
+              />
+            </div>
+
+            {/* Subtle Vignette at bottom edge of frame for text contrast without darkening faces */}
+            <div
+              className="absolute inset-x-0 bottom-0 h-40 sm:h-52 pointer-events-none z-20"
+              style={{
+                background: 'linear-gradient(to top, rgba(3,5,12,0.88) 0%, rgba(3,5,12,0.45) 45%, transparent 100%)',
+              }}
+            />
+
+            {/* SARANYA REVEAL (Phase 3) */}
+            {stage === 'SARANYA' && (
+              <div className="absolute inset-x-0 bottom-8 sm:bottom-12 z-30 flex flex-col items-center justify-center animate-in fade-in zoom-in-90 duration-700">
+                <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-black tracking-[0.35em] bg-gradient-to-r from-amber-200 via-rose-300 to-pink-400 bg-clip-text text-transparent drop-shadow-[0_2px_15px_rgba(0,0,0,0.9)] drop-shadow-[0_0_35px_rgba(244,63,94,0.9)] animate-pulse">
+                  SARANYA
+                </h2>
+                <div className="w-20 h-0.5 bg-rose-500/50 mt-3 rounded-full blur-xs animate-pulse" />
+              </div>
+            )}
+
+            {/* "I LOVE YOU" + SUBTITLE + BUTTONS (Phase 4 & 5) */}
+            {(stage === 'ILOVEYOU' || stage === 'BUTTONS') && (
+              <div className="absolute inset-x-0 bottom-2 sm:bottom-4 md:bottom-6 z-30 flex flex-col items-center justify-center text-center px-4 space-y-1.5 sm:space-y-2.5 max-w-3xl mx-auto animate-in fade-in zoom-in-95 duration-1000">
+                
+                {/* Hero "I LOVE YOU" with Lens Flare Sweep & Micro-Shimmer */}
+                <div className="relative overflow-hidden px-4 py-1">
+                  <h1 className="hero-text-shimmer text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-serif font-black tracking-wider bg-gradient-to-r from-amber-200 via-rose-200 to-pink-300 bg-clip-text text-transparent drop-shadow-[0_2px_16px_rgba(0,0,0,0.95)] drop-shadow-[0_0_35px_rgba(244,63,94,0.75)]">
+                    I LOVE YOU
+                  </h1>
+                  {/* Cinematic Lens Flare Streak */}
+                  <div
+                    className="absolute inset-y-0 w-32 bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none"
+                    style={{ animation: 'lensFlareSweep 1.8s ease-out' }}
+                  />
+                </div>
+
+                {/* Proposal Subtitle */}
+                <div className="space-y-0.5">
+                  <p className="text-pink-300 font-serif text-base sm:text-lg md:text-xl tracking-widest italic drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+                    Saranya...
+                  </p>
+                  <p className="text-slate-100 font-serif text-base sm:text-xl md:text-2xl font-medium tracking-wide drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
+                    "Saranya, will you be mine forever and ever? 💍✨"
+                  </p>
+                </div>
+
+                {/* 7. DELAYED BUTTONS (Phase 5) */}
+                <div
+                  className={`pt-2 sm:pt-4 flex items-center justify-center gap-4 sm:gap-6 transition-all duration-1000 ${
+                    stage === 'BUTTONS'
+                      ? 'opacity-100 translate-y-0 pointer-events-auto'
+                      : 'opacity-0 translate-y-6 pointer-events-none'
+                  }`}
+                >
+                  {/* YES BUTTON with Breathing Aura & Click Celebration */}
+                  <button
+                    onClick={handleYesClick}
+                    disabled={celebratingYes}
+                    className="breathing-yes px-8 sm:px-10 py-3 sm:py-3.5 rounded-full font-bold text-white text-sm sm:text-base md:text-lg bg-gradient-to-r from-amber-500 via-rose-500 to-pink-600 hover:opacity-95 shadow-[0_0_40px_rgba(244,63,94,0.6)] transform hover:scale-105 active:scale-95 transition-all duration-300 group flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>Yes, Forever! 💍✨</span>
+                  </button>
+
+                  {/* NO BUTTON (Pure Choice, Functional & Clean) */}
+                  <button
+                    onClick={handleNoClick}
+                    disabled={celebratingYes}
+                    className="px-6 sm:px-7 py-2.5 sm:py-3 rounded-full font-medium text-slate-300 text-xs sm:text-sm md:text-base bg-slate-900/80 border border-slate-700/80 hover:border-pink-500/40 backdrop-blur-md hover:text-white transition-all duration-300 cursor-pointer shadow-[0_2px_10px_rgba(0,0,0,0.8)]"
+                  >
+                    No 🤍
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
         </div>
       </div>
 
@@ -254,77 +391,6 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
       {stage === 'BLACKOUT' && (
         <div className="relative z-40 flex flex-col items-center justify-center">
           <div className="w-10 h-10 rounded-full bg-rose-500/35 blur-xl animate-ping" />
-        </div>
-      )}
-
-      {/* 5. SARANYA MEMORY REVEAL (Phase 3) */}
-      {stage === 'SARANYA' && (
-        <div className="relative z-40 flex flex-col items-center justify-center animate-in fade-in zoom-in-90 duration-700">
-          <h2 className="text-4xl md:text-6xl font-serif font-black tracking-[0.35em] bg-gradient-to-r from-amber-200 via-rose-300 to-pink-400 bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(244,63,94,0.9)] animate-pulse">
-            SARANYA
-          </h2>
-          <div className="w-20 h-0.5 bg-rose-500/40 mt-4 rounded-full blur-xs animate-pulse" />
-        </div>
-      )}
-
-      {/* 6. CLIMAX: "I LOVE YOU" + SUBTITLE + BUTTONS (Phase 4 & 5) */}
-      {(stage === 'ILOVEYOU' || stage === 'BUTTONS') && (
-        <div className="relative z-40 flex flex-col items-center justify-center text-center px-4 space-y-4 max-w-4xl animate-in fade-in zoom-in-95 duration-1000">
-          
-          {/* Glowing Center Bloom & Particle Heart Silhouette */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
-            <div className="w-80 h-80 rounded-full bg-rose-500/15 blur-[60px] animate-pulse" />
-          </div>
-
-          {/* Hero "I LOVE YOU" with Lens Flare Sweep & Micro-Shimmer */}
-          <div className="relative overflow-hidden px-4 py-2">
-            <h1 className="hero-text-shimmer text-5xl md:text-7xl lg:text-8xl font-serif font-black tracking-wider bg-gradient-to-r from-amber-200 via-rose-200 to-pink-400 bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(244,63,94,0.8)]">
-              I LOVE YOU
-            </h1>
-            {/* Cinematic Lens Flare Streak */}
-            <div
-              className="absolute inset-y-0 w-32 bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none"
-              style={{ animation: 'lensFlareSweep 1.8s ease-out' }}
-            />
-          </div>
-
-          {/* Proposal Subtitle */}
-          <div className="space-y-1">
-            <p className="text-pink-300 font-serif text-lg md:text-xl tracking-widest italic drop-shadow-sm">
-              Saranya...
-            </p>
-            <p className="text-slate-100 font-serif text-xl md:text-2xl font-medium tracking-wide drop-shadow-md">
-              "Saranya, will you be mine forever and ever? 💍✨"
-            </p>
-          </div>
-
-          {/* 7. DELAYED BUTTONS (Phase 5) */}
-          <div
-            className={`pt-6 flex items-center justify-center gap-6 transition-all duration-1000 ${
-              stage === 'BUTTONS'
-                ? 'opacity-100 translate-y-0 pointer-events-auto'
-                : 'opacity-0 translate-y-6 pointer-events-none'
-            }`}
-          >
-            {/* YES BUTTON with Breathing Aura & Click Celebration */}
-            <button
-              onClick={handleYesClick}
-              disabled={celebratingYes}
-              className="breathing-yes px-10 py-3.5 rounded-full font-bold text-white text-base md:text-lg bg-gradient-to-r from-amber-500 via-rose-500 to-pink-600 hover:opacity-95 shadow-[0_0_40px_rgba(244,63,94,0.6)] transform hover:scale-105 active:scale-95 transition-all duration-300 group flex items-center gap-2 cursor-pointer"
-            >
-              <span>Yes, Forever! 💍✨</span>
-            </button>
-
-            {/* NO BUTTON (Pure Choice, Functional & Clean) */}
-            <button
-              onClick={handleNoClick}
-              disabled={celebratingYes}
-              className="px-7 py-3 rounded-full font-medium text-slate-300 text-sm md:text-base bg-slate-900/60 border border-slate-700/80 hover:border-pink-500/40 backdrop-blur-md hover:text-white transition-all duration-300 cursor-pointer"
-            >
-              No 🤍
-            </button>
-          </div>
-
         </div>
       )}
 

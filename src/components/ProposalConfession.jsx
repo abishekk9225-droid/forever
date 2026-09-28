@@ -1,5 +1,756 @@
 import React, { useState, useEffect } from 'react';
 
+// ==========================================
+// CINEMATIC SVG CHERRY BLOSSOM FLOWER HELPER
+// ==========================================
+function BlossomCluster({ x, y, scale = 1, rotation = 0, opacity = 1 }) {
+  return (
+    <g
+      transform={`translate(${x}, ${y}) rotate(${rotation}) scale(${scale})`}
+      opacity={opacity}
+      className="pointer-events-none"
+    >
+      {/* Soft Ambient Flower Bloom */}
+      <circle cx="0" cy="0" r="28" fill="url(#blossomAmbientGlow)" opacity="0.45" />
+
+      {/* 5-Petal Rose / Sakura Blossom Formation */}
+      {[0, 72, 144, 216, 288].map((angle, i) => (
+        <path
+          key={i}
+          d="M 0,0 C -9,-14 -16,-10 -14,2 C -12,12 -3,14 0,0 Z"
+          transform={`rotate(${angle})`}
+          fill={i % 2 === 0 ? 'url(#sakuraPetalDeep)' : 'url(#sakuraPetalLight)'}
+          filter="url(#sakuraDropShadow)"
+        />
+      ))}
+
+      {/* Central Florets & Stamen */}
+      {[36, 108, 180, 252, 324].map((angle, i) => (
+        <line
+          key={`stamen-${i}`}
+          x1="0"
+          y1="0"
+          x2="0"
+          y2="-6"
+          transform={`rotate(${angle})`}
+          stroke="#fef08a"
+          strokeWidth="1.2"
+        />
+      ))}
+      <circle cx="0" cy="0" r="3.2" fill="#fffbeb" />
+      <circle cx="0" cy="0" r="1.8" fill="#f59e0b" />
+    </g>
+  );
+}
+
+// ==========================================
+// LEFT CINEMATIC FLOWERING TREE (ABISHEK)
+// ==========================================
+function LeftCinematicTree() {
+  return (
+    <div className="absolute left-0 bottom-0 top-0 w-[240px] sm:w-[300px] md:w-[380px] lg:w-[440px] xl:w-[500px] pointer-events-none z-[15] overflow-visible">
+      {/* Volumetric Pink/Rose Atmospheric Backlight */}
+      <div
+        className="absolute -inset-10 opacity-60 blur-3xl pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at 25% 65%, rgba(244,63,94,0.38) 0%, rgba(236,72,153,0.25) 45%, rgba(168,85,247,0.15) 70%, transparent 100%)',
+        }}
+      />
+
+      <svg
+        viewBox="0 0 500 900"
+        preserveAspectRatio="xMinYMax meet"
+        className="w-full h-full overflow-visible drop-shadow-[0_0_30px_rgba(244,63,94,0.4)]"
+      >
+        <defs>
+          {/* Gradients for Trunk & Bark */}
+          <linearGradient id="leftTrunkGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#12060b" />
+            <stop offset="25%" stopColor="#240c17" />
+            <stop offset="60%" stopColor="#3d1425" />
+            <stop offset="90%" stopColor="#5c1e38" />
+            <stop offset="100%" stopColor="#831843" />
+          </linearGradient>
+
+          {/* Golden Bough Rim Lighting */}
+          <linearGradient id="goldRimGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#fef08a" stopOpacity="0.9" />
+            <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+          </linearGradient>
+
+          {/* Blossom Petal Gradients */}
+          <radialGradient id="sakuraPetalDeep" cx="30%" cy="30%" r="70%">
+            <stop offset="0%" stopColor="#fda4af" />
+            <stop offset="45%" stopColor="#f43f5e" />
+            <stop offset="85%" stopColor="#be123c" />
+            <stop offset="100%" stopColor="#881337" />
+          </radialGradient>
+
+          <radialGradient id="sakuraPetalLight" cx="30%" cy="30%" r="70%">
+            <stop offset="0%" stopColor="#fff1f2" />
+            <stop offset="40%" stopColor="#fbcfe8" />
+            <stop offset="80%" stopColor="#ec4899" />
+            <stop offset="100%" stopColor="#be185d" />
+          </radialGradient>
+
+          <radialGradient id="blossomAmbientGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.8" />
+            <stop offset="60%" stopColor="#ec4899" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+          </radialGradient>
+
+          <radialGradient id="fairyLightRadial" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="30%" stopColor="#fef08a" />
+            <stop offset="70%" stopColor="#f59e0b" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+          </radialGradient>
+
+          <filter id="sakuraDropShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#000000" floodOpacity="0.5" />
+          </filter>
+
+          <filter id="fairyGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        {/* BACKGROUND SOFT CANOPY MASSES (Lush Volumetric Blossom Depth) */}
+        <g opacity="0.55" filter="url(#sakuraDropShadow)">
+          <circle cx="140" cy="180" r="110" fill="#9d174d" />
+          <circle cx="260" cy="130" r="95" fill="#be185d" />
+          <circle cx="360" cy="160" r="85" fill="#881337" />
+          <circle cx="100" cy="300" r="90" fill="#9d174d" />
+          <circle cx="220" cy="280" r="95" fill="#be185d" />
+          <circle cx="330" cy="310" r="80" fill="#a21caf" />
+          <circle cx="70" cy="450" r="85" fill="#881337" />
+          <circle cx="170" cy="430" r="90" fill="#9d174d" />
+        </g>
+
+        {/* ORGANIC MAIN TREE TRUNK & GNARLED BARK */}
+        <g>
+          {/* Main Gnarled Trunk Rising from Bottom-Left */}
+          <path
+            d="M 0,900 C 35,840 60,740 65,650 C 70,550 45,460 60,370 C 75,270 120,210 180,150 C 230,100 290,70 370,45 C 330,85 270,135 220,190 C 175,245 145,320 135,420 C 125,510 150,650 160,780 C 168,840 175,880 190,900 Z"
+            fill="url(#leftTrunkGrad)"
+          />
+
+          {/* Golden Bough Edge Highlights */}
+          <path
+            d="M 60,370 C 75,270 120,210 180,150 C 230,100 290,70 370,45"
+            stroke="url(#goldRimGrad)"
+            strokeWidth="4"
+            fill="none"
+            strokeLinecap="round"
+          />
+
+          {/* Major Branch 1: High Canopy Arch toward Center-Left */}
+          <path
+            d="M 180,150 C 240,110 320,100 410,115 C 445,120 480,140 500,165 C 460,150 415,145 375,148 C 310,152 245,185 200,210 Z"
+            fill="url(#leftTrunkGrad)"
+          />
+          <path
+            d="M 240,110 C 320,100 410,115 480,140"
+            stroke="url(#goldRimGrad)"
+            strokeWidth="3"
+            fill="none"
+          />
+
+          {/* Major Branch 2: Mid Bough reaching toward Center */}
+          <path
+            d="M 135,420 C 180,370 260,330 350,320 C 395,315 440,325 470,345 C 430,340 380,340 340,350 C 270,368 200,410 160,455 Z"
+            fill="url(#leftTrunkGrad)"
+          />
+          <path
+            d="M 180,370 C 260,330 350,320 440,325"
+            stroke="url(#goldRimGrad)"
+            strokeWidth="2.5"
+            fill="none"
+          />
+
+          {/* Major Branch 3: Lower Arch gracefully flanking margin */}
+          <path
+            d="M 145,550 C 190,520 250,510 320,520 C 360,525 400,545 425,565 C 385,550 345,545 305,548 C 245,552 195,575 160,610 Z"
+            fill="url(#leftTrunkGrad)"
+          />
+
+          {/* Fine Secondary Twigs with Budding Nodes */}
+          <path
+            d="M 280,125 Q 315,75 350,60 M 340,140 Q 380,110 420,95 M 240,340 Q 275,290 310,270 M 320,335 Q 365,295 405,285 M 220,530 Q 260,490 295,475"
+            stroke="#5c1e38"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </g>
+
+        {/* HANGING WEEPING BLOSSOM GARLANDS & DELICATE TENDRILS */}
+        <g opacity="0.9">
+          {[
+            { x: 190, y: 220, l: 6 },
+            { x: 260, y: 175, l: 8 },
+            { x: 340, y: 170, l: 9 },
+            { x: 420, y: 180, l: 7 },
+            { x: 280, y: 360, l: 7 },
+            { x: 360, y: 355, l: 8 },
+            { x: 430, y: 365, l: 6 },
+            { x: 250, y: 550, l: 5 },
+            { x: 330, y: 555, l: 6 },
+          ].map((tendril, tidx) => (
+            <g key={`tendril-${tidx}`}>
+              <line
+                x1={tendril.x}
+                y1={tendril.y}
+                x2={tendril.x - 10}
+                y2={tendril.y + tendril.l * 12}
+                stroke="rgba(244,63,94,0.4)"
+                strokeWidth="1"
+                strokeDasharray="2 3"
+              />
+              {[...Array(tendril.l)].map((_, fi) => (
+                <circle
+                  key={`tfl-${fi}`}
+                  cx={tendril.x - (fi * 1.5)}
+                  cy={tendril.y + (fi * 12) + 6}
+                  r={5.5 - (fi * 0.4)}
+                  fill={fi % 2 === 0 ? '#fda4af' : '#f43f5e'}
+                  opacity={0.9}
+                  filter="url(#sakuraDropShadow)"
+                />
+              ))}
+            </g>
+          ))}
+        </g>
+
+        {/* DENSE LUXURIOUS BLOSSOM CLUSTERS ACROSS CANOPY */}
+        <g>
+          {/* High Canopy Clusters */}
+          <BlossomCluster x={120} y={160} scale={1.4} rotation={15} />
+          <BlossomCluster x={180} y={130} scale={1.5} rotation={-25} />
+          <BlossomCluster x={240} y={90} scale={1.3} rotation={45} />
+          <BlossomCluster x={300} y={70} scale={1.4} rotation={-10} />
+          <BlossomCluster x={360} y={60} scale={1.2} rotation={35} />
+          <BlossomCluster x={420} y={80} scale={1.3} rotation={-20} />
+          <BlossomCluster x={470} y={120} scale={1.1} rotation={18} />
+
+          {/* Upper-Mid Bough Clusters */}
+          <BlossomCluster x={150} y={230} scale={1.3} rotation={-15} />
+          <BlossomCluster x={210} y={190} scale={1.4} rotation={30} />
+          <BlossomCluster x={270} y={160} scale={1.5} rotation={-5} />
+          <BlossomCluster x={330} y={150} scale={1.3} rotation={40} />
+          <BlossomCluster x={390} y={160} scale={1.4} rotation={-30} />
+          <BlossomCluster x={450} y={180} scale={1.2} rotation={22} />
+
+          {/* Mid Branch Clusters (Extending toward Center-Left margin) */}
+          <BlossomCluster x={110} y={320} scale={1.2} rotation={12} />
+          <BlossomCluster x={170} y={290} scale={1.4} rotation={-18} />
+          <BlossomCluster x={230} y={270} scale={1.3} rotation={25} />
+          <BlossomCluster x={290} y={260} scale={1.4} rotation={-12} />
+          <BlossomCluster x={350} y={270} scale={1.3} rotation={35} />
+          <BlossomCluster x={410} y={290} scale={1.2} rotation={-15} />
+          <BlossomCluster x={460} y={320} scale={1.1} rotation={20} />
+
+          {/* Lower Bough Clusters */}
+          <BlossomCluster x={80} y={430} scale={1.2} rotation={-10} />
+          <BlossomCluster x={140} y={400} scale={1.3} rotation={28} />
+          <BlossomCluster x={200} y={380} scale={1.4} rotation={-22} />
+          <BlossomCluster x={260} y={370} scale={1.3} rotation={15} />
+          <BlossomCluster x={320} y={380} scale={1.2} rotation={-35} />
+          <BlossomCluster x={380} y={400} scale={1.1} rotation={10} />
+
+          {/* Flank Clusters along lower trunk */}
+          <BlossomCluster x={100} y={530} scale={1.1} rotation={20} />
+          <BlossomCluster x={160} y={510} scale={1.2} rotation={-15} />
+          <BlossomCluster x={220} y={490} scale={1.2} rotation={30} />
+          <BlossomCluster x={280} y={490} scale={1.1} rotation={-25} />
+          <BlossomCluster x={340} y={510} scale={1.0} rotation={18} />
+          <BlossomCluster x={90} y={630} scale={1.0} rotation={-12} />
+          <BlossomCluster x={150} y={610} scale={1.1} rotation={25} />
+        </g>
+
+        {/* WARM GOLDEN FAIRY LIGHTS & HANGING HEART LANTERNS */}
+        <g filter="url(#fairyGlowFilter)">
+          {/* Hanging Golden Heart Lanterns swaying softly */}
+          {[
+            { x: 210, y: 220, l: 38 },
+            { x: 310, y: 180, l: 45 },
+            { x: 390, y: 190, l: 32 },
+            { x: 280, y: 380, l: 40 },
+            { x: 370, y: 370, l: 35 },
+          ].map((lantern, li) => (
+            <g
+              key={`lantern-${li}`}
+              style={{
+                transformOrigin: `${lantern.x}px ${lantern.y}px`,
+                animation: `lanternSway ${3.5 + (li * 0.4)}s ease-in-out infinite`,
+                animationDelay: `${li * 0.7}s`,
+              }}
+            >
+              <line
+                x1={lantern.x}
+                y1={lantern.y}
+                x2={lantern.x}
+                y2={lantern.y + lantern.l}
+                stroke="#fbbf24"
+                strokeWidth="1.2"
+              />
+              <circle
+                cx={lantern.x}
+                cy={lantern.y + lantern.l}
+                r="7"
+                fill="url(#fairyLightRadial)"
+              />
+              <path
+                d={`M ${lantern.x},${lantern.y + lantern.l - 4} C ${lantern.x - 4},${lantern.y + lantern.l - 8} ${lantern.x - 8},${lantern.y + lantern.l - 4} ${lantern.x},${lantern.y + lantern.l + 5} C ${lantern.x + 8},${lantern.y + lantern.l - 4} ${lantern.x + 4},${lantern.y + lantern.l - 8} ${lantern.x},${lantern.y + lantern.l - 4} Z`}
+                fill="#f43f5e"
+                opacity="0.9"
+              />
+            </g>
+          ))}
+
+          {/* Twinkling Fairy Light Orbs along Branches */}
+          {[
+            { cx: 160, cy: 150, r: 4.5 },
+            { cx: 220, cy: 110, r: 4 },
+            { cx: 280, cy: 90, r: 5 },
+            { cx: 340, cy: 80, r: 4 },
+            { cx: 400, cy: 95, r: 4.5 },
+            { cx: 180, cy: 210, r: 4 },
+            { cx: 250, cy: 180, r: 5 },
+            { cx: 320, cy: 170, r: 4 },
+            { cx: 380, cy: 185, r: 4.5 },
+            { cx: 210, cy: 290, r: 4 },
+            { cx: 280, cy: 275, r: 4.5 },
+            { cx: 350, cy: 285, r: 4 },
+            { cx: 170, cy: 410, r: 4 },
+            { cx: 240, cy: 390, r: 4.5 },
+            { cx: 310, cy: 400, r: 4 },
+            { cx: 150, cy: 520, r: 4 },
+            { cx: 210, cy: 505, r: 4.5 },
+          ].map((light, lidx) => (
+            <circle
+              key={`fl-${lidx}`}
+              cx={light.cx}
+              cy={light.cy}
+              r={light.r}
+              fill="url(#fairyLightRadial)"
+              style={{
+                animation: 'fairyTwinkle 2.8s ease-in-out infinite',
+                animationDelay: `${lidx * 0.22}s`,
+              }}
+            />
+          ))}
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+// ==========================================
+// RIGHT CINEMATIC FLOWERING TREE (SARANYA)
+// ==========================================
+function RightCinematicTree() {
+  return (
+    <div className="absolute right-0 bottom-0 top-0 w-[240px] sm:w-[300px] md:w-[380px] lg:w-[440px] xl:w-[500px] pointer-events-none z-[15] overflow-visible">
+      {/* Volumetric Purple/Rose Atmospheric Backlight */}
+      <div
+        className="absolute -inset-10 opacity-60 blur-3xl pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at 75% 65%, rgba(236,72,153,0.38) 0%, rgba(168,85,247,0.25) 45%, rgba(244,63,94,0.15) 70%, transparent 100%)',
+        }}
+      />
+
+      <svg
+        viewBox="0 0 500 900"
+        preserveAspectRatio="xMaxYMax meet"
+        className="w-full h-full overflow-visible drop-shadow-[0_0_30px_rgba(236,72,153,0.4)]"
+        style={{ transform: 'scaleX(-1)' }}
+      >
+        <defs>
+          <linearGradient id="rightTrunkGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#12060b" />
+            <stop offset="25%" stopColor="#240c17" />
+            <stop offset="60%" stopColor="#3d1425" />
+            <stop offset="90%" stopColor="#5c1e38" />
+            <stop offset="100%" stopColor="#831843" />
+          </linearGradient>
+        </defs>
+
+        {/* Mirrored background masses, organic trunk, dense clusters, lanterns & lights */}
+        <g opacity="0.55" filter="url(#sakuraDropShadow)">
+          <circle cx="140" cy="180" r="110" fill="#9d174d" />
+          <circle cx="260" cy="130" r="95" fill="#be185d" />
+          <circle cx="360" cy="160" r="85" fill="#881337" />
+          <circle cx="100" cy="300" r="90" fill="#9d174d" />
+          <circle cx="220" cy="280" r="95" fill="#be185d" />
+          <circle cx="330" cy="310" r="80" fill="#a21caf" />
+          <circle cx="70" cy="450" r="85" fill="#881337" />
+          <circle cx="170" cy="430" r="90" fill="#9d174d" />
+        </g>
+
+        {/* ORGANIC MAIN TREE TRUNK */}
+        <g>
+          <path
+            d="M 0,900 C 35,840 60,740 65,650 C 70,550 45,460 60,370 C 75,270 120,210 180,150 C 230,100 290,70 370,45 C 330,85 270,135 220,190 C 175,245 145,320 135,420 C 125,510 150,650 160,780 C 168,840 175,880 190,900 Z"
+            fill="url(#rightTrunkGrad)"
+          />
+          <path
+            d="M 60,370 C 75,270 120,210 180,150 C 230,100 290,70 370,45"
+            stroke="url(#goldRimGrad)"
+            strokeWidth="4"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 180,150 C 240,110 320,100 410,115 C 445,120 480,140 500,165 C 460,150 415,145 375,148 C 310,152 245,185 200,210 Z"
+            fill="url(#rightTrunkGrad)"
+          />
+          <path
+            d="M 240,110 C 320,100 410,115 480,140"
+            stroke="url(#goldRimGrad)"
+            strokeWidth="3"
+            fill="none"
+          />
+          <path
+            d="M 135,420 C 180,370 260,330 350,320 C 395,315 440,325 470,345 C 430,340 380,340 340,350 C 270,368 200,410 160,455 Z"
+            fill="url(#rightTrunkGrad)"
+          />
+          <path
+            d="M 180,370 C 260,330 350,320 440,325"
+            stroke="url(#goldRimGrad)"
+            strokeWidth="2.5"
+            fill="none"
+          />
+          <path
+            d="M 145,550 C 190,520 250,510 320,520 C 360,525 400,545 425,565 C 385,550 345,545 305,548 C 245,552 195,575 160,610 Z"
+            fill="url(#rightTrunkGrad)"
+          />
+          <path
+            d="M 280,125 Q 315,75 350,60 M 340,140 Q 380,110 420,95 M 240,340 Q 275,290 310,270 M 320,335 Q 365,295 405,285 M 220,530 Q 260,490 295,475"
+            stroke="#5c1e38"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </g>
+
+        {/* WEEPING GARLANDS */}
+        <g opacity="0.9">
+          {[
+            { x: 190, y: 220, l: 6 },
+            { x: 260, y: 175, l: 8 },
+            { x: 340, y: 170, l: 9 },
+            { x: 420, y: 180, l: 7 },
+            { x: 280, y: 360, l: 7 },
+            { x: 360, y: 355, l: 8 },
+            { x: 430, y: 365, l: 6 },
+            { x: 250, y: 550, l: 5 },
+            { x: 330, y: 555, l: 6 },
+          ].map((tendril, tidx) => (
+            <g key={`r-tendril-${tidx}`}>
+              <line
+                x1={tendril.x}
+                y1={tendril.y}
+                x2={tendril.x - 10}
+                y2={tendril.y + tendril.l * 12}
+                stroke="rgba(236,72,153,0.4)"
+                strokeWidth="1"
+                strokeDasharray="2 3"
+              />
+              {[...Array(tendril.l)].map((_, fi) => (
+                <circle
+                  key={`r-tfl-${fi}`}
+                  cx={tendril.x - (fi * 1.5)}
+                  cy={tendril.y + (fi * 12) + 6}
+                  r={5.5 - (fi * 0.4)}
+                  fill={fi % 2 === 0 ? '#fbcfe8' : '#ec4899'}
+                  opacity={0.9}
+                  filter="url(#sakuraDropShadow)"
+                />
+              ))}
+            </g>
+          ))}
+        </g>
+
+        {/* DENSE FLOWER BLOSSOM CANOPY */}
+        <g>
+          <BlossomCluster x={120} y={160} scale={1.4} rotation={-15} />
+          <BlossomCluster x={180} y={130} scale={1.5} rotation={25} />
+          <BlossomCluster x={240} y={90} scale={1.3} rotation={-45} />
+          <BlossomCluster x={300} y={70} scale={1.4} rotation={10} />
+          <BlossomCluster x={360} y={60} scale={1.2} rotation={-35} />
+          <BlossomCluster x={420} y={80} scale={1.3} rotation={20} />
+          <BlossomCluster x={470} y={120} scale={1.1} rotation={-18} />
+
+          <BlossomCluster x={150} y={230} scale={1.3} rotation={15} />
+          <BlossomCluster x={210} y={190} scale={1.4} rotation={-30} />
+          <BlossomCluster x={270} y={160} scale={1.5} rotation={5} />
+          <BlossomCluster x={330} y={150} scale={1.3} rotation={-40} />
+          <BlossomCluster x={390} y={160} scale={1.4} rotation={30} />
+          <BlossomCluster x={450} y={180} scale={1.2} rotation={-22} />
+
+          <BlossomCluster x={110} y={320} scale={1.2} rotation={-12} />
+          <BlossomCluster x={170} y={290} scale={1.4} rotation={18} />
+          <BlossomCluster x={230} y={270} scale={1.3} rotation={-25} />
+          <BlossomCluster x={290} y={260} scale={1.4} rotation={12} />
+          <BlossomCluster x={350} y={270} scale={1.3} rotation={-35} />
+          <BlossomCluster x={410} y={290} scale={1.2} rotation={15} />
+          <BlossomCluster x={460} y={320} scale={1.1} rotation={-20} />
+
+          <BlossomCluster x={80} y={430} scale={1.2} rotation={10} />
+          <BlossomCluster x={140} y={400} scale={1.3} rotation={-28} />
+          <BlossomCluster x={200} y={380} scale={1.4} rotation={22} />
+          <BlossomCluster x={260} y={370} scale={1.3} rotation={-15} />
+          <BlossomCluster x={320} y={380} scale={1.2} rotation={35} />
+          <BlossomCluster x={380} y={400} scale={1.1} rotation={-10} />
+
+          <BlossomCluster x={100} y={530} scale={1.1} rotation={-20} />
+          <BlossomCluster x={160} y={510} scale={1.2} rotation={15} />
+          <BlossomCluster x={220} y={490} scale={1.2} rotation={-30} />
+          <BlossomCluster x={280} y={490} scale={1.1} rotation={25} />
+          <BlossomCluster x={340} y={510} scale={1.0} rotation={-18} />
+          <BlossomCluster x={90} y={630} scale={1.0} rotation={12} />
+          <BlossomCluster x={150} y={610} scale={1.1} rotation={-25} />
+        </g>
+
+        {/* FAIRY LIGHTS & HANGING HEARTS */}
+        <g filter="url(#fairyGlowFilter)">
+          {[
+            { x: 210, y: 220, l: 38 },
+            { x: 310, y: 180, l: 45 },
+            { x: 390, y: 190, l: 32 },
+            { x: 280, y: 380, l: 40 },
+            { x: 370, y: 370, l: 35 },
+          ].map((lantern, li) => (
+            <g
+              key={`r-lantern-${li}`}
+              style={{
+                transformOrigin: `${lantern.x}px ${lantern.y}px`,
+                animation: `lanternSway ${3.8 + (li * 0.3)}s ease-in-out infinite`,
+                animationDelay: `${li * 0.6 + 0.3}s`,
+              }}
+            >
+              <line
+                x1={lantern.x}
+                y1={lantern.y}
+                x2={lantern.x}
+                y2={lantern.y + lantern.l}
+                stroke="#fbbf24"
+                strokeWidth="1.2"
+              />
+              <circle
+                cx={lantern.x}
+                cy={lantern.y + lantern.l}
+                r="7"
+                fill="url(#fairyLightRadial)"
+              />
+              <path
+                d={`M ${lantern.x},${lantern.y + lantern.l - 4} C ${lantern.x - 4},${lantern.y + lantern.l - 8} ${lantern.x - 8},${lantern.y + lantern.l - 4} ${lantern.x},${lantern.y + lantern.l + 5} C ${lantern.x + 8},${lantern.y + lantern.l - 4} ${lantern.x + 4},${lantern.y + lantern.l - 8} ${lantern.x},${lantern.y + lantern.l - 4} Z`}
+                fill="#ec4899"
+                opacity="0.9"
+              />
+            </g>
+          ))}
+
+          {[
+            { cx: 160, cy: 150, r: 4.5 },
+            { cx: 220, cy: 110, r: 4 },
+            { cx: 280, cy: 90, r: 5 },
+            { cx: 340, cy: 80, r: 4 },
+            { cx: 400, cy: 95, r: 4.5 },
+            { cx: 180, cy: 210, r: 4 },
+            { cx: 250, cy: 180, r: 5 },
+            { cx: 320, cy: 170, r: 4 },
+            { cx: 380, cy: 185, r: 4.5 },
+            { cx: 210, cy: 290, r: 4 },
+            { cx: 280, cy: 275, r: 4.5 },
+            { cx: 350, cy: 285, r: 4 },
+            { cx: 170, cy: 410, r: 4 },
+            { cx: 240, cy: 390, r: 4.5 },
+            { cx: 310, cy: 400, r: 4 },
+            { cx: 150, cy: 520, r: 4 },
+            { cx: 210, cy: 505, r: 4.5 },
+          ].map((light, lidx) => (
+            <circle
+              key={`r-fl-${lidx}`}
+              cx={light.cx}
+              cy={light.cy}
+              r={light.r}
+              fill="url(#fairyLightRadial)"
+              style={{
+                animation: 'fairyTwinkle 2.8s ease-in-out infinite',
+                animationDelay: `${lidx * 0.22 + 0.15}s`,
+              }}
+            />
+          ))}
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+// ==========================================
+// SYNCHRONIZED NAME REVEAL COMPONENT
+// ==========================================
+function CinematicNameReveal({ name, side }) {
+  const letters = name.split('');
+  const isLeft = side === 'left';
+
+  return (
+    <div
+      className={`absolute ${
+        isLeft
+          ? 'left-2 sm:left-4 md:left-8 lg:left-12 xl:left-16'
+          : 'right-2 sm:right-4 md:right-8 lg:right-12 xl:right-16'
+      } top-[10%] sm:top-[12%] md:top-[15%] pointer-events-none z-[25] flex flex-col items-center justify-center`}
+      style={{
+        animation: 'wordSynchronizedPulse 6s ease-in-out infinite',
+      }}
+    >
+      {/* Radiant Atmospheric Backdrop Glow */}
+      <div
+        className="absolute -inset-8 rounded-full blur-2xl pointer-events-none opacity-70"
+        style={{
+          background: isLeft
+            ? 'radial-gradient(ellipse at center, rgba(244,63,94,0.45) 0%, rgba(251,191,36,0.3) 50%, transparent 80%)'
+            : 'radial-gradient(ellipse at center, rgba(236,72,153,0.45) 0%, rgba(168,85,247,0.3) 50%, transparent 80%)',
+        }}
+      />
+
+      {/* Letters Staggered Sequence */}
+      <div className="relative flex items-center justify-center space-x-1 sm:space-x-1.5 md:space-x-2">
+        {letters.map((char, index) => (
+          <span
+            key={`${name}-${index}`}
+            className="inline-block font-serif font-black tracking-wider text-xl sm:text-2xl md:text-3xl lg:text-5xl select-none"
+            style={{
+              background: 'linear-gradient(180deg, #fffbeb 0%, #fde68a 25%, #f472b6 65%, #e11d48 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              filter:
+                'drop-shadow(0 2px 4px rgba(0,0,0,0.95)) drop-shadow(0 0 16px rgba(244,63,94,0.9)) drop-shadow(0 0 32px rgba(251,191,36,0.65))',
+              animation: `letterDrop${index} 6s cubic-bezier(0.16, 1, 0.3, 1) infinite`,
+            }}
+          >
+            {char}
+          </span>
+        ))}
+      </div>
+
+      {/* Romantic Golden Filigree Underline with Star */}
+      <div
+        className="relative flex items-center justify-center space-x-2 mt-1 sm:mt-1.5 text-amber-200/80 text-[10px] sm:text-xs md:text-sm tracking-widest"
+        style={{ animation: 'filigreeGlow 6s ease-in-out infinite' }}
+      >
+        <span className="w-5 sm:w-8 md:w-12 h-[1px] bg-gradient-to-r from-transparent via-rose-400 to-amber-300" />
+        <span className="text-amber-200 animate-pulse text-xs sm:text-sm">✨</span>
+        <span className="w-5 sm:w-8 md:w-12 h-[1px] bg-gradient-to-l from-transparent via-rose-400 to-amber-300" />
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// CINEMATIC ANIMATED FLYING BUTTERFLIES
+// ==========================================
+function Butterfly({ pathClass, duration, delay = '0s', wingGradientId, size = 32 }) {
+  return (
+    <div
+      className={`absolute pointer-events-none z-[25] ${pathClass}`}
+      style={{
+        animationDuration: `${duration}s`,
+        animationDelay: delay,
+      }}
+    >
+      <svg
+        width={size}
+        height={Math.round(size * 0.85)}
+        viewBox="0 0 34 28"
+        className="overflow-visible drop-shadow-[0_0_10px_rgba(236,72,153,0.9)]"
+      >
+        <defs>
+          <linearGradient id={wingGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f472b6" />
+            <stop offset="50%" stopColor="#c084fc" />
+            <stop offset="100%" stopColor="#38bdf8" />
+          </linearGradient>
+        </defs>
+
+        {/* Left Wing with rapid 3D fluttering */}
+        <g
+          style={{
+            transformOrigin: '17px 14px',
+            animation: 'wingFlapLeft 0.24s ease-in-out infinite',
+          }}
+        >
+          <path
+            d="M 16,14 C 11,3 3,2 1,7 C -1,13 4,20 16,16 Z"
+            fill={`url(#${wingGradientId})`}
+            opacity="0.95"
+          />
+          <path
+            d="M 16,15 C 9,18 4,24 6,26 C 9,28 14,24 16,17 Z"
+            fill={`url(#${wingGradientId})`}
+            opacity="0.85"
+          />
+          {/* Delicate wing veins */}
+          <path
+            d="M 16,14 Q 8,8 3,8 M 16,15 Q 9,14 4,16"
+            stroke="rgba(255,255,255,0.75)"
+            strokeWidth="0.6"
+            fill="none"
+          />
+        </g>
+
+        {/* Central Thorax & Antennae */}
+        <ellipse cx="17" cy="15" rx="1.2" ry="7" fill="#ffffff" />
+        <circle cx="17" cy="8" r="1.5" fill="#fef08a" />
+        <path
+          d="M 17,7 Q 15,3 13,2 M 17,7 Q 19,3 21,2"
+          stroke="#fef08a"
+          strokeWidth="0.6"
+          strokeLinecap="round"
+          fill="none"
+        />
+
+        {/* Right Wing with synchronized 3D fluttering */}
+        <g
+          style={{
+            transformOrigin: '17px 14px',
+            animation: 'wingFlapRight 0.24s ease-in-out infinite',
+          }}
+        >
+          <path
+            d="M 18,14 C 23,3 31,2 33,7 C 35,13 30,20 18,16 Z"
+            fill={`url(#${wingGradientId})`}
+            opacity="0.95"
+          />
+          <path
+            d="M 18,15 C 25,18 30,24 28,26 C 25,28 20,24 18,17 Z"
+            fill={`url(#${wingGradientId})`}
+            opacity="0.85"
+          />
+          <path
+            d="M 18,14 Q 26,8 31,8 M 18,15 Q 25,14 30,16"
+            stroke="rgba(255,255,255,0.75)"
+            strokeWidth="0.6"
+            fill="none"
+          />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+// ==========================================
+// MAIN COMPONENT
+// ==========================================
 export default function ProposalConfession({ onAccept, onReject, onNext }) {
   // Timeline Stages: 'BLACKOUT' -> 'PHOTO' -> 'SARANYA' -> 'ILOVEYOU' -> 'BUTTONS'
   const [stage, setStage] = useState('BLACKOUT');
@@ -53,7 +804,6 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
     }, 6550);
 
     // Phase 4 (6.8s): Grand Climax "I LOVE YOU" + Lens Flare
-    // Requirement 8: "I LOVE YOU" reaches its strongest cinematic point, without clipping
     const tClimax = setTimeout(() => {
       setStage('ILOVEYOU');
       if (window.heartbeatEngine) {
@@ -104,35 +854,218 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
   return (
     <div className="fixed inset-0 w-full h-full bg-[#03050c] text-slate-100 flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 overflow-hidden select-none z-[100]">
       
-      {/* INLINE CSS FOR MOVIE LIGHTING & EFFECTS */}
+      {/* INLINE CSS FOR CINEMATIC LIGHTING, NAME REVEAL, RAINBOW BORDER, BUTTERFLIES */}
       <style>{`
+        /* ====================================================
+           1. CONTINUOUS TRAVELLING RAINBOW BORDER LIGHTING
+           Travels: TOP -> RIGHT -> BOTTOM -> LEFT -> TOP
+           Smooth, elegant, premium - No strobe/flashing
+        ==================================================== */
+        @keyframes rainbowBorderTravel {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes rainbowHaloGlow {
+          0%, 100% {
+            box-shadow:
+              0 0 25px rgba(244, 63, 94, 0.45),
+              0 0 55px rgba(217, 70, 239, 0.35),
+              0 0 85px rgba(168, 85, 247, 0.25),
+              0 0 120px rgba(251, 191, 36, 0.2);
+          }
+          33% {
+            box-shadow:
+              0 0 25px rgba(168, 85, 247, 0.45),
+              0 0 55px rgba(59, 130, 246, 0.35),
+              0 0 85px rgba(6, 182, 212, 0.25),
+              0 0 120px rgba(244, 63, 94, 0.2);
+          }
+          66% {
+            box-shadow:
+              0 0 25px rgba(6, 182, 212, 0.45),
+              0 0 55px rgba(245, 158, 11, 0.35),
+              0 0 85px rgba(244, 63, 94, 0.25),
+              0 0 120px rgba(168, 85, 247, 0.2);
+          }
+        }
+
+        /* ====================================================
+           2. STAGGERED NAME REVEAL (ABISHEK & SARANYA)
+           Timing: 0.0s, 0.35s, 0.70s, 1.05s, 1.40s, 1.75s, 2.10s
+           Letters descend gracefully, then full name blooms,
+           synchronized pulse, resets and loops forever.
+        ==================================================== */
+        @keyframes letterDrop0 {
+          0% { opacity: 0; transform: translateY(-42px) rotate(-6deg) scale(0.75); filter: blur(3px); }
+          6% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          74% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84% { opacity: 0; transform: translateY(-12px) rotate(2deg) scale(0.9); filter: blur(2px); }
+          100% { opacity: 0; transform: translateY(-42px) rotate(-6deg) scale(0.75); }
+        }
+        @keyframes letterDrop1 {
+          0%, 5.8% { opacity: 0; transform: translateY(-42px) rotate(5deg) scale(0.75); filter: blur(3px); }
+          11.8% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          74% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84% { opacity: 0; transform: translateY(-12px) rotate(-2deg) scale(0.9); filter: blur(2px); }
+          100% { opacity: 0; transform: translateY(-42px) rotate(5deg) scale(0.75); }
+        }
+        @keyframes letterDrop2 {
+          0%, 11.6% { opacity: 0; transform: translateY(-42px) rotate(-4deg) scale(0.75); filter: blur(3px); }
+          17.6% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          74% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84% { opacity: 0; transform: translateY(-12px) rotate(2deg) scale(0.9); filter: blur(2px); }
+          100% { opacity: 0; transform: translateY(-42px) rotate(-4deg) scale(0.75); }
+        }
+        @keyframes letterDrop3 {
+          0%, 17.5% { opacity: 0; transform: translateY(-42px) rotate(6deg) scale(0.75); filter: blur(3px); }
+          23.5% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          74% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84% { opacity: 0; transform: translateY(-12px) rotate(-2deg) scale(0.9); filter: blur(2px); }
+          100% { opacity: 0; transform: translateY(-42px) rotate(6deg) scale(0.75); }
+        }
+        @keyframes letterDrop4 {
+          0%, 23.3% { opacity: 0; transform: translateY(-42px) rotate(-5deg) scale(0.75); filter: blur(3px); }
+          29.3% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          74% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84% { opacity: 0; transform: translateY(-12px) rotate(2deg) scale(0.9); filter: blur(2px); }
+          100% { opacity: 0; transform: translateY(-42px) rotate(-5deg) scale(0.75); }
+        }
+        @keyframes letterDrop5 {
+          0%, 29.1% { opacity: 0; transform: translateY(-42px) rotate(4deg) scale(0.75); filter: blur(3px); }
+          35.1% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          74% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84% { opacity: 0; transform: translateY(-12px) rotate(-2deg) scale(0.9); filter: blur(2px); }
+          100% { opacity: 0; transform: translateY(-42px) rotate(4deg) scale(0.75); }
+        }
+        @keyframes letterDrop6 {
+          0%, 35.0% { opacity: 0; transform: translateY(-42px) rotate(-3deg) scale(0.75); filter: blur(3px); }
+          41.0% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          74% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: blur(0px); }
+          84% { opacity: 0; transform: translateY(-12px) rotate(2deg) scale(0.9); filter: blur(2px); }
+          100% { opacity: 0; transform: translateY(-42px) rotate(-3deg) scale(0.75); }
+        }
+
+        /* Synchronized Radiance Pulse for Assembled Name */
+        @keyframes wordSynchronizedPulse {
+          0%, 40% {
+            opacity: 0.95;
+            transform: scale(1);
+          }
+          45%, 70% {
+            opacity: 1;
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 35px rgba(244,63,94,1)) drop-shadow(0 0 65px rgba(251,191,36,0.85)) drop-shadow(0 0 95px rgba(236,72,153,0.75));
+          }
+          74%, 84% {
+            opacity: 0;
+            transform: scale(0.95);
+            filter: blur(4px);
+          }
+          85%, 100% {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+        }
+        @keyframes filigreeGlow {
+          0%, 41% { opacity: 0; transform: scaleX(0.4); }
+          45%, 70% { opacity: 1; transform: scaleX(1); filter: drop-shadow(0 0 10px rgba(251,191,36,0.9)); }
+          74%, 84% { opacity: 0; transform: scaleX(0.4); }
+          85%, 100% { opacity: 0; }
+        }
+
+        /* ====================================================
+           3. TREE DECORATIONS: SWAYING LANTERNS & FAIRY LIGHTS
+        ==================================================== */
+        @keyframes lanternSway {
+          0%, 100% { transform: rotate(-5deg); }
+          50% { transform: rotate(5deg); }
+        }
+        @keyframes fairyTwinkle {
+          0%, 100% { opacity: 0.35; transform: scale(0.8); }
+          50% { opacity: 1; transform: scale(1.25); filter: drop-shadow(0 0 8px rgba(254,240,138,0.95)); }
+        }
+
+        /* ====================================================
+           4. ANIMATED BUTTERFLIES: WING FLAPS & FLIGHT PATHS
+        ==================================================== */
+        @keyframes wingFlapLeft {
+          0%, 100% { transform: scaleX(1) rotate(0deg); }
+          50% { transform: scaleX(0.18) rotate(16deg); }
+        }
+        @keyframes wingFlapRight {
+          0%, 100% { transform: scaleX(1) rotate(0deg); }
+          50% { transform: scaleX(0.18) rotate(-16deg); }
+        }
+
+        @keyframes flyPath1 {
+          0% { transform: translate(5vw, 16vh) rotate(12deg) scale(0.85); }
+          25% { transform: translate(16vw, 26vh) rotate(24deg) scale(0.95); }
+          50% { transform: translate(9vw, 40vh) rotate(-10deg) scale(1); }
+          75% { transform: translate(3vw, 28vh) rotate(-22deg) scale(0.9); }
+          100% { transform: translate(5vw, 16vh) rotate(12deg) scale(0.85); }
+        }
+        @keyframes flyPath2 {
+          0% { transform: translate(88vw, 20vh) rotate(-14deg) scale(0.9); }
+          30% { transform: translate(77vw, 34vh) rotate(-28deg) scale(1); }
+          60% { transform: translate(85vw, 48vh) rotate(15deg) scale(0.95); }
+          85% { transform: translate(93vw, 32vh) rotate(22deg) scale(0.88); }
+          100% { transform: translate(88vw, 20vh) rotate(-14deg) scale(0.9); }
+        }
+        @keyframes flyPath3 {
+          0% { transform: translate(7vw, 76vh) rotate(-15deg) scale(0.8); }
+          35% { transform: translate(13vw, 54vh) rotate(8deg) scale(0.92); }
+          65% { transform: translate(17vw, 34vh) rotate(-12deg) scale(1); }
+          85% { transform: translate(9vw, 58vh) rotate(18deg) scale(0.85); }
+          100% { transform: translate(7vw, 76vh) rotate(-15deg) scale(0.8); }
+        }
+        @keyframes flyPath4 {
+          0% { transform: translate(91vw, 74vh) rotate(14deg) scale(0.85); }
+          30% { transform: translate(83vw, 50vh) rotate(-10deg) scale(0.95); }
+          65% { transform: translate(87vw, 30vh) rotate(18deg) scale(1); }
+          85% { transform: translate(93vw, 54vh) rotate(-14deg) scale(0.9); }
+          100% { transform: translate(91vw, 74vh) rotate(14deg) scale(0.85); }
+        }
+        @keyframes flyPath5 {
+          0% { transform: translate(22vw, 8vh) rotate(10deg) scale(0.75); }
+          30% { transform: translate(42vw, 6vh) rotate(-5deg) scale(0.85); }
+          60% { transform: translate(68vw, 8vh) rotate(12deg) scale(0.8); }
+          80% { transform: translate(46vw, 10vh) rotate(-8deg) scale(0.78); }
+          100% { transform: translate(22vw, 8vh) rotate(10deg) scale(0.75); }
+        }
+        @keyframes flyPath6 {
+          0% { transform: translate(14vw, 24vh) rotate(-8deg) scale(0.95); }
+          25% { transform: translate(16vw, 20vh) rotate(6deg) scale(1.05); }
+          50% { transform: translate(12vw, 26vh) rotate(-14deg) scale(0.9); }
+          75% { transform: translate(15vw, 28vh) rotate(10deg) scale(1); }
+          100% { transform: translate(14vw, 24vh) rotate(-8deg) scale(0.95); }
+        }
+
+        /* ====================================================
+           5. FLOATING HEARTS & DRAPING SAKURA PETALS
+        ==================================================== */
+        @keyframes floatingHeartDrift {
+          0% { transform: translateY(105vh) translateX(0px) scale(0.7) rotate(-6deg); opacity: 0; }
+          15% { opacity: 0.85; }
+          50% { transform: translateY(52vh) translateX(24px) scale(0.92) rotate(8deg); }
+          85% { opacity: 0.85; }
+          100% { transform: translateY(-10vh) translateX(-18px) scale(1.08) rotate(-12deg); opacity: 0; }
+        }
+        @keyframes petalCascadingTwirl {
+          0% { transform: translateY(-8vh) translateX(0px) rotate(0deg) scale(0.75); opacity: 0; }
+          15% { opacity: 0.85; }
+          50% { transform: translateY(52vh) translateX(36px) rotate(190deg) scale(0.95); }
+          85% { opacity: 0.75; }
+          100% { transform: translateY(108vh) translateX(12px) rotate(380deg) scale(1.1); opacity: 0; }
+        }
+
+        /* ====================================================
+           6. EXISTING LIGHTING & CINEMATIC EFFECTS
+        ==================================================== */
         @keyframes edgeGlowCycle {
           0% { box-shadow: inset 0 0 90px rgba(244,63,94,0.32), inset 0 0 170px rgba(251,191,36,0.18); }
           33% { box-shadow: inset 0 0 90px rgba(168,85,247,0.32), inset 0 0 170px rgba(236,72,153,0.22); }
           66% { box-shadow: inset 0 0 90px rgba(6,182,212,0.28), inset 0 0 170px rgba(99,102,241,0.22); }
           100% { box-shadow: inset 0 0 90px rgba(244,63,94,0.32), inset 0 0 170px rgba(251,191,36,0.18); }
-        }
-        @keyframes cinematicBorderGlow {
-          0%, 100% {
-            box-shadow:
-              0 0 0 1px rgba(251, 191, 36, 0.4),
-              0 0 18px rgba(244, 63, 94, 0.35),
-              0 0 38px rgba(236, 72, 153, 0.28),
-              0 0 70px rgba(168, 85, 247, 0.18),
-              0 0 110px rgba(251, 191, 36, 0.14);
-          }
-          50% {
-            box-shadow:
-              0 0 0 1.5px rgba(251, 191, 36, 0.7),
-              0 0 30px rgba(244, 63, 94, 0.65),
-              0 0 60px rgba(236, 72, 153, 0.45),
-              0 0 100px rgba(168, 85, 247, 0.3),
-              0 0 145px rgba(251, 191, 36, 0.24);
-          }
-        }
-        @keyframes cinematicBorderSweep {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
         }
         @keyframes ambientBackdropPulse {
           0%, 100% { opacity: 0.35; transform: scale(1); }
@@ -142,12 +1075,6 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
           0% { transform: translateX(-150%) skewX(-25deg); opacity: 0; }
           40% { opacity: 0.9; }
           100% { transform: translateX(200%) skewX(-25deg); opacity: 0; }
-        }
-        @keyframes petalFall {
-          0% { transform: translateY(-10vh) rotate(0deg) scale(0.8); opacity: 0; }
-          20% { opacity: 0.75; }
-          80% { opacity: 0.75; }
-          100% { transform: translateY(110vh) rotate(360deg) scale(1.1); opacity: 0; }
         }
         @keyframes shimmerText {
           0% { background-position: -200% center; }
@@ -210,7 +1137,7 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
       <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-gradient-to-br from-amber-400/20 via-rose-500/20 to-transparent blur-3xl pointer-events-none z-20 light-leak-glow" />
       <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-gradient-to-tl from-pink-500/20 via-purple-600/15 to-transparent blur-3xl pointer-events-none z-20 light-leak-glow" />
 
-      {/* Diagonal Cinematic Lens Rays (3 layers for depth) */}
+      {/* Diagonal Cinematic Lens Rays */}
       <div className="absolute -inset-20 opacity-20 pointer-events-none z-20 mix-blend-screen bg-gradient-to-tr from-transparent via-rose-300/15 to-amber-200/25 blur-3xl ray-drift" />
       <div className="absolute -inset-10 opacity-15 pointer-events-none z-20 mix-blend-screen bg-gradient-to-bl from-transparent via-pink-400/10 to-indigo-300/15 blur-2xl ray-drift [animation-delay:4s]" />
 
@@ -222,31 +1149,151 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
         style={{ animation: 'ambientBackdropPulse 4s ease-in-out infinite' }}
       />
 
-      {/* 2. WIDE LANDSCAPE CINEMATIC PHOTO FRAME WITH MULTI-LAYER BORDER LIGHTING */}
+      {/* ====================================================
+          2. LEFT CINEMATIC TREE + ABISHEK NAME REVEAL
+      ==================================================== */}
+      <LeftCinematicTree />
+      <CinematicNameReveal name="ABISHEK" side="left" />
+
+      {/* ====================================================
+          3. RIGHT CINEMATIC TREE + SARANYA NAME REVEAL
+      ==================================================== */}
+      <RightCinematicTree />
+      <CinematicNameReveal name="SARANYA" side="right" />
+
+      {/* ====================================================
+          4. CINEMATIC FLYING BUTTERFLIES (Real Wing Flutter)
+      ==================================================== */}
+      <Butterfly
+        pathClass="[animation:flyPath1_13s_ease-in-out_infinite]"
+        duration={13}
+        wingGradientId="bfGrad1"
+        size={34}
+      />
+      <Butterfly
+        pathClass="[animation:flyPath2_15s_ease-in-out_infinite]"
+        duration={15}
+        delay="1.5s"
+        wingGradientId="bfGrad2"
+        size={32}
+      />
+      <Butterfly
+        pathClass="[animation:flyPath3_11s_ease-in-out_infinite]"
+        duration={11}
+        delay="0.7s"
+        wingGradientId="bfGrad3"
+        size={28}
+      />
+      <Butterfly
+        pathClass="[animation:flyPath4_14s_ease-in-out_infinite]"
+        duration={14}
+        delay="2.2s"
+        wingGradientId="bfGrad4"
+        size={30}
+      />
+      <Butterfly
+        pathClass="[animation:flyPath5_18s_ease-in-out_infinite]"
+        duration={18}
+        delay="3.0s"
+        wingGradientId="bfGrad5"
+        size={26}
+      />
+      <Butterfly
+        pathClass="[animation:flyPath6_9s_ease-in-out_infinite]"
+        duration={9}
+        delay="0.4s"
+        wingGradientId="bfGrad6"
+        size={32}
+      />
+
+      {/* ====================================================
+          5. FLOATING HEARTS & CASCADING SAKURA PETALS
+      ==================================================== */}
+      <div className="absolute inset-0 pointer-events-none z-[16] overflow-hidden">
+        {/* Floating Romantic Glowing Hearts (Left & Right Flanks) */}
+        {[
+          { left: '4%', delay: '0s', dur: '9.5s', size: 'text-rose-400 text-xl' },
+          { left: '12%', delay: '2.5s', dur: '11s', size: 'text-pink-400 text-base' },
+          { left: '19%', delay: '4.8s', dur: '10s', size: 'text-amber-300 text-lg' },
+          { left: '78%', delay: '1.2s', dur: '10.5s', size: 'text-rose-400 text-lg' },
+          { left: '85%', delay: '3.6s', dur: '12s', size: 'text-pink-300 text-xl' },
+          { left: '92%', delay: '5.2s', dur: '9s', size: 'text-amber-200 text-base' },
+        ].map((heart, hi) => (
+          <div
+            key={`flt-heart-${hi}`}
+            className={`absolute ${heart.size} drop-shadow-[0_0_12px_rgba(244,63,94,0.9)]`}
+            style={{
+              left: heart.left,
+              animation: `floatingHeartDrift ${heart.dur} linear infinite`,
+              animationDelay: heart.delay,
+            }}
+          >
+            ❤️
+          </div>
+        ))}
+
+        {/* Cascading Cherry Blossom Petals from Trees */}
+        {[
+          { left: '6%', delay: '0.4s', dur: '8s' },
+          { left: '14%', delay: '1.8s', dur: '10s' },
+          { left: '22%', delay: '3.2s', dur: '9s' },
+          { left: '76%', delay: '0.8s', dur: '8.5s' },
+          { left: '84%', delay: '2.4s', dur: '10.5s' },
+          { left: '92%', delay: '4.0s', dur: '9.5s' },
+        ].map((petal, pi) => (
+          <div
+            key={`tree-petal-${pi}`}
+            className="absolute text-pink-300/80 text-lg md:text-xl drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]"
+            style={{
+              left: petal.left,
+              animation: `petalCascadingTwirl ${petal.dur} linear infinite`,
+              animationDelay: petal.delay,
+            }}
+          >
+            🌸
+          </div>
+        ))}
+      </div>
+
+      {/* ====================================================
+          6. WIDE LANDSCAPE CINEMATIC PHOTO FRAME
+             UPGRADED WITH CONTINUOUS TRAVELLING RAINBOW BORDER
+             (PHOTO, DIMENSIONS, CROPS, AND FACES UNCHANGED)
+      ==================================================== */}
       <div
-        className={`relative w-[96vw] max-w-5xl lg:max-w-6xl h-[60vh] sm:h-[66vh] md:h-[72vh] max-h-[720px] transition-all duration-1000 z-10 ${
+        className={`relative w-[96vw] max-w-5xl lg:max-w-6xl h-[60vh] sm:h-[66vh] md:h-[72vh] max-h-[720px] transition-all duration-1000 z-20 ${
           stage === 'BLACKOUT' ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
         }`}
       >
-        {/* Animated Multi-Layer Cinematic Border Glow (Rose, Gold, Pink, Purple) */}
+        {/* Animated Multi-Layer Travelling Rainbow Border Container */}
         <div
-          className="relative w-full h-full rounded-2xl sm:rounded-3xl p-[2px] md:p-[2.5px] overflow-hidden"
+          className="relative w-full h-full rounded-2xl sm:rounded-3xl p-[3px] md:p-[3.5px] overflow-hidden"
           style={{
-            animation: 'cinematicBorderGlow 4s ease-in-out infinite',
-            background: 'linear-gradient(135deg, rgba(251,191,36,0.65), rgba(244,63,94,0.75), rgba(236,72,153,0.65), rgba(168,85,247,0.45), rgba(251,191,36,0.6))',
+            animation: 'rainbowHaloGlow 8s ease-in-out infinite',
           }}
         >
-          {/* Subtle Slow Light Sweep along the Border Perimeter */}
+          {/* Continuous Rotating Rainbow Conic Gradient Base */}
           <div
-            className="absolute -inset-[150%] pointer-events-none opacity-45 mix-blend-screen"
+            className="absolute -inset-[150%] pointer-events-none opacity-85"
             style={{
-              background: 'conic-gradient(from 0deg, transparent 0deg, rgba(251,191,36,0.4) 60deg, rgba(244,63,94,0.8) 120deg, rgba(236,72,153,0.6) 180deg, rgba(168,85,247,0.4) 240deg, transparent 330deg)',
-              animation: 'cinematicBorderSweep 10s linear infinite',
+              background:
+                'conic-gradient(from 0deg, #f43f5e 0deg, #ec4899 45deg, #d946ef 90deg, #a855f7 135deg, #3b82f6 180deg, #06b6d4 225deg, #8b5cf6 270deg, #fbbf24 315deg, #f43f5e 360deg)',
+              animation: 'rainbowBorderTravel 6s linear infinite',
             }}
           />
 
-          {/* Inner Photo Stage */}
-          <div className="relative w-full h-full rounded-[14px] sm:rounded-[22px] overflow-hidden bg-[#04060e] flex items-center justify-center">
+          {/* Travelling High-Intensity Magical Light Sweep (Visibly Travels TOP -> RIGHT -> BOTTOM -> LEFT -> TOP) */}
+          <div
+            className="absolute -inset-[150%] pointer-events-none opacity-90 mix-blend-screen"
+            style={{
+              background:
+                'conic-gradient(from 0deg, transparent 0deg, transparent 270deg, rgba(255,255,255,0.3) 315deg, rgba(255,255,255,0.98) 348deg, #f43f5e 360deg)',
+              animation: 'rainbowBorderTravel 6s linear infinite',
+            }}
+          />
+
+          {/* Inner Photo Stage - Untouched Dimensions & Behavior */}
+          <div className="relative w-full h-full rounded-[13px] sm:rounded-[21px] overflow-hidden bg-[#04060e] flex items-center justify-center">
             
             {/* Ambient Blurred Base (Fills wide landscape aspect ratio with matching atmosphere) */}
             <img
@@ -354,40 +1401,7 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
         </div>
       </div>
 
-      {/* 3. FLOATING ROSE PETALS & GOLDEN MEMORY DUST */}
-      {(stage === 'ILOVEYOU' || stage === 'BUTTONS') && (
-        <div className="absolute inset-0 pointer-events-none z-30 overflow-hidden">
-          {[...Array(12)].map((_, i) => (
-            <div
-              key={`petal-${i}`}
-              className="absolute text-rose-300/60 text-lg md:text-xl"
-              style={{
-                left: `${(i * 8.5) % 95}%`,
-                animation: `petalFall ${7 + (i % 5)}s linear infinite`,
-                animationDelay: `${i * 0.7}s`,
-              }}
-            >
-              🌸
-            </div>
-          ))}
-          {/* Golden Sparkle Dust */}
-          {[...Array(18)].map((_, i) => (
-            <div
-              key={`dust-${i}`}
-              className="absolute rounded-full bg-amber-200/50 blur-[1px] animate-ping"
-              style={{
-                top: `${(i * 5.5) % 85}%`,
-                left: `${(i * 6.2) % 90}%`,
-                width: `${(i % 3) + 2}px`,
-                height: `${(i % 3) + 2}px`,
-                animationDuration: `${2.5 + (i * 0.3)}s`,
-              }}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* 4. BLACKOUT PULSE (Phase 1) */}
+      {/* 7. BLACKOUT PULSE (Phase 1) */}
       {stage === 'BLACKOUT' && (
         <div className="relative z-40 flex flex-col items-center justify-center">
           <div className="w-10 h-10 rounded-full bg-rose-500/35 blur-xl animate-ping" />

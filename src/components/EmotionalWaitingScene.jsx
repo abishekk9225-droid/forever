@@ -57,9 +57,14 @@ export default function EmotionalWaitingScene({ onComplete }) {
 
   const hasSentEmailRef = useRef(false);
   const timersRef = useRef([]);
+  const mmAudioRef = useRef(null);
+  const audioTimerRef = useRef(null);
+  const isMountedRef = useRef(true);
 
-  // 1. Scene Entry: EmailJS notification, Heartbeat progression, ka.mp3 autoplay
+  // 1. Scene Entry: EmailJS notification, Heartbeat progression, /mm.mp3 autoplay after 5 seconds
   useEffect(() => {
+    isMountedRef.current = true;
+
     // A. Send EmailJS notification at most once per session
     if (!hasSentEmailRef.current) {
       hasSentEmailRef.current = true;
@@ -96,49 +101,68 @@ export default function EmotionalWaitingScene({ onComplete }) {
 
     timersRef.current.push(tHeartbeat1, tHeartbeat2, tHeartbeat3);
 
-    // C. Start ka.mp3 automatically when the scene becomes active
-    const startKaAudio = () => {
-      let playPromise = null;
-      if (typeof playKaTrack === 'function') {
-        playPromise = playKaTrack();
-      } else if (window.soundController?.playKaTrack) {
-        playPromise = window.soundController.playKaTrack();
-      }
+    // C. Wait exactly 5.0 seconds before automatically playing /mm.mp3
+    audioTimerRef.current = setTimeout(() => {
+      if (!isMountedRef.current) return;
 
-      if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch((err) => {
-          console.warn('ka.mp3 autoplay restricted by browser:', err);
-          setIsAutoplayBlocked(true);
-        });
-      }
-    };
+      try {
+        if (!mmAudioRef.current) {
+          const audio = new Audio('/mm.mp3');
+          audio.preload = 'auto';
+          audio.loop = true;
+          audio.volume = 0.8;
+          mmAudioRef.current = audio;
+        }
 
-    // Trigger ka.mp3 smoothly upon scene activation
-    startKaAudio();
+        const playPromise = mmAudioRef.current.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+          playPromise.catch((err) => {
+            console.warn('/mm.mp3 autoplay restricted by browser:', err);
+            if (isMountedRef.current) {
+              setIsAutoplayBlocked(true);
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to play /mm.mp3:', err);
+      }
+    }, 5000);
 
     // Cleanup when leaving Emotional Waiting Scene:
-    // Smoothly stop/pause ka.mp3 so it does not continue into unrelated scenes
+    // Clear 5s timer and stop /mm.mp3 playback cleanly
     return () => {
+      isMountedRef.current = false;
       timersRef.current.forEach((t) => clearTimeout(t));
+
+      if (audioTimerRef.current) {
+        clearTimeout(audioTimerRef.current);
+        audioTimerRef.current = null;
+      }
+
+      if (mmAudioRef.current) {
+        mmAudioRef.current.pause();
+        mmAudioRef.current.currentTime = 0;
+        mmAudioRef.current = null;
+      }
+
       if (typeof stopKaTrack === 'function') {
-        stopKaTrack(1.2);
-      } else if (window.soundController?.stopKaTrack) {
-        window.soundController.stopKaTrack(1.2);
-      } else if (window.unifiedAudioEngine?.stopKaTrack) {
-        window.unifiedAudioEngine.stopKaTrack(1.2);
+        stopKaTrack(0.5);
       }
     };
-  }, [playKaTrack, stopKaTrack]);
+  }, [stopKaTrack]);
 
-  // 2. User gesture fallback if browser autoplay policy blocked ka.mp3
+  // 2. User gesture fallback if browser autoplay policy blocked /mm.mp3
   const handleUnblockAudio = (e) => {
     if (e) e.stopPropagation();
     setIsAutoplayBlocked(false);
-    if (typeof playKaTrack === 'function') {
-      playKaTrack().catch(() => {});
-    } else if (window.soundController?.playKaTrack) {
-      window.soundController.playKaTrack();
+    if (!mmAudioRef.current) {
+      const audio = new Audio('/mm.mp3');
+      audio.preload = 'auto';
+      audio.loop = true;
+      audio.volume = 0.8;
+      mmAudioRef.current = audio;
     }
+    mmAudioRef.current.play().catch(() => {});
     if (window.heartbeatEngine) {
       window.heartbeatEngine.resumeContext();
     }
@@ -191,7 +215,16 @@ export default function EmotionalWaitingScene({ onComplete }) {
   };
 
   const handleContinue = () => {
-    // Cleanly stop ka.mp3 before completing scene
+    // Cleanly stop /mm.mp3 timer and audio before completing scene
+    if (audioTimerRef.current) {
+      clearTimeout(audioTimerRef.current);
+      audioTimerRef.current = null;
+    }
+    if (mmAudioRef.current) {
+      mmAudioRef.current.pause();
+      mmAudioRef.current.currentTime = 0;
+      mmAudioRef.current = null;
+    }
     if (typeof stopKaTrack === 'function') {
       stopKaTrack(1.0);
     }

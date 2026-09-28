@@ -5,6 +5,7 @@ import { Gift, AlertCircle, Eye } from 'lucide-react';
 import ProposalConfession from './ProposalConfession';
 import SecretGiftCinematicScene from './SecretGiftCinematicScene';
 import EmotionalWaitingScene from './EmotionalWaitingScene';
+import CinematicSecretGiftBackground from './CinematicSecretGiftBackground';
 import { sendEmail } from '../utils/emailService';
 
 const ADMIN_PHONE = '6380404055';
@@ -150,12 +151,14 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
         {/* SUBSTAGE 2: PRANK GIFT BOX & LETTER */}
         {subStage === 'GIFT_BOX' && (
           <>
+            <CinematicSecretGiftBackground />
+
             <motion.div
               key="gift_box"
               initial={{ opacity: 0, scale: 0.92, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: -20 }}
-              className="w-full p-8 sm:p-10 rounded-3xl backdrop-blur-3xl bg-zinc-950/85 border border-rose-500/30 shadow-[0_0_50px_rgba(244,114,182,0.25)] text-center relative"
+              className="w-full p-8 sm:p-10 rounded-3xl backdrop-blur-3xl bg-zinc-950/85 border border-rose-500/30 shadow-[0_0_50px_rgba(244,114,182,0.25)] text-center relative z-20"
             >
               <div
                 onClick={() => setIsBoxOpen(true)}

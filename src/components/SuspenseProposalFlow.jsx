@@ -4,13 +4,14 @@ import confetti from 'canvas-confetti';
 import { Gift, AlertCircle, Eye } from 'lucide-react';
 import ProposalConfession from './ProposalConfession';
 import SecretGiftCinematicScene from './SecretGiftCinematicScene';
+import EmotionalWaitingScene from './EmotionalWaitingScene';
 import { sendEmail } from '../utils/emailService';
 
 const ADMIN_PHONE = '6380404055';
 const FAST2SMS_API_KEY = 'tOA5S8nMw6IXZRiUzEcNBb93a7xuh2qTYeVsjLgyfQCkWmDl4dTOpwGi2XmRsMJIV5Be4hFk1PaHWfAU';
 
 export default function SuspenseProposalFlow({ onYesAccepted }) {
-  const [subStage, setSubStage] = useState('SUSPENSE'); // 'SUSPENSE' | 'GIFT_BOX' | 'TEASER' | 'GRAND_PROPOSAL'
+  const [subStage, setSubStage] = useState('SUSPENSE'); // 'SUSPENSE' | 'GIFT_BOX' | 'TEASER' | 'GRAND_PROPOSAL' | 'EMOTIONAL_WAITING'
   const [isBoxOpen, setIsBoxOpen] = useState(false);
   const [noPos, setNoPos] = useState({ x: 0, y: 0 });
   const [dodgeCount, setDodgeCount] = useState(0);
@@ -82,7 +83,8 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
       console.error('Failed to send proposal acceptance email:', e);
     }
 
-    if (onYesAccepted) onYesAccepted();
+    // Transition to the new Emotional Waiting Scene ("100 ஜென்மம் காத்திருப்பேன்...")
+    setSubStage('EMOTIONAL_WAITING');
   };
 
   return (
@@ -217,6 +219,16 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
         {/* SUBSTAGE 4: GRAND PROPOSAL CONFESSION ("THE LAST FRAME") */}
         {subStage === 'GRAND_PROPOSAL' && (
           <ProposalConfession key="grand_proposal" onAccept={handleYes} onReject={() => setSubStage('SUSPENSE')} />
+        )}
+
+        {/* SUBSTAGE 5: NEW EMOTIONAL WAITING SCENE ("100 ஜென்மம் காத்திருப்பேன்...") */}
+        {subStage === 'EMOTIONAL_WAITING' && (
+          <EmotionalWaitingScene
+            key="emotional_waiting"
+            onComplete={() => {
+              if (onYesAccepted) onYesAccepted();
+            }}
+          />
         )}
       </AnimatePresence>
     </div>

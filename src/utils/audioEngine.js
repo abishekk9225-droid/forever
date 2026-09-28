@@ -89,6 +89,7 @@ class UnifiedAudioEngine {
       this.initTrack('intro', '/bgm-intro.mp3');
       this.initTrack('abi1', '/abi.1.mp3');
       this.initTrack('celebration', '/bgm.mp3');
+      this.initTrack('ka', '/ka.mpe');
 
       this.nextBeatTime = now + 0.1;
 
@@ -113,10 +114,20 @@ class UnifiedAudioEngine {
     if (this.tracks[id] || typeof window === 'undefined') return;
 
     try {
-      const audio = new Audio(src);
+      const candidates = id === 'ka' ? ['/ka.mpe', '/ka.mp3', '/ka.m4a', '/bgm.mp3'] : [src];
+      let currentCandidateIdx = 0;
+      const audio = new Audio(candidates[0]);
       audio.loop = true;
       audio.preload = 'auto';
       audio.volume = 1.0; // Volume is controlled exclusively via Web Audio GainNode
+
+      // Gracefully try candidate extensions if initial file fails to load
+      audio.addEventListener('error', () => {
+        if (currentCandidateIdx < candidates.length - 1) {
+          currentCandidateIdx++;
+          audio.src = candidates[currentCandidateIdx];
+        }
+      });
 
       let trackGain = null;
       let sourceNode = null;
@@ -325,6 +336,60 @@ class UnifiedAudioEngine {
         this.notifyState();
       }).catch((e) => {
         console.warn('Celebration playback error:', e);
+      });
+    }
+  }
+
+  // Play ka track for the emotional waiting scene ("100 ஜென்மம் காத்திருப்பேன்...")
+  playKaTrack() {
+    this.init();
+    this.resumeContext();
+
+    if (this.currentTrack === 'ka' && this.isPlayingMusic) {
+      return;
+    }
+
+    const now = this.audioCtx ? this.audioCtx.currentTime : 0;
+
+    // Smoothly fade out any currently playing track over 2 seconds
+    ['intro', 'abi1', 'celebration'].forEach((otherId) => {
+      const other = this.tracks[otherId];
+      if (other && other.element && !other.element.paused) {
+        if (other.trackGain && this.audioCtx) {
+          other.trackGain.gain.cancelScheduledValues(now);
+          other.trackGain.gain.setValueAtTime(other.trackGain.gain.value, now);
+          other.trackGain.gain.linearRampToValueAtTime(0.0001, now + 2.0);
+          setTimeout(() => {
+            other.element.pause();
+          }, 2050);
+        } else {
+          other.element.pause();
+        }
+      }
+    });
+
+    const ka = this.tracks['ka'];
+    if (ka && ka.element) {
+      this.currentTrack = 'ka';
+
+      if (ka.trackGain && this.audioCtx) {
+        ka.trackGain.gain.cancelScheduledValues(now);
+        ka.trackGain.gain.setValueAtTime(0.0001, now);
+        ka.trackGain.gain.linearRampToValueAtTime(1.0, now + 2.5);
+      }
+
+      if (this.musicGain && this.audioCtx) {
+        this.musicGain.gain.cancelScheduledValues(now);
+        this.musicGain.gain.setValueAtTime(0.04, now);
+        this.musicGain.gain.linearRampToValueAtTime(0.16, now + 3.0);
+      }
+
+      ka.element.currentTime = 0;
+      ka.element.play().then(() => {
+        this.isPlayingMusic = true;
+        this.notifyState();
+      }).catch((e) => {
+        console.warn('ka track playback notice:', e);
       });
     }
   }

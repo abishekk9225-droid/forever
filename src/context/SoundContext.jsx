@@ -26,6 +26,7 @@ export const SoundProvider = ({ children }) => {
       playIntroTrack: () => globalAudioEngine.playIntroTrack(),
       playAbi1Track: () => globalAudioEngine.playAbi1Track(),
       playCelebrationTrack: (startTime) => globalAudioEngine.playCelebrationTrack(startTime),
+      playKaTrack: () => globalAudioEngine.playKaTrack(),
       fadeToSoftAmbience: (target, duration) => globalAudioEngine.fadeToSoftAmbience(target, duration),
       toggleSound: () => globalAudioEngine.toggleSound(),
     };
@@ -47,6 +48,10 @@ export const SoundProvider = ({ children }) => {
     globalAudioEngine.playCelebrationTrack(startTime);
   };
 
+  const playKaTrack = () => {
+    globalAudioEngine.playKaTrack();
+  };
+
   const toggleSound = () => {
     globalAudioEngine.toggleSound();
   };
@@ -63,6 +68,7 @@ export const SoundProvider = ({ children }) => {
         playCelebrationTrack,
         playIntroTrack,
         playAbi1Track,
+        playKaTrack,
         toggleSound,
         fadeToSoftAmbience,
       }}

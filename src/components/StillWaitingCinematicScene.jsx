@@ -6,7 +6,7 @@ import { sendEmail } from '../utils/emailService';
 import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 // ============================================================================
-// 1. STUDIO-GRADE MULTI-DEPTH CINEMATIC RAIN & WET GLASS CANVAS (60 FPS)
+// 1. HIGHLY REALISTIC MULTI-DEPTH CINEMATIC RAIN & LENS MOISTURE CANVAS (60 FPS)
 // ============================================================================
 function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0, rainSurge = false }) {
   const canvasRef = useRef(null);
@@ -29,71 +29,71 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0, rainSurge = f
 
     const isMobile = width < 768;
 
-    // Layer 1: Distant Background Rain (Fine, fast, deep blue-grey)
-    const bgCount = isMobile ? 50 : 100;
+    // Depth Layer 1: Distant Fine Rain (Dense, thin, high speed, faint cyan-blue)
+    const bgCount = isMobile ? 70 : 140;
     const bgRain = Array.from({ length: bgCount }).map(() => ({
-      x: Math.random() * width,
+      x: Math.random() * (width + 200) - 100,
       y: Math.random() * height,
-      len: Math.random() * 14 + 10,
-      speed: Math.random() * 7 + 8,
-      slant: -1.2,
-      opacity: Math.random() * 0.15 + 0.08,
-      width: 0.8,
+      len: Math.random() * 16 + 12,
+      speed: Math.random() * 9 + 12,
+      slant: -1.6,
+      opacity: Math.random() * 0.2 + 0.1,
+      width: 0.85,
     }));
 
-    // Layer 2: Midground Rain (Medium streaks, slight angle)
-    const mgCount = isMobile ? 35 : 70;
+    // Depth Layer 2: Medium Rain Streaks (Natural angle, specular highlight)
+    const mgCount = isMobile ? 45 : 90;
     const mgRain = Array.from({ length: mgCount }).map(() => ({
-      x: Math.random() * width,
+      x: Math.random() * (width + 200) - 100,
       y: Math.random() * height,
-      len: Math.random() * 22 + 16,
-      speed: Math.random() * 11 + 13,
-      slant: -1.8,
-      opacity: Math.random() * 0.28 + 0.15,
-      width: 1.2,
+      len: Math.random() * 26 + 18,
+      speed: Math.random() * 14 + 16,
+      slant: -2.2,
+      opacity: Math.random() * 0.32 + 0.18,
+      width: 1.3,
     }));
 
-    // Layer 3: Foreground Rain (Heavy, fast, motion blurred)
-    const fgCount = isMobile ? 18 : 35;
+    // Depth Layer 3: Foreground Large Droplets (Motion blurred, close to camera)
+    const fgCount = isMobile ? 22 : 45;
     const fgRain = Array.from({ length: fgCount }).map(() => ({
-      x: Math.random() * width,
+      x: Math.random() * (width + 200) - 100,
       y: Math.random() * height,
-      len: Math.random() * 32 + 25,
-      speed: Math.random() * 16 + 18,
-      slant: -2.4,
-      opacity: Math.random() * 0.4 + 0.2,
-      width: 1.8,
+      len: Math.random() * 40 + 30,
+      speed: Math.random() * 20 + 22,
+      slant: -2.8,
+      opacity: Math.random() * 0.45 + 0.25,
+      width: 2.0,
     }));
 
-    // Layer 4: Static Condensation Droplets on Window Glass Pane
-    const staticCount = isMobile ? 45 : 85;
+    // Depth Layer 4: Static Condensation & Lens Droplets (Realistic specular refraction)
+    const staticCount = isMobile ? 50 : 95;
     const staticDrops = Array.from({ length: staticCount }).map(() => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      r: Math.random() * 2.8 + 1.2,
-      opacity: Math.random() * 0.4 + 0.35,
-      aspect: Math.random() * 0.3 + 0.85,
+      r: Math.random() * 3.2 + 1.2,
+      opacity: Math.random() * 0.38 + 0.3,
+      aspect: Math.random() * 0.25 + 0.85,
     }));
 
-    // Layer 5: Slow Trickling Rain Droplets sliding down the glass pane
-    const trickleCount = isMobile ? 8 : 16;
+    // Depth Layer 5: Wet Sliding Water Droplets (Trickling down camera lens)
+    const trickleCount = isMobile ? 10 : 20;
     const trickles = Array.from({ length: trickleCount }).map(() => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      speed: Math.random() * 1.5 + 0.6,
-      r: Math.random() * 2.4 + 1.4,
+      speed: Math.random() * 1.8 + 0.7,
+      r: Math.random() * 2.6 + 1.5,
       trail: [],
     }));
 
-    // Layer 6: Atmospheric Ambient Floating Dust & Mist Particles
-    const dustCount = isMobile ? 20 : 38;
-    const dustParticles = Array.from({ length: dustCount }).map(() => ({
+    // Depth Layer 6: Atmospheric Moisture & Fine Rain Mist Particles
+    const mistCount = isMobile ? 25 : 45;
+    const mistParticles = Array.from({ length: mistCount }).map(() => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      r: Math.random() * 2.2 + 0.8,
-      vx: (Math.random() - 0.5) * 0.3 - 0.2,
-      vy: -Math.random() * 0.4 - 0.15,
-      opacity: Math.random() * 0.4 + 0.2,
+      r: Math.random() * 3.0 + 1.0,
+      vx: (Math.random() - 0.5) * 0.4 - 0.3,
+      vy: -Math.random() * 0.5 - 0.2,
+      opacity: Math.random() * 0.35 + 0.15,
       pulse: Math.random() * Math.PI * 2,
     }));
 
@@ -104,14 +104,14 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0, rainSurge = f
       ctx.clearRect(0, 0, width, height);
 
       const flash = lightningFlash; // 0.0 to 1.0
-      const surgeMultiplier = rainSurge ? 1.25 : 1.0;
+      const surgeMultiplier = rainSurge ? 1.3 : 1.0;
 
-      // 1. Render Background Rain
+      // 1. Draw Distant Fine Rain
       ctx.lineCap = 'round';
       bgRain.forEach((d) => {
-        const dropOpacity = Math.min(1.0, (d.opacity + flash * 0.35) * (rainSurge ? 1.2 : 1.0));
+        const dropOpacity = Math.min(1.0, (d.opacity + flash * 0.4) * (rainSurge ? 1.25 : 1.0));
         ctx.lineWidth = d.width;
-        ctx.strokeStyle = `rgba(186, 215, 255, ${dropOpacity})`;
+        ctx.strokeStyle = `rgba(191, 219, 254, ${dropOpacity})`;
         ctx.beginPath();
         ctx.moveTo(d.x, d.y);
         ctx.lineTo(d.x + d.slant, d.y + d.len * surgeMultiplier);
@@ -121,15 +121,15 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0, rainSurge = f
         d.x += d.slant * 0.4;
         if (d.y > height + 20) {
           d.y = -20;
-          d.x = Math.random() * (width + 100);
+          d.x = Math.random() * (width + 120);
         }
       });
 
-      // 2. Render Midground Rain
+      // 2. Draw Midground Rain Streaks
       mgRain.forEach((d) => {
-        const dropOpacity = Math.min(1.0, (d.opacity + flash * 0.45) * (rainSurge ? 1.2 : 1.0));
+        const dropOpacity = Math.min(1.0, (d.opacity + flash * 0.5) * (rainSurge ? 1.25 : 1.0));
         ctx.lineWidth = d.width * (rainSurge ? 1.15 : 1.0);
-        ctx.strokeStyle = `rgba(219, 234, 254, ${dropOpacity})`;
+        ctx.strokeStyle = `rgba(224, 242, 254, ${dropOpacity})`;
         ctx.beginPath();
         ctx.moveTo(d.x, d.y);
         ctx.lineTo(d.x + d.slant, d.y + d.len * surgeMultiplier);
@@ -139,14 +139,14 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0, rainSurge = f
         d.x += d.slant * 0.5;
         if (d.y > height + 30) {
           d.y = -30;
-          d.x = Math.random() * (width + 100);
+          d.x = Math.random() * (width + 120);
         }
       });
 
-      // 3. Render Foreground Rain
+      // 3. Draw Foreground Large Rain Droplets
       fgRain.forEach((d) => {
-        const dropOpacity = Math.min(1.0, (d.opacity + flash * 0.55) * (rainSurge ? 1.25 : 1.0));
-        ctx.lineWidth = d.width * (rainSurge ? 1.2 : 1.0);
+        const dropOpacity = Math.min(1.0, (d.opacity + flash * 0.6) * (rainSurge ? 1.3 : 1.0));
+        ctx.lineWidth = d.width * (rainSurge ? 1.25 : 1.0);
         ctx.strokeStyle = `rgba(240, 249, 255, ${dropOpacity})`;
         ctx.beginPath();
         ctx.moveTo(d.x, d.y);
@@ -157,47 +157,47 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0, rainSurge = f
         d.x += d.slant * 0.6;
         if (d.y > height + 40) {
           d.y = -40;
-          d.x = Math.random() * (width + 100);
+          d.x = Math.random() * (width + 120);
         }
       });
 
-      // 4. Render Static Droplets on Window Glass Pane
+      // 4. Draw Static Camera Lens Moisture & Droplets
       staticDrops.forEach((d) => {
         ctx.save();
         ctx.translate(d.x, d.y);
         ctx.scale(1, d.aspect);
 
-        const effOpacity = Math.min(1.0, d.opacity + flash * 0.45);
+        const effOpacity = Math.min(1.0, d.opacity + flash * 0.5);
         const radGrad = ctx.createRadialGradient(-0.4, -0.4, 0.1, 0, 0, d.r);
         radGrad.addColorStop(0, `rgba(255, 255, 255, ${effOpacity * 0.95})`);
         radGrad.addColorStop(
           0.5,
           warmHopeLevel > 0.4
-            ? `rgba(251, 191, 36, ${effOpacity * 0.4})`
-            : `rgba(244, 114, 182, ${effOpacity * 0.35})`
+            ? `rgba(251, 191, 36, ${effOpacity * 0.45})`
+            : `rgba(186, 230, 253, ${effOpacity * 0.4})`
         );
-        radGrad.addColorStop(1, 'rgba(15, 23, 42, 0.45)');
+        radGrad.addColorStop(1, 'rgba(15, 23, 42, 0.5)');
 
         ctx.fillStyle = radGrad;
         ctx.beginPath();
         ctx.arc(0, 0, d.r, 0, Math.PI * 2);
         ctx.fill();
 
-        // Droplet top reflection highlight
-        ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1.0, 0.8 + flash * 0.2)})`;
+        // Droplet top specular highlight
+        ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1.0, 0.85 + flash * 0.15)})`;
         ctx.beginPath();
-        ctx.arc(-d.r * 0.28, -d.r * 0.28, d.r * 0.24, 0, Math.PI * 2);
+        ctx.arc(-d.r * 0.3, -d.r * 0.3, d.r * 0.25, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();
       });
 
-      // 5. Render Sliding Trickles Down the Glass Pane
+      // 5. Draw Wet Sliding Lens Droplets & Trickle Trails
       trickles.forEach((s) => {
-        // Draw faint condensation trail
+        // Translucent condensation trail
         if (s.trail.length > 1) {
-          ctx.strokeStyle = `rgba(255, 255, 255, ${0.07 + flash * 0.12})`;
-          ctx.lineWidth = s.r * 0.9;
+          ctx.strokeStyle = `rgba(224, 242, 254, ${0.08 + flash * 0.15})`;
+          ctx.lineWidth = s.r * 0.85;
           ctx.beginPath();
           ctx.moveTo(s.trail[0].x, s.trail[0].y);
           for (let ti = 1; ti < s.trail.length; ti++) {
@@ -206,16 +206,16 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0, rainSurge = f
           ctx.stroke();
         }
 
-        // Draw moving droplet head
+        // Droplet head
         ctx.save();
         ctx.translate(s.x, s.y);
         const trickleGrad = ctx.createRadialGradient(-0.4, -0.4, 0.15, 0, 0, s.r);
         trickleGrad.addColorStop(0, `rgba(255, 255, 255, ${0.95 + flash * 0.05})`);
         trickleGrad.addColorStop(
           0.65,
-          warmHopeLevel > 0.4 ? 'rgba(251, 191, 36, 0.45)' : 'rgba(236, 72, 153, 0.4)'
+          warmHopeLevel > 0.4 ? 'rgba(251, 191, 36, 0.5)' : 'rgba(147, 197, 253, 0.45)'
         );
-        trickleGrad.addColorStop(1, 'rgba(15, 23, 42, 0.35)');
+        trickleGrad.addColorStop(1, 'rgba(15, 23, 42, 0.4)');
 
         ctx.fillStyle = trickleGrad;
         ctx.beginPath();
@@ -224,9 +224,9 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0, rainSurge = f
         ctx.restore();
 
         s.trail.push({ x: s.x, y: s.y });
-        if (s.trail.length > 20) s.trail.shift();
+        if (s.trail.length > 22) s.trail.shift();
 
-        s.y += s.speed * (rainSurge ? 1.2 : 1.0);
+        s.y += s.speed * (rainSurge ? 1.25 : 1.0);
         s.x += (Math.random() - 0.5) * 0.35;
 
         if (s.y > height + 25) {
@@ -236,8 +236,8 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0, rainSurge = f
         }
       });
 
-      // 6. Render Floating Atmospheric Dust & Golden Particles
-      dustParticles.forEach((p) => {
+      // 6. Draw Atmospheric Rain Mist & Floating Moisture
+      mistParticles.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
         if (p.y < -10) p.y = height + 10;
@@ -245,19 +245,19 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0, rainSurge = f
         if (p.x > width + 10) p.x = -10;
 
         const pulseVal = Math.sin(frame * 0.03 + p.pulse) * 0.2 + 0.8;
-        const alpha = Math.min(1.0, p.opacity * pulseVal + flash * 0.5);
+        const alpha = Math.min(1.0, p.opacity * pulseVal + flash * 0.55);
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         if (warmHopeLevel > 0.3) {
-          ctx.fillStyle = `rgba(251, 191, 36, ${alpha * 0.9})`;
+          ctx.fillStyle = `rgba(251, 191, 36, ${alpha * 0.85})`;
           ctx.shadowBlur = 6;
           ctx.shadowColor = '#f59e0b';
         } else {
           ctx.fillStyle =
-            flash > 0.1 ? `rgba(224, 242, 254, ${alpha})` : `rgba(244, 114, 182, ${alpha * 0.6})`;
+            flash > 0.1 ? `rgba(224, 242, 254, ${alpha})` : `rgba(186, 230, 253, ${alpha * 0.65})`;
           ctx.shadowBlur = flash > 0.1 ? 8 : 4;
-          ctx.shadowColor = flash > 0.1 ? '#38bdf8' : '#f472b6';
+          ctx.shadowColor = flash > 0.1 ? '#38bdf8' : '#60a5fa';
         }
         ctx.fill();
         ctx.shadowBlur = 0;
@@ -274,7 +274,7 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0, rainSurge = f
     };
   }, [lightningFlash, warmHopeLevel, rainSurge]);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-[12] opacity-90" />;
+  return <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-[16] opacity-90" />;
 }
 
 // ============================================================================
@@ -399,7 +399,7 @@ function SoftFallingPetals({ active = false }) {
   if (!active) return null;
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden z-[16]">
+    <div className="absolute inset-0 pointer-events-none overflow-hidden z-[18]">
       {petals.map((p) => (
         <motion.div
           key={p.id}
@@ -453,7 +453,7 @@ function playCinematicMovieThunder(intensity = 1.0) {
     }
 
     const now = ctx.currentTime;
-    const duration = 3.4; // 3.4 seconds natural acoustic roll
+    const duration = 3.6; // 3.6 seconds natural acoustic roll
 
     // 1. Dual Noise Buffer with Brownian Low-Frequency Random Walk
     const sampleRate = ctx.sampleRate;
@@ -476,34 +476,34 @@ function playCinematicMovieThunder(intensity = 1.0) {
     const noiseSource = ctx.createBufferSource();
     noiseSource.buffer = noiseBuffer;
 
-    // 2. Dual-stage Resonant Lowpass Filter (120Hz -> 38Hz sweep)
+    // 2. Dual-stage Resonant Lowpass Filter (130Hz -> 36Hz sweep)
     const lowpass = ctx.createBiquadFilter();
     lowpass.type = 'lowpass';
-    lowpass.frequency.setValueAtTime(130, now);
-    lowpass.frequency.exponentialRampToValueAtTime(38, now + duration);
+    lowpass.frequency.setValueAtTime(135, now);
+    lowpass.frequency.exponentialRampToValueAtTime(36, now + duration);
     lowpass.Q.setValueAtTime(2.6, now);
 
-    // 3. Sub-Bass Physical Resonance Oscillator (44Hz -> 32Hz deep chest rumble)
+    // 3. Sub-Bass Physical Resonance Oscillator (46Hz -> 30Hz deep chest rumble)
     const subOsc = ctx.createOscillator();
     subOsc.type = 'sine';
-    subOsc.frequency.setValueAtTime(46, now);
-    subOsc.frequency.exponentialRampToValueAtTime(32, now + 2.2);
+    subOsc.frequency.setValueAtTime(48, now);
+    subOsc.frequency.exponentialRampToValueAtTime(30, now + 2.4);
 
     const subGain = ctx.createGain();
     subGain.gain.setValueAtTime(0.0001, now);
-    subGain.gain.linearRampToValueAtTime(0.12 * intensity, now + 0.09);
-    subGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.4);
+    subGain.gain.linearRampToValueAtTime(0.14 * intensity, now + 0.09);
+    subGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.6);
 
     subOsc.connect(subGain);
 
     // 4. Main Thunder Rolling Envelope Gain (Impact + Echoing Clouds Tail)
     const mainGain = ctx.createGain();
     mainGain.gain.setValueAtTime(0.0001, now);
-    // Soft 75ms attack to avoid sudden clicking / artificial beep
-    mainGain.gain.linearRampToValueAtTime(0.22 * intensity, now + 0.075);
+    // Soft 75ms attack to avoid sudden clicking
+    mainGain.gain.linearRampToValueAtTime(0.24 * intensity, now + 0.075);
     // Secondary acoustic echo modulation around 0.6s
-    mainGain.gain.setValueAtTime(0.18 * intensity, now + 0.6);
-    mainGain.gain.linearRampToValueAtTime(0.14 * intensity, now + 1.2);
+    mainGain.gain.setValueAtTime(0.19 * intensity, now + 0.6);
+    mainGain.gain.linearRampToValueAtTime(0.15 * intensity, now + 1.2);
     // Long natural fading tail
     mainGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
@@ -528,7 +528,7 @@ function playCinematicMovieThunder(intensity = 1.0) {
 
     setTimeout(() => {
       isThunderPlaying = false;
-    }, duration * 1000 + 50);
+    }, duration * 1000 + 60);
   } catch (e) {
     console.warn('Cinematic thunder engine notice:', e);
     isThunderPlaying = false;
@@ -585,7 +585,7 @@ export default function StillWaitingCinematicScene({ onComplete }) {
       setLightningFlash(0.2);
       const f2 = setTimeout(() => {
         if (!isMountedRef.current) return;
-        setLightningFlash(0.8);
+        setLightningFlash(0.85);
         const f3 = setTimeout(() => {
           if (!isMountedRef.current) return;
           setLightningFlash(0);
@@ -603,7 +603,7 @@ export default function StillWaitingCinematicScene({ onComplete }) {
       // 1. Play deep movie thunder sound
       playCinematicMovieThunder(1.0);
 
-      // 2. Subtle window vibration & tiny camera shake at the exact thunder moment
+      // 2. Subtle camera and environmental reaction at the thunder moment
       setWindowVibration(true);
       setCameraShake(true);
       setRainSurge(true);
@@ -631,15 +631,15 @@ export default function StillWaitingCinematicScene({ onComplete }) {
   const triggerLightning2 = useCallback(() => {
     if (!isMountedRef.current) return;
 
-    // T = 0.0s: Softer atmospheric lightning flash revealing room silhouette
-    setLightningFlash(0.75);
+    // T = 0.0s: Softer atmospheric lightning flash revealing scene silhouette
+    setLightningFlash(0.8);
     const f1 = setTimeout(() => {
       if (!isMountedRef.current) return;
-      setLightningFlash(0.15);
+      setLightningFlash(0.18);
       const f2 = setTimeout(() => {
         if (!isMountedRef.current) return;
         setLightningFlash(0);
-        // Immediately after flash: Warm golden light gradually enters (Hope Transition)
+        // Immediately after flash: Warm golden light enters (Hope Transition)
         setWarmHopeLevel(1.0);
       }, 120);
       timersRef.current.push(f2);
@@ -861,17 +861,11 @@ For Saranya cinematic experience.`,
         /* Slow Cinematic Movie Camera Push */
         @keyframes masterCameraPush {
           0% { transform: scale(1.0) translateY(0px); }
-          50% { transform: scale(1.04) translateY(-5px); }
-          100% { transform: scale(1.075) translateY(-10px); }
+          50% { transform: scale(1.03) translateY(-4px); }
+          100% { transform: scale(1.06) translateY(-8px); }
         }
 
-        /* Warm Table Lamp Breathing Ambient Glow */
-        @keyframes masterLampBreathe {
-          0%, 100% { opacity: 0.7; transform: scale(1); filter: drop-shadow(0 0 35px rgba(251,191,36,0.4)); }
-          50% { opacity: 0.92; transform: scale(1.06); filter: drop-shadow(0 0 60px rgba(245,158,11,0.6)); }
-        }
-
-        /* Distant City Lights Bokeh Drifting Outside Window */
+        /* Ambient Bokeh Drifting */
         @keyframes masterBokeh1 {
           0%, 100% { transform: translate(0px, 0px) scale(1); opacity: 0.35; }
           50% { transform: translate(14px, -16px) scale(1.18); opacity: 0.55; }
@@ -879,21 +873,6 @@ For Saranya cinematic experience.`,
         @keyframes masterBokeh2 {
           0%, 100% { transform: translate(0px, 0px) scale(1); opacity: 0.3; }
           50% { transform: translate(-16px, 14px) scale(0.88); opacity: 0.5; }
-        }
-
-        /* Occasional Passing Car Headlights Ambient Sweep Outside Glass */
-        @keyframes masterCarSweep {
-          0%, 82% { opacity: 0; transform: translateX(-120%) skewX(-20deg); }
-          86% { opacity: 0.16; }
-          90% { opacity: 0.22; }
-          94% { opacity: 0; transform: translateX(140%) skewX(-20deg); }
-          100% { opacity: 0; }
-        }
-
-        /* Phone Screen Soft Periodic Notification Pulse */
-        @keyframes masterPhonePulse {
-          0%, 85%, 100% { opacity: 0.25; box-shadow: 0 0 6px rgba(244,114,182,0.3); }
-          92% { opacity: 0.85; box-shadow: 0 0 20px rgba(244,114,182,0.75); }
         }
 
         /* Butterfly Climax Flight Path */
@@ -958,7 +937,7 @@ For Saranya cinematic experience.`,
         }
       `}</style>
 
-      {/* SVG NOISE FILTER FOR FILM GRAIN */}
+      {/* SVG NOISE FILTER FOR CINEMATIC FILM GRAIN */}
       <svg className="hidden">
         <filter id="cinematic-film-grain-master">
           <feTurbulence
@@ -980,52 +959,53 @@ For Saranya cinematic experience.`,
         className="absolute inset-0 pointer-events-none z-20"
         style={{
           background:
-            'radial-gradient(ellipse at center, transparent 36%, rgba(2, 1, 5, 0.65) 72%, rgba(2, 1, 5, 0.98) 100%)',
+            'radial-gradient(ellipse at center, transparent 38%, rgba(2, 1, 5, 0.45) 70%, rgba(2, 1, 5, 0.88) 100%)',
         }}
       />
 
       {/* ====================================================================
-          REALISTIC MOVIE SCENE ENVIRONMENT (Slow Camera Push & Depth)
+          FULL-SCREEN CINEMATIC ROMANTIC RAIN MOVIE BACKGROUND (public/l.jpg)
       ==================================================================== */}
       <div
-        className={`absolute inset-0 overflow-hidden pointer-events-none ${
-          windowVibration ? 'translate-y-[0.4px] translate-x-[-0.4px]' : ''
+        className={`absolute inset-0 overflow-hidden pointer-events-none z-[10] ${
+          windowVibration ? 'translate-y-[0.5px] translate-x-[-0.5px]' : ''
         } transition-transform duration-75`}
-        style={{ animation: 'masterCameraPush 45s ease-in-out infinite alternate' }}
       >
-        {/* 1. OUTSIDE RAINY NIGHT BACKDROP (Deep navy, purple, cool blue) */}
+        {/* 1. Main Background Image: public/l.jpg (Responsive Full-Viewport Cover) */}
         <div
-          className="absolute inset-0 transition-colors duration-1000"
+          className="absolute inset-0 w-full h-full"
+          style={{ animation: 'masterCameraPush 50s ease-in-out infinite alternate' }}
+        >
+          <img
+            src="/l.jpg"
+            alt="Rain Cinematic Romantic Couple"
+            className="w-full h-full object-cover object-center filter brightness-[0.92] contrast-[1.08] saturate-[1.05]"
+          />
+        </div>
+
+        {/* 2. Soft Atmospheric Depth & Color Grading Overlay */}
+        <div
+          className="absolute inset-0 transition-opacity duration-1000"
           style={{
             background:
               warmHopeLevel > 0.4
-                ? 'linear-gradient(175deg, #050614 0%, #0d0c24 35%, #180e28 70%, #241126 100%)'
-                : 'linear-gradient(175deg, #02040b 0%, #060916 35%, #0b071a 70%, #15091a 100%)',
+                ? 'linear-gradient(to top, rgba(15, 7, 18, 0.8) 0%, rgba(10, 8, 22, 0.35) 50%, rgba(5, 6, 20, 0.4) 100%)'
+                : 'linear-gradient(to top, rgba(6, 4, 14, 0.82) 0%, rgba(4, 6, 18, 0.4) 50%, rgba(2, 4, 12, 0.45) 100%)',
           }}
         />
 
-        {/* 2. DISTANT CITY LIGHT BOKEH (Pink, purple, gold blurred circles outside window) */}
+        {/* 3. Subtle City & Streetlight Bokeh Halos */}
         <div
-          className="absolute top-[18%] left-[22%] w-32 h-32 rounded-full bg-pink-500/15 blur-2xl pointer-events-none"
+          className="absolute top-[20%] left-[18%] w-36 h-36 rounded-full bg-cyan-400/15 blur-2xl pointer-events-none mix-blend-screen"
           style={{ animation: 'masterBokeh1 12s ease-in-out infinite' }}
         />
         <div
-          className="absolute top-[32%] left-[48%] w-40 h-40 rounded-full bg-purple-600/15 blur-3xl pointer-events-none"
-          style={{ animation: 'masterBokeh2 15s ease-in-out infinite' }}
+          className="absolute top-[35%] right-[20%] w-40 h-40 rounded-full bg-amber-400/15 blur-3xl pointer-events-none mix-blend-screen"
+          style={{ animation: 'masterBokeh2 14s ease-in-out infinite' }}
         />
         <div
-          className="absolute top-[24%] right-[25%] w-36 h-36 rounded-full bg-amber-400/15 blur-2xl pointer-events-none"
-          style={{ animation: 'masterBokeh1 14s ease-in-out infinite reverse' }}
-        />
-        <div
-          className="absolute top-[40%] right-[15%] w-28 h-28 rounded-full bg-blue-500/15 blur-2xl pointer-events-none"
-          style={{ animation: 'masterBokeh2 11s ease-in-out infinite' }}
-        />
-
-        {/* 3. OCCASIONAL PASSING CAR HEADLIGHTS SWEEP ACROSS WINDOW */}
-        <div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-200/10 to-transparent pointer-events-none"
-          style={{ animation: 'masterCarSweep 16s ease-in-out infinite' }}
+          className="absolute bottom-[28%] left-[30%] w-32 h-32 rounded-full bg-rose-500/12 blur-2xl pointer-events-none mix-blend-screen"
+          style={{ animation: 'masterBokeh1 16s ease-in-out infinite reverse' }}
         />
 
         {/* 4. REALISTIC MULTI-DEPTH RAIN & WET GLASS CANVAS */}
@@ -1035,107 +1015,22 @@ For Saranya cinematic experience.`,
           rainSurge={rainSurge}
         />
 
-        {/* 5. ATMOSPHERIC LIGHTNING ILLUMINATION LAYER */}
+        {/* 5. ATMOSPHERIC LIGHTNING ILLUMINATION & FLASH LAYER */}
         {lightningFlash > 0 && (
           <div
-            className="absolute inset-0 pointer-events-none z-[13] transition-opacity duration-75"
+            className="absolute inset-0 pointer-events-none z-[17] transition-opacity duration-75"
             style={{
-              background: `radial-gradient(ellipse at 50% 20%, rgba(224, 242, 254, ${
-                lightningFlash * 0.75
-              }) 0%, rgba(186, 230, 253, ${lightningFlash * 0.4}) 50%, rgba(14, 165, 233, ${
-                lightningFlash * 0.2
+              background: `radial-gradient(ellipse at 50% 25%, rgba(240, 249, 255, ${
+                lightningFlash * 0.85
+              }) 0%, rgba(186, 230, 253, ${lightningFlash * 0.5}) 45%, rgba(56, 189, 248, ${
+                lightningFlash * 0.25
               }) 100%)`,
               mixBlendMode: 'screen',
             }}
           />
         )}
 
-        {/* 6. WINDOW FRAME MULLION & TRANSOM SILHOUETTE */}
-        <div className="absolute inset-0 pointer-events-none z-[13]">
-          <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[3px] bg-slate-900/70 shadow-[0_0_12px_rgba(0,0,0,0.8)]" />
-          <div className="absolute left-0 right-0 top-[28%] h-[3px] bg-slate-900/70 shadow-[0_0_12px_rgba(0,0,0,0.8)]" />
-        </div>
-
-        {/* 7. ROOM INTERIOR FOREGROUND (Warm wooden table, lamp, empty chair, memory photos) */}
-        <div className="absolute inset-x-0 bottom-0 h-[48%] sm:h-[45%] pointer-events-none z-[14]">
-          {/* Wooden Table Surface with Warm Ambient Glow */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                warmHopeLevel > 0.4
-                  ? 'linear-gradient(to top, rgba(22, 10, 14, 0.96) 0%, rgba(32, 15, 20, 0.88) 60%, rgba(18, 8, 12, 0.45) 100%)'
-                  : 'linear-gradient(to top, rgba(14, 7, 10, 0.96) 0%, rgba(22, 11, 15, 0.85) 60%, rgba(10, 5, 8, 0.4) 100%)',
-              borderTop: '1px solid rgba(244, 114, 182, 0.15)',
-            }}
-          />
-
-          {/* Warm Table Lamp casting amber/rose illumination */}
-          <div className="absolute bottom-4 left-4 sm:left-12 flex flex-col items-center">
-            <div
-              className="absolute -top-32 -left-16 w-64 h-64 rounded-full pointer-events-none blur-3xl"
-              style={{
-                background:
-                  warmHopeLevel > 0.4
-                    ? 'radial-gradient(ellipse at center, rgba(251, 191, 36, 0.45) 0%, rgba(244, 63, 94, 0.25) 50%, transparent 80%)'
-                    : 'radial-gradient(ellipse at center, rgba(251, 191, 36, 0.28) 0%, rgba(244, 63, 94, 0.15) 50%, transparent 80%)',
-                animation: 'masterLampBreathe 6s ease-in-out infinite',
-              }}
-            />
-            <div className="w-10 sm:w-14 h-8 sm:h-10 bg-gradient-to-b from-amber-200/40 via-amber-400/25 to-rose-500/20 rounded-t-lg border-b border-amber-300/40 shadow-[0_0_20px_rgba(251,191,36,0.4)]" />
-            <div className="w-1.5 h-16 sm:h-20 bg-gradient-to-b from-amber-600/50 to-slate-800/80" />
-            <div className="w-8 sm:w-12 h-2 rounded-full bg-slate-800/90 border-t border-amber-500/30" />
-          </div>
-
-          {/* ONE EMPTY CHAIR OPPOSITE (Right side of room with delicate rim lighting) */}
-          <div className="absolute bottom-6 right-6 sm:right-16 flex flex-col items-center opacity-75">
-            <div className="relative w-16 sm:w-22 h-24 sm:h-32 rounded-t-2xl border-t-2 border-x-2 border-rose-400/30 bg-gradient-to-b from-slate-900/85 via-zinc-950/90 to-transparent shadow-[inset_0_2px_8px_rgba(244,114,182,0.2)]">
-              <div className="absolute inset-x-2 top-4 bottom-2 flex justify-around opacity-40">
-                <div className="w-[1.5px] h-full bg-rose-300/30" />
-                <div className="w-[1.5px] h-full bg-rose-300/30" />
-                <div className="w-[1.5px] h-full bg-rose-300/30" />
-              </div>
-            </div>
-            <div className="w-20 sm:w-28 h-3 rounded-md bg-slate-900/95 border-t border-rose-400/20 shadow-md" />
-            <div className="w-20 sm:w-28 flex justify-between px-1">
-              <div className="w-1.5 h-12 bg-slate-950" />
-              <div className="w-1.5 h-12 bg-slate-950" />
-            </div>
-          </div>
-
-          {/* PHONE RESTING ON TABLE (Waiting for her call/message) */}
-          <div className="absolute bottom-8 left-[38%] sm:left-[35%] w-10 sm:w-12 h-16 sm:h-20 rounded-lg bg-zinc-950 border border-slate-700/60 shadow-[0_4px_12px_rgba(0,0,0,0.8)] flex items-center justify-center -rotate-6">
-            <div
-              className="w-8 sm:w-10 h-14 sm:h-18 rounded bg-slate-900/90 flex flex-col items-center justify-center p-1"
-              style={{ animation: 'masterPhonePulse 7s ease-in-out infinite' }}
-            >
-              <span className="text-[7px] text-pink-300 font-mono tracking-tighter opacity-70">
-                00:00
-              </span>
-              <Heart className="w-2.5 h-2.5 text-rose-400 fill-rose-400/60 mt-1 animate-pulse" />
-            </div>
-          </div>
-
-          {/* FRAMED MEMORY PHOTOGRAPH ON TABLE (/as.jpg) */}
-          <div className="absolute bottom-10 left-[22%] sm:left-[24%] w-14 sm:w-18 h-18 sm:h-22 p-1 rounded bg-zinc-900/90 border border-amber-400/25 shadow-[0_4px_15px_rgba(0,0,0,0.9)] rotate-3 flex items-center justify-center overflow-hidden">
-            <img
-              src="/as.jpg"
-              alt="Memory"
-              className="w-full h-full object-cover rounded-xs opacity-80 filter contrast-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/10 via-transparent to-rose-500/15 pointer-events-none" />
-          </div>
-
-          {/* DELICATE GLASS VASE WITH A ROSE & HIGHLIGHTS */}
-          <div className="absolute bottom-10 right-[35%] sm:right-[38%] flex flex-col items-center opacity-90 rotate-[-4deg]">
-            <span className="text-sm sm:text-base drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]">
-              🥀
-            </span>
-            <div className="w-3 sm:w-4 h-8 sm:h-10 rounded-full bg-slate-800/40 border border-white/20 backdrop-blur-xs shadow-sm" />
-          </div>
-        </div>
-
-        {/* 8. CINEMATIC BUTTERFLIES (Ambient + Climax Composition) */}
+        {/* 6. CINEMATIC BUTTERFLIES (Ambient + Climax Composition) */}
         {phase >= 4 && !isEmotionalClimax && (
           <div className="absolute bottom-1/3 left-1/4 pointer-events-none z-[45]">
             <RealisticCinematicButterfly delay={0} pathType="ambient" />
@@ -1151,7 +1046,7 @@ For Saranya cinematic experience.`,
           </>
         )}
 
-        {/* 9. FALLING FLOWER PETALS (Climax) */}
+        {/* 7. FALLING FLOWER PETALS (Climax) */}
         <SoftFallingPetals active={isEmotionalClimax || phase >= 5} />
       </div>
 
@@ -1322,20 +1217,6 @@ For Saranya cinematic experience.`,
                   animation: 'tearLightGlisten 4s ease-in-out infinite',
                 }}
               />
-
-              {/* Memory Flash In Background */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 0.28, scale: 1.05 }}
-                transition={{ duration: 2.5 }}
-                className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden"
-              >
-                <img
-                  src="/as.jpg"
-                  alt="Echo"
-                  className="w-72 sm:w-96 h-72 sm:h-96 object-cover rounded-full filter blur-xl opacity-30 mix-blend-screen"
-                />
-              </motion.div>
 
               {/* Climax Message Part 1: "சில வார்த்தைகள்... மனசை விட்டு போகாது. ❤️" */}
               <motion.div

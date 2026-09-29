@@ -427,11 +427,11 @@ export default function UnsentMessageScene({ onComplete }) {
     else if (phase === 5) {
       setTargetBPM(68, 0.24);
       timer = setTimeout(() => {
-        setSubStep(1); // "இப்போ... ஒரு முடிவு எடுக்க வேண்டிய நேரம் இல்லை."
+        setSubStep(1); // "நான் உன்னிடம் ஒரு பதிலை கேட்க வரல..."
         timer = setTimeout(() => {
-          setSubStep(2); // "ஒரு பதில் சொல்ல வேண்டிய அவசியமும் இல்லை."
+          setSubStep(2); // "என் மனசுல இருந்த உண்மையை மட்டும் சொல்ல வரேன்."
           timer = setTimeout(() => {
-            setSubStep(3); // "உன் மனசு உண்மையாக எதை உணருகிறதோ... அதைத்தான் கேள். ❤️"
+            setSubStep(3); // "நான் எதிர்பார்ப்பது ஒரு வார்த்தை இல்ல... என் வாழ்க்கை முழுக்க உன் நினைவுகள் இருக்கணும் என்ற ஆசை மட்டும். ❤️"
             timer = setTimeout(() => {
               setPhase(6);
               setSubStep(0);
@@ -961,9 +961,9 @@ export default function UnsentMessageScene({ onComplete }) {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-base sm:text-lg font-serif text-slate-300 leading-relaxed"
                   >
-                    இப்போ...
+                    நான் உன்னிடம்
                     <br />
-                    ஒரு முடிவு எடுக்க வேண்டிய நேரம் இல்லை.
+                    ஒரு பதிலை கேட்க வரல...
                   </motion.p>
                 )}
 
@@ -973,7 +973,7 @@ export default function UnsentMessageScene({ onComplete }) {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-base sm:text-lg font-serif text-slate-300 leading-relaxed"
                   >
-                    ஒரு பதில் சொல்ல வேண்டிய அவசியமும் இல்லை.
+                    என் மனசுல இருந்த உண்மையை மட்டும் சொல்ல வரேன்.
                   </motion.p>
                 )}
 
@@ -985,11 +985,11 @@ export default function UnsentMessageScene({ onComplete }) {
                     className="pt-4 p-5 rounded-2xl bg-rose-950/40 border border-rose-500/30 backdrop-blur-md"
                   >
                     <p className="text-lg sm:text-2xl font-serif text-amber-200 font-medium leading-relaxed drop-shadow-[0_0_15px_rgba(251,191,36,0.6)]">
-                      உன் மனசு உண்மையாக
+                      நான் எதிர்பார்ப்பது ஒரு வார்த்தை இல்ல...
                       <br />
-                      எதை உணருகிறதோ...
-                      <br />
-                      <span className="text-rose-400 font-semibold">அதைத்தான் கேள். ❤️</span>
+                      <span className="text-rose-400 font-semibold">
+                        என் வாழ்க்கை முழுக்க உன் நினைவுகள் இருக்கணும் என்ற ஆசை மட்டும். ❤️
+                      </span>
                     </p>
                   </motion.div>
                 )}

@@ -8,7 +8,7 @@ import CinematicRainbowBorder from './CinematicRainbowBorder';
 // ============================================================================
 // 1. STUDIO-GRADE MULTI-DEPTH CINEMATIC RAIN & WET GLASS CANVAS (60 FPS)
 // ============================================================================
-function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0 }) {
+function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0, rainSurge = false }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -104,19 +104,20 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0 }) {
       ctx.clearRect(0, 0, width, height);
 
       const flash = lightningFlash; // 0.0 to 1.0
+      const surgeMultiplier = rainSurge ? 1.25 : 1.0;
 
       // 1. Render Background Rain
       ctx.lineCap = 'round';
       bgRain.forEach((d) => {
-        const dropOpacity = d.opacity + flash * 0.35;
+        const dropOpacity = Math.min(1.0, (d.opacity + flash * 0.35) * (rainSurge ? 1.2 : 1.0));
         ctx.lineWidth = d.width;
         ctx.strokeStyle = `rgba(186, 215, 255, ${dropOpacity})`;
         ctx.beginPath();
         ctx.moveTo(d.x, d.y);
-        ctx.lineTo(d.x + d.slant, d.y + d.len);
+        ctx.lineTo(d.x + d.slant, d.y + d.len * surgeMultiplier);
         ctx.stroke();
 
-        d.y += d.speed;
+        d.y += d.speed * surgeMultiplier;
         d.x += d.slant * 0.4;
         if (d.y > height + 20) {
           d.y = -20;
@@ -126,15 +127,15 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0 }) {
 
       // 2. Render Midground Rain
       mgRain.forEach((d) => {
-        const dropOpacity = d.opacity + flash * 0.45;
-        ctx.lineWidth = d.width;
+        const dropOpacity = Math.min(1.0, (d.opacity + flash * 0.45) * (rainSurge ? 1.2 : 1.0));
+        ctx.lineWidth = d.width * (rainSurge ? 1.15 : 1.0);
         ctx.strokeStyle = `rgba(219, 234, 254, ${dropOpacity})`;
         ctx.beginPath();
         ctx.moveTo(d.x, d.y);
-        ctx.lineTo(d.x + d.slant, d.y + d.len);
+        ctx.lineTo(d.x + d.slant, d.y + d.len * surgeMultiplier);
         ctx.stroke();
 
-        d.y += d.speed;
+        d.y += d.speed * surgeMultiplier;
         d.x += d.slant * 0.5;
         if (d.y > height + 30) {
           d.y = -30;
@@ -144,15 +145,15 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0 }) {
 
       // 3. Render Foreground Rain
       fgRain.forEach((d) => {
-        const dropOpacity = d.opacity + flash * 0.55;
-        ctx.lineWidth = d.width;
+        const dropOpacity = Math.min(1.0, (d.opacity + flash * 0.55) * (rainSurge ? 1.25 : 1.0));
+        ctx.lineWidth = d.width * (rainSurge ? 1.2 : 1.0);
         ctx.strokeStyle = `rgba(240, 249, 255, ${dropOpacity})`;
         ctx.beginPath();
         ctx.moveTo(d.x, d.y);
-        ctx.lineTo(d.x + d.slant, d.y + d.len);
+        ctx.lineTo(d.x + d.slant, d.y + d.len * surgeMultiplier);
         ctx.stroke();
 
-        d.y += d.speed;
+        d.y += d.speed * surgeMultiplier;
         d.x += d.slant * 0.6;
         if (d.y > height + 40) {
           d.y = -40;
@@ -225,7 +226,7 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0 }) {
         s.trail.push({ x: s.x, y: s.y });
         if (s.trail.length > 20) s.trail.shift();
 
-        s.y += s.speed;
+        s.y += s.speed * (rainSurge ? 1.2 : 1.0);
         s.x += (Math.random() - 0.5) * 0.35;
 
         if (s.y > height + 25) {
@@ -244,7 +245,7 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0 }) {
         if (p.x > width + 10) p.x = -10;
 
         const pulseVal = Math.sin(frame * 0.03 + p.pulse) * 0.2 + 0.8;
-        const alpha = Math.min(1.0, (p.opacity * pulseVal) + flash * 0.5);
+        const alpha = Math.min(1.0, p.opacity * pulseVal + flash * 0.5);
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
@@ -253,7 +254,8 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0 }) {
           ctx.shadowBlur = 6;
           ctx.shadowColor = '#f59e0b';
         } else {
-          ctx.fillStyle = flash > 0.1 ? `rgba(224, 242, 254, ${alpha})` : `rgba(244, 114, 182, ${alpha * 0.6})`;
+          ctx.fillStyle =
+            flash > 0.1 ? `rgba(224, 242, 254, ${alpha})` : `rgba(244, 114, 182, ${alpha * 0.6})`;
           ctx.shadowBlur = flash > 0.1 ? 8 : 4;
           ctx.shadowColor = flash > 0.1 ? '#38bdf8' : '#f472b6';
         }
@@ -270,7 +272,7 @@ function MasterRainCanvas({ lightningFlash = 0, warmHopeLevel = 0 }) {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', handleResize);
     };
-  }, [lightningFlash, warmHopeLevel]);
+  }, [lightningFlash, warmHopeLevel, rainSurge]);
 
   return <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-[12] opacity-90" />;
 }
@@ -425,55 +427,111 @@ function SoftFallingPetals({ active = false }) {
 }
 
 // ============================================================================
-// 4. SYNTHESIZED STUDIO ACOUSTIC DISTANT THUNDER RUMBLE (WEB AUDIO API)
+// 4. MASTER CINEMATIC MOVIE THUNDER ENGINE (REALISTIC ACOUSTICS & TAIL)
 // ============================================================================
-function playAcousticThunderRumble() {
+let sharedThunderCtx = null;
+let isThunderPlaying = false;
+
+function playCinematicMovieThunder(intensity = 1.0) {
+  // Prevent harsh overlapping thunder sounds
+  if (isThunderPlaying) return;
+  isThunderPlaying = true;
+
   try {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    const now = ctx.currentTime;
-
-    // Pink/Brown noise buffer for realistic thunder texture
-    const bufferSize = ctx.sampleRate * 2.8;
-    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const output = noiseBuffer.getChannelData(0);
-    let lastOut = 0.0;
-    for (let i = 0; i < bufferSize; i++) {
-      const white = Math.random() * 2 - 1;
-      output[i] = (lastOut + 0.02 * white) / 1.02; // Brown noise algorithm
-      lastOut = output[i];
-      output[i] *= 3.5;
+    if (!AudioCtx) {
+      isThunderPlaying = false;
+      return;
     }
 
-    const whiteNoise = ctx.createBufferSource();
-    whiteNoise.buffer = noiseBuffer;
+    if (!sharedThunderCtx || sharedThunderCtx.state === 'closed') {
+      sharedThunderCtx = new AudioCtx();
+    }
+    const ctx = sharedThunderCtx;
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
 
-    // Resonant Lowpass Filter tuned for distant thunder acoustics (60Hz - 160Hz)
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(140, now);
-    filter.frequency.exponentialRampToValueAtTime(55, now + 2.5);
-    filter.Q.setValueAtTime(3.2, now);
+    const now = ctx.currentTime;
+    const duration = 3.4; // 3.4 seconds natural acoustic roll
 
-    // Gain envelope with soft physical strike and deep rolling tail
-    const gainNode = ctx.createGain();
-    gainNode.gain.setValueAtTime(0.0001, now);
-    gainNode.gain.linearRampToValueAtTime(0.18, now + 0.18);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 2.7);
+    // 1. Dual Noise Buffer with Brownian Low-Frequency Random Walk
+    const sampleRate = ctx.sampleRate;
+    const bufferSize = sampleRate * duration;
+    const noiseBuffer = ctx.createBuffer(2, bufferSize, sampleRate);
+    const leftChannel = noiseBuffer.getChannelData(0);
+    const rightChannel = noiseBuffer.getChannelData(1);
 
-    whiteNoise.connect(filter);
-    filter.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    let lastLeft = 0.0;
+    let lastRight = 0.0;
+    for (let i = 0; i < bufferSize; i++) {
+      const whiteL = Math.random() * 2 - 1;
+      const whiteR = Math.random() * 2 - 1;
+      lastLeft = (lastLeft + 0.022 * whiteL) / 1.022;
+      lastRight = (lastRight + 0.022 * whiteR) / 1.022;
+      leftChannel[i] = lastLeft * 3.8;
+      rightChannel[i] = lastRight * 3.8;
+    }
 
-    whiteNoise.start(now);
-    whiteNoise.stop(now + 2.8);
+    const noiseSource = ctx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+
+    // 2. Dual-stage Resonant Lowpass Filter (120Hz -> 38Hz sweep)
+    const lowpass = ctx.createBiquadFilter();
+    lowpass.type = 'lowpass';
+    lowpass.frequency.setValueAtTime(130, now);
+    lowpass.frequency.exponentialRampToValueAtTime(38, now + duration);
+    lowpass.Q.setValueAtTime(2.6, now);
+
+    // 3. Sub-Bass Physical Resonance Oscillator (44Hz -> 32Hz deep chest rumble)
+    const subOsc = ctx.createOscillator();
+    subOsc.type = 'sine';
+    subOsc.frequency.setValueAtTime(46, now);
+    subOsc.frequency.exponentialRampToValueAtTime(32, now + 2.2);
+
+    const subGain = ctx.createGain();
+    subGain.gain.setValueAtTime(0.0001, now);
+    subGain.gain.linearRampToValueAtTime(0.12 * intensity, now + 0.09);
+    subGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.4);
+
+    subOsc.connect(subGain);
+
+    // 4. Main Thunder Rolling Envelope Gain (Impact + Echoing Clouds Tail)
+    const mainGain = ctx.createGain();
+    mainGain.gain.setValueAtTime(0.0001, now);
+    // Soft 75ms attack to avoid sudden clicking / artificial beep
+    mainGain.gain.linearRampToValueAtTime(0.22 * intensity, now + 0.075);
+    // Secondary acoustic echo modulation around 0.6s
+    mainGain.gain.setValueAtTime(0.18 * intensity, now + 0.6);
+    mainGain.gain.linearRampToValueAtTime(0.14 * intensity, now + 1.2);
+    // Long natural fading tail
+    mainGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    // 5. Soft Dynamics Limiter / Master routing
+    const limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.setValueAtTime(-12, now);
+    limiter.knee.setValueAtTime(18, now);
+    limiter.ratio.setValueAtTime(8, now);
+    limiter.attack.setValueAtTime(0.005, now);
+    limiter.release.setValueAtTime(0.2, now);
+
+    noiseSource.connect(lowpass);
+    lowpass.connect(mainGain);
+    mainGain.connect(limiter);
+    subGain.connect(limiter);
+    limiter.connect(ctx.destination);
+
+    noiseSource.start(now);
+    subOsc.start(now);
+    noiseSource.stop(now + duration);
+    subOsc.stop(now + duration);
 
     setTimeout(() => {
-      ctx.close().catch(() => {});
-    }, 3000);
+      isThunderPlaying = false;
+    }, duration * 1000 + 50);
   } catch (e) {
-    console.warn('Synthesized thunder audio notice:', e);
+    console.warn('Cinematic thunder engine notice:', e);
+    isThunderPlaying = false;
   }
 }
 
@@ -495,6 +553,8 @@ export default function StillWaitingCinematicScene({ onComplete }) {
   // Cinematic Lighting & Lightning States
   const [lightningFlash, setLightningFlash] = useState(0); // 0.0 -> 1.0
   const [cameraShake, setCameraShake] = useState(false);
+  const [windowVibration, setWindowVibration] = useState(false);
+  const [rainSurge, setRainSurge] = useState(false);
   const [warmHopeLevel, setWarmHopeLevel] = useState(0); // 0.0 -> 1.0
 
   // EmailJS sending state & duplicate prevention refs
@@ -513,64 +573,101 @@ export default function StillWaitingCinematicScene({ onComplete }) {
   const timersRef = useRef([]);
 
   // ==========================================================================
-  // LIGHTNING MOMENT 1 TRIGGER (Authentic Flash + Speed of Sound Delay Thunder)
+  // LIGHTNING MOMENT 1 TRIGGER (⚡ T=0.0s Flash -> T=0.65s 🌩️ Deep Thunder Rumble)
   // ==========================================================================
   const triggerLightning1 = useCallback(() => {
     if (!isMountedRef.current) return;
 
-    // 1. Initial quick double-strike lightning flash
+    // T = 0.0s: Lightning flash strikes with realistic double-flicker
     setLightningFlash(0.95);
-    setTimeout(() => {
+    const f1 = setTimeout(() => {
       if (!isMountedRef.current) return;
       setLightningFlash(0.2);
-      setTimeout(() => {
+      const f2 = setTimeout(() => {
         if (!isMountedRef.current) return;
         setLightningFlash(0.8);
-        setTimeout(() => {
+        const f3 = setTimeout(() => {
           if (!isMountedRef.current) return;
           setLightningFlash(0);
         }, 140);
+        timersRef.current.push(f3);
       }, 50);
+      timersRef.current.push(f2);
     }, 90);
+    timersRef.current.push(f1);
 
-    // 2. Realistic subtle camera micro-movement
-    setCameraShake(true);
-    setTimeout(() => {
-      if (isMountedRef.current) setCameraShake(false);
-    }, 450);
+    // T = ~0.65s (650ms natural speed-of-sound delay): Deep Thunder & subtle environmental vibration
+    const tSound = setTimeout(() => {
+      if (!isMountedRef.current) return;
 
-    // 3. Distant thunder rumbling sound after physical sound delay (~650ms)
-    setTimeout(() => {
-      if (isMountedRef.current) {
-        playAcousticThunderRumble();
-      }
+      // 1. Play deep movie thunder sound
+      playCinematicMovieThunder(1.0);
+
+      // 2. Subtle window vibration & tiny camera shake at the exact thunder moment
+      setWindowVibration(true);
+      setCameraShake(true);
+      setRainSurge(true);
+
+      const endVibe = setTimeout(() => {
+        if (!isMountedRef.current) return;
+        setWindowVibration(false);
+        setCameraShake(false);
+      }, 420);
+
+      const endSurge = setTimeout(() => {
+        if (!isMountedRef.current) return;
+        setRainSurge(false);
+      }, 1900);
+
+      timersRef.current.push(endVibe, endSurge);
     }, 650);
+
+    timersRef.current.push(tSound);
   }, []);
 
   // ==========================================================================
-  // LIGHTNING MOMENT 2 TRIGGER (Climax Hope Transition)
+  // LIGHTNING MOMENT 2 TRIGGER (⚡ T=0.0s Flash -> T=0.65s 🌩️ Thunder -> Warm Hope)
   // ==========================================================================
   const triggerLightning2 = useCallback(() => {
     if (!isMountedRef.current) return;
 
-    // Softer, atmospheric lightning flash revealing room silhouette
+    // T = 0.0s: Softer atmospheric lightning flash revealing room silhouette
     setLightningFlash(0.75);
-    setTimeout(() => {
+    const f1 = setTimeout(() => {
       if (!isMountedRef.current) return;
       setLightningFlash(0.15);
-      setTimeout(() => {
+      const f2 = setTimeout(() => {
         if (!isMountedRef.current) return;
         setLightningFlash(0);
         // Immediately after flash: Warm golden light gradually enters (Hope Transition)
         setWarmHopeLevel(1.0);
       }, 120);
+      timersRef.current.push(f2);
     }, 110);
+    timersRef.current.push(f1);
 
-    setTimeout(() => {
-      if (isMountedRef.current) {
-        playAcousticThunderRumble();
-      }
-    }, 750);
+    // T = ~0.65s: Soft distant thunder rumble
+    const tSound = setTimeout(() => {
+      if (!isMountedRef.current) return;
+      playCinematicMovieThunder(0.85);
+
+      setWindowVibration(true);
+      setRainSurge(true);
+
+      const endVibe = setTimeout(() => {
+        if (!isMountedRef.current) return;
+        setWindowVibration(false);
+      }, 380);
+
+      const endSurge = setTimeout(() => {
+        if (!isMountedRef.current) return;
+        setRainSurge(false);
+      }, 1800);
+
+      timersRef.current.push(endVibe, endSurge);
+    }, 650);
+
+    timersRef.current.push(tSound);
   }, []);
 
   // ==========================================================================
@@ -613,7 +710,7 @@ export default function StillWaitingCinematicScene({ onComplete }) {
     const t2 = setTimeout(() => {
       setPhase(2);
       if (window.heartbeatEngine) {
-        window.heartbeatEngine.setTargetBPM(60, 0.20);
+        window.heartbeatEngine.setTargetBPM(60, 0.2);
       }
     }, 11500);
 
@@ -657,6 +754,12 @@ export default function StillWaitingCinematicScene({ onComplete }) {
         stopKkTrack(1.0);
       } else if (window.soundController?.stopKkTrack) {
         window.soundController.stopKkTrack(1.0);
+      }
+
+      // Close shared thunder context if open
+      if (sharedThunderCtx && sharedThunderCtx.state !== 'closed') {
+        sharedThunderCtx.close().catch(() => {});
+        sharedThunderCtx = null;
       }
     };
   }, [playKkTrack, stopKaTrack, stopKkTrack, triggerLightning1, triggerLightning2]);
@@ -744,11 +847,14 @@ For Saranya cinematic experience.`,
   return (
     <div
       className={`fixed inset-0 w-full h-full bg-[#030206] text-slate-100 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 overflow-hidden select-none z-[125] animate-in fade-in duration-1000 ${
-        cameraShake ? 'translate-y-[-1.5px] translate-x-[1px]' : ''
+        cameraShake ? 'translate-y-[-1px] translate-x-[0.8px]' : ''
       } transition-transform duration-75`}
     >
       {/* SCREEN-LEVEL CONTINUOUS TRAVELLING RAINBOW BORDER */}
-      <CinematicRainbowBorder mode="screen" className={warmHopeLevel > 0.4 ? 'opacity-90' : 'opacity-60'} />
+      <CinematicRainbowBorder
+        mode="screen"
+        className={warmHopeLevel > 0.4 ? 'opacity-90' : 'opacity-60'}
+      />
 
       {/* MASTER MOVIE CSS STYLES FOR CAMERA, BOKEH, CAR SWEEP, WING FLAP */}
       <style>{`
@@ -855,7 +961,12 @@ For Saranya cinematic experience.`,
       {/* SVG NOISE FILTER FOR FILM GRAIN */}
       <svg className="hidden">
         <filter id="cinematic-film-grain-master">
-          <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch" />
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.75"
+            numOctaves="3"
+            stitchTiles="stitch"
+          />
           <feColorMatrix type="saturate" values="0" />
         </filter>
       </svg>
@@ -877,7 +988,9 @@ For Saranya cinematic experience.`,
           REALISTIC MOVIE SCENE ENVIRONMENT (Slow Camera Push & Depth)
       ==================================================================== */}
       <div
-        className="absolute inset-0 overflow-hidden pointer-events-none"
+        className={`absolute inset-0 overflow-hidden pointer-events-none ${
+          windowVibration ? 'translate-y-[0.4px] translate-x-[-0.4px]' : ''
+        } transition-transform duration-75`}
         style={{ animation: 'masterCameraPush 45s ease-in-out infinite alternate' }}
       >
         {/* 1. OUTSIDE RAINY NIGHT BACKDROP (Deep navy, purple, cool blue) */}
@@ -916,14 +1029,22 @@ For Saranya cinematic experience.`,
         />
 
         {/* 4. REALISTIC MULTI-DEPTH RAIN & WET GLASS CANVAS */}
-        <MasterRainCanvas lightningFlash={lightningFlash} warmHopeLevel={warmHopeLevel} />
+        <MasterRainCanvas
+          lightningFlash={lightningFlash}
+          warmHopeLevel={warmHopeLevel}
+          rainSurge={rainSurge}
+        />
 
         {/* 5. ATMOSPHERIC LIGHTNING ILLUMINATION LAYER */}
         {lightningFlash > 0 && (
           <div
             className="absolute inset-0 pointer-events-none z-[13] transition-opacity duration-75"
             style={{
-              background: `radial-gradient(ellipse at 50% 20%, rgba(224, 242, 254, ${lightningFlash * 0.75}) 0%, rgba(186, 230, 253, ${lightningFlash * 0.4}) 50%, rgba(14, 165, 233, ${lightningFlash * 0.2}) 100%)`,
+              background: `radial-gradient(ellipse at 50% 20%, rgba(224, 242, 254, ${
+                lightningFlash * 0.75
+              }) 0%, rgba(186, 230, 253, ${lightningFlash * 0.4}) 50%, rgba(14, 165, 233, ${
+                lightningFlash * 0.2
+              }) 100%)`,
               mixBlendMode: 'screen',
             }}
           />

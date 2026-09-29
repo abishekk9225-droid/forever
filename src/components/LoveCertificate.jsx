@@ -57,6 +57,616 @@ const RosetteSeal = () => (
   </div>
 );
 
+// ============================================================================
+// CINEMATIC FLOWER BURST CANVAS (60 FPS, 3D PETALS, BLOSSOMS & GOLDEN DUST)
+// ============================================================================
+function drawRosePetal(ctx, w, h, color1, color2) {
+  ctx.beginPath();
+  ctx.moveTo(0, -h * 0.5);
+  ctx.bezierCurveTo(w * 0.6, -h * 0.45, w * 0.7, h * 0.3, 0, h * 0.5);
+  ctx.bezierCurveTo(-w * 0.7, h * 0.3, -w * 0.6, -h * 0.45, 0, -h * 0.5);
+  const grad = ctx.createLinearGradient(-w * 0.4, -h * 0.5, w * 0.4, h * 0.5);
+  grad.addColorStop(0, color1);
+  grad.addColorStop(0.7, color2);
+  grad.addColorStop(1, '#be123c');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.lineWidth = 0.75;
+  ctx.beginPath();
+  ctx.moveTo(0, -h * 0.38);
+  ctx.quadraticCurveTo(w * 0.08, 0, 0, h * 0.35);
+  ctx.stroke();
+}
+
+function drawHeartPetal(ctx, size, color1, color2) {
+  ctx.beginPath();
+  const topH = size * 0.3;
+  ctx.moveTo(0, topH);
+  ctx.bezierCurveTo(0, 0, -size * 0.5, 0, -size * 0.5, topH);
+  ctx.bezierCurveTo(-size * 0.5, (size + topH) * 0.5, 0, (size + topH) * 0.7, 0, size);
+  ctx.bezierCurveTo(0, (size + topH) * 0.7, size * 0.5, (size + topH) * 0.5, size * 0.5, topH);
+  ctx.bezierCurveTo(size * 0.5, 0, 0, 0, 0, topH);
+
+  const grad = ctx.createRadialGradient(0, topH, size * 0.1, 0, size * 0.5, size * 0.6);
+  grad.addColorStop(0, color1);
+  grad.addColorStop(1, color2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+}
+
+function drawBlossom(ctx, radius, color1, color2) {
+  const petals = 5;
+  for (let i = 0; i < petals; i++) {
+    const angle = (i * 2 * Math.PI) / petals;
+    ctx.save();
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(radius * 0.4, -radius * 0.6, radius * 0.8, -radius * 0.3, 0, -radius);
+    ctx.bezierCurveTo(-radius * 0.8, -radius * 0.3, -radius * 0.4, -radius * 0.6, 0, 0);
+    const grad = ctx.createLinearGradient(0, 0, 0, -radius);
+    grad.addColorStop(0, color1);
+    grad.addColorStop(1, color2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.beginPath();
+  ctx.arc(0, 0, radius * 0.22, 0, Math.PI * 2);
+  ctx.fillStyle = '#fbbf24';
+  ctx.fill();
+}
+
+function drawSparkle(ctx, x, y, size, alpha) {
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+  const grad = ctx.createRadialGradient(x, y, 0, x, y, size);
+  grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  grad.addColorStop(0.35, 'rgba(253, 224, 71, 0.85)');
+  grad.addColorStop(0.75, 'rgba(251, 191, 36, 0.35)');
+  grad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(x, y, size, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(x - size * 0.75, y);
+  ctx.quadraticCurveTo(x, y, x, y - size * 0.75);
+  ctx.quadraticCurveTo(x, y, x + size * 0.75, y);
+  ctx.quadraticCurveTo(x, y, x, y + size * 0.75);
+  ctx.quadraticCurveTo(x, y, x - size * 0.75, y);
+  ctx.fill();
+  ctx.restore();
+}
+
+function playSoftFireworkPop() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!window._fireworkAudioCtx) {
+      window._fireworkAudioCtx = new AudioCtx();
+    }
+    const ctx = window._fireworkAudioCtx;
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(130, now);
+    osc.frequency.exponentialRampToValueAtTime(32, now + 0.35);
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.36);
+  } catch (e) {}
+}
+
+function CinematicCelebrationClimaxCanvas({ onCelebrationComplete }) {
+  const canvasRef = useRef(null);
+  const completedRef = useRef(false);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    let animId = null;
+    let startTime = null;
+    let flowerBurstTriggered = false;
+
+    const PALETTES = [
+      { c1: '#f43f5e', c2: '#fda4af', type: 'rose' },
+      { c1: '#ec4899', c2: '#fbcfe8', type: 'rose' },
+      { c1: '#e11d48', c2: '#fb7185', type: 'rose' },
+      { c1: '#d946ef', c2: '#f5d0fe', type: 'rose' },
+      { c1: '#a855f7', c2: '#e9d5ff', type: 'blossom' },
+      { c1: '#fb7185', c2: '#ffe4e6', type: 'heart' },
+      { c1: '#f43f5e', c2: '#ffffff', type: 'heart' },
+      { c1: '#fbbf24', c2: '#fef08a', type: 'blossom' },
+      { c1: '#ffffff', c2: '#fbcfe8', type: 'blossom' },
+      { c1: '#f472b6', c2: '#fed7aa', type: 'rose' },
+    ];
+
+    const petals = [];
+    const sparkles = [];
+    const butterflies = [];
+    const rockets = [];
+    const fireworkSparks = [];
+    const skyFlashes = [];
+
+    let bloomRadius = 0;
+    let bloomOpacity = 0;
+    let budGlow = 0;
+
+    const PRE_BURST_TIME = 5600;
+    const FLOWER_BURST_TIME = 6600;
+    const CELEBRATION_END_TIME = 16800;
+
+    const FIREWORK_SCHEDULE = [
+      { launchTime: 10400, sx: 0.15, tx: 0.28, ty: 0.24, color: '#f43f5e', type: 'peony', launched: false },
+      { launchTime: 11200, sx: 0.85, tx: 0.72, ty: 0.22, color: '#d946ef', type: 'peony', launched: false },
+      { launchTime: 12000, sx: 0.25, tx: 0.42, ty: 0.18, color: '#fbbf24', type: 'willow', launched: false },
+      { launchTime: 12700, sx: 0.75, tx: 0.58, ty: 0.20, color: '#ec4899', type: 'peony', launched: false },
+      { launchTime: 13500, sx: 0.35, tx: 0.48, ty: 0.15, color: '#a855f7', type: 'grand', launched: false },
+      { launchTime: 13650, sx: 0.65, tx: 0.52, ty: 0.16, color: '#fb7185', type: 'grand', launched: false },
+    ];
+
+    function createFlowerExplosion(cx, cy) {
+      flowerBurstTriggered = true;
+      bloomRadius = 10;
+      bloomOpacity = 0.95;
+
+      const isMobile = width < 768;
+      const petalCount = isMobile ? 220 : 340;
+      const sparkleCount = isMobile ? 120 : 190;
+
+      for (let i = 0; i < petalCount; i++) {
+        const palette = PALETTES[Math.floor(Math.random() * PALETTES.length)];
+        const angle = Math.random() * Math.PI * 2;
+        const speedMultiplier = Math.random() < 0.18 ? Math.random() * 8 + 18 : Math.random() * 12 + 5;
+        const vx = Math.cos(angle) * speedMultiplier * (Math.random() * 0.4 + 0.8);
+        const vy = Math.sin(angle) * speedMultiplier * (Math.random() * 0.4 + 0.8) - Math.random() * 4.5;
+
+        const depth = Math.random() < 0.15 ? 2 : Math.random() < 0.45 ? 0 : 1;
+        const baseSize = depth === 2 ? Math.random() * 14 + 24 : depth === 0 ? Math.random() * 6 + 10 : Math.random() * 10 + 15;
+
+        petals.push({
+          x: cx + (Math.random() - 0.5) * 20,
+          y: cy + (Math.random() - 0.5) * 20,
+          vx,
+          vy,
+          drag: depth === 2 ? 0.935 : depth === 0 ? 0.965 : 0.95,
+          gravity: depth === 2 ? 0.14 : depth === 0 ? 0.08 : 0.11,
+          size: baseSize,
+          aspectRatio: Math.random() * 0.5 + 0.9,
+          color: palette,
+          shape: palette.type,
+          depth,
+          roll: Math.random() * Math.PI * 2,
+          rollSpeed: (Math.random() - 0.5) * 0.14,
+          pitch: Math.random() * Math.PI * 2,
+          pitchSpeed: (Math.random() - 0.5) * 0.12,
+          yaw: Math.random() * Math.PI * 2,
+          yawSpeed: (Math.random() - 0.5) * 0.06,
+          swayPhase: Math.random() * Math.PI * 2,
+          swaySpeed: Math.random() * 0.03 + 0.02,
+          swayAmount: Math.random() * 1.8 + 0.6,
+          opacity: 1.0,
+          fadeSpeed: Math.random() * 0.0006 + 0.0003,
+        });
+      }
+
+      for (let i = 0; i < sparkleCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 16 + 4;
+        sparkles.push({
+          x: cx,
+          y: cy,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - Math.random() * 3,
+          drag: 0.92,
+          gravity: 0.04,
+          size: Math.random() * 3.5 + 1.5,
+          alpha: 1.0,
+          fadeSpeed: Math.random() * 0.015 + 0.008,
+          twinklePhase: Math.random() * Math.PI * 2,
+        });
+      }
+
+      for (let i = 0; i < 7; i++) {
+        const bAngle = (i / 7) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+        const bSpeed = Math.random() * 6 + 4;
+        butterflies.push({
+          x: cx,
+          y: cy,
+          vx: Math.cos(bAngle) * bSpeed,
+          vy: Math.sin(bAngle) * bSpeed - 3,
+          targetSpeedX: (Math.random() - 0.5) * 3,
+          targetSpeedY: -Math.random() * 2 - 1.2,
+          size: Math.random() * 6 + 14,
+          color: PALETTES[i % PALETTES.length].c1,
+          flapPhase: Math.random() * Math.PI * 2,
+        });
+      }
+    }
+
+    function launchRocket(conf) {
+      const startX = conf.sx * width;
+      const targetX = conf.tx * width;
+      const targetY = conf.ty * height;
+      const duration = 40; // 40 frames flight (~660ms)
+
+      rockets.push({
+        x: startX,
+        y: height + 10,
+        targetX,
+        targetY,
+        vx: (targetX - startX) / duration,
+        vy: (targetY - (height + 10)) / duration,
+        color: conf.color,
+        type: conf.type,
+        trail: [],
+        framesRemaining: duration,
+      });
+    }
+
+    function explodeRocket(r) {
+      playSoftFireworkPop();
+
+      skyFlashes.push({
+        x: r.targetX,
+        y: r.targetY,
+        radius: 10,
+        maxRadius: 180,
+        alpha: 0.45,
+        color: r.color,
+      });
+
+      const count = r.type === 'grand' ? 64 : r.type === 'willow' ? 52 : 46;
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.25;
+        const speed = r.type === 'grand' ? Math.random() * 4.5 + 2.5 : Math.random() * 3.8 + 1.8;
+        fireworkSparks.push({
+          x: r.targetX,
+          y: r.targetY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          color: r.color,
+          alpha: 1.0,
+          decay: r.type === 'willow' ? 0.009 : 0.014 + Math.random() * 0.008,
+          gravity: r.type === 'willow' ? 0.075 : 0.055,
+          drag: r.type === 'willow' ? 0.955 : 0.945,
+          size: r.type === 'grand' ? 2.6 : 2.0,
+          isWillow: r.type === 'willow',
+          trail: [],
+        });
+      }
+    }
+
+    function render(timestamp) {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width / 2;
+      const cy = height * 0.48;
+
+      // 1. FLOWER BURST PRE-GLOW (5600ms -> 6600ms)
+      if (elapsed >= PRE_BURST_TIME && elapsed < FLOWER_BURST_TIME) {
+        const progress = (elapsed - PRE_BURST_TIME) / (FLOWER_BURST_TIME - PRE_BURST_TIME);
+        budGlow = Math.sin(progress * Math.PI * 4) * 0.3 + progress * 0.7;
+        const budRadius = 15 + progress * 35;
+
+        ctx.save();
+        const budGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, budRadius);
+        budGrad.addColorStop(0, `rgba(255, 255, 255, ${budGlow * 0.95})`);
+        budGrad.addColorStop(0.35, `rgba(251, 191, 36, ${budGlow * 0.8})`);
+        budGrad.addColorStop(0.7, `rgba(244, 63, 94, ${budGlow * 0.5})`);
+        budGrad.addColorStop(1, 'rgba(244, 63, 94, 0)');
+        ctx.fillStyle = budGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, budRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        drawSparkle(ctx, cx, cy, budRadius * 0.45, budGlow);
+        ctx.restore();
+      }
+
+      // 2. TRIGGER FLOWER EXPLOSION AT 6600ms
+      if (elapsed >= FLOWER_BURST_TIME && !flowerBurstTriggered) {
+        createFlowerExplosion(cx, cy);
+      }
+
+      // 3. FLOWER BURST BLOOM & PETALS
+      if (flowerBurstTriggered) {
+        if (bloomOpacity > 0.01) {
+          bloomRadius += (340 - bloomRadius) * 0.08;
+          bloomOpacity *= 0.94;
+
+          ctx.save();
+          const bloomGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, bloomRadius);
+          bloomGrad.addColorStop(0, `rgba(255, 255, 255, ${bloomOpacity * 0.9})`);
+          bloomGrad.addColorStop(0.3, `rgba(254, 240, 138, ${bloomOpacity * 0.75})`);
+          bloomGrad.addColorStop(0.65, `rgba(251, 191, 36, ${bloomOpacity * 0.4})`);
+          bloomGrad.addColorStop(1, 'rgba(244, 63, 94, 0)');
+          ctx.fillStyle = bloomGrad;
+          ctx.beginPath();
+          ctx.arc(cx, cy, bloomRadius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Golden Sparkles
+        for (let i = sparkles.length - 1; i >= 0; i--) {
+          const s = sparkles[i];
+          s.x += s.vx;
+          s.y += s.vy;
+          s.vx *= s.drag;
+          s.vy *= s.drag;
+          s.vy += s.gravity;
+          s.alpha -= s.fadeSpeed;
+          s.twinklePhase += 0.15;
+
+          if (s.alpha <= 0.01) {
+            sparkles.splice(i, 1);
+            continue;
+          }
+
+          const currentAlpha = Math.max(0, s.alpha * (Math.sin(s.twinklePhase) * 0.3 + 0.7));
+          drawSparkle(ctx, s.x, s.y, s.size, currentAlpha);
+        }
+
+        // 3D Flower Petals
+        for (let i = petals.length - 1; i >= 0; i--) {
+          const p = petals[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vx *= p.drag;
+          p.vy *= p.drag;
+          p.vy += p.gravity;
+
+          p.swayPhase += p.swaySpeed;
+          p.x += Math.sin(p.swayPhase) * p.swayAmount;
+
+          p.roll += p.rollSpeed;
+          p.pitch += p.pitchSpeed;
+          p.yaw += p.yawSpeed;
+          p.opacity -= p.fadeSpeed;
+
+          if (p.y > height + 80 || p.opacity <= 0.01) {
+            petals.splice(i, 1);
+            continue;
+          }
+
+          const scaleX = Math.cos(p.roll) * (p.depth === 2 ? 1.3 : p.depth === 0 ? 0.75 : 1.0);
+          const scaleY = Math.cos(p.pitch) * p.aspectRatio * (p.depth === 2 ? 1.3 : p.depth === 0 ? 0.75 : 1.0);
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.yaw);
+          ctx.scale(scaleX, scaleY);
+          ctx.globalAlpha = Math.max(0, Math.min(1, p.opacity));
+
+          if (p.shape === 'rose') {
+            drawRosePetal(ctx, p.size, p.size * 1.3, p.color.c1, p.color.c2);
+          } else if (p.shape === 'heart') {
+            drawHeartPetal(ctx, p.size * 1.1, p.color.c1, p.color.c2);
+          } else if (p.shape === 'blossom') {
+            drawBlossom(ctx, p.size * 0.7, p.color.c1, p.color.c2);
+          } else {
+            drawRosePetal(ctx, p.size * 0.85, p.size * 1.1, p.color.c1, p.color.c2);
+          }
+
+          ctx.restore();
+        }
+
+        // Floating Butterflies
+        for (let i = butterflies.length - 1; i >= 0; i--) {
+          const b = butterflies[i];
+          b.vx += (b.targetSpeedX - b.vx) * 0.04;
+          b.vy += (b.targetSpeedY - b.vy) * 0.04;
+          b.x += b.vx;
+          b.y += b.vy;
+          b.flapPhase += 0.28;
+
+          if (b.x < -60 || b.x > width + 60 || b.y < -60) {
+            butterflies.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.translate(b.x, b.y);
+          ctx.rotate(Math.atan2(b.vy, b.vx) + Math.PI / 2);
+          const wingSpan = Math.sin(b.flapPhase) * 0.85 + 0.15;
+
+          ctx.save();
+          ctx.scale(wingSpan, 1);
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.bezierCurveTo(-b.size * 0.9, -b.size * 0.8, -b.size * 1.2, b.size * 0.4, 0, b.size * 0.6);
+          ctx.fillStyle = b.color;
+          ctx.fill();
+          ctx.restore();
+
+          ctx.save();
+          ctx.scale(-wingSpan, 1);
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.bezierCurveTo(-b.size * 0.9, -b.size * 0.8, -b.size * 1.2, b.size * 0.4, 0, b.size * 0.6);
+          ctx.fillStyle = b.color;
+          ctx.fill();
+          ctx.restore();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(0, b.size * 0.2, 1.8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // 4. FIREWORKS LAUNCHES & FLIGHT
+      FIREWORK_SCHEDULE.forEach((item) => {
+        if (elapsed >= item.launchTime && !item.launched) {
+          item.launched = true;
+          launchRocket(item);
+        }
+      });
+
+      // Render Rockets
+      for (let i = rockets.length - 1; i >= 0; i--) {
+        const r = rockets[i];
+        r.trail.push({ x: r.x, y: r.y });
+        if (r.trail.length > 7) r.trail.shift();
+
+        r.x += r.vx;
+        r.y += r.vy;
+        r.framesRemaining--;
+
+        // Draw glowing rocket trail
+        if (r.trail.length > 1) {
+          ctx.save();
+          ctx.strokeStyle = r.color;
+          ctx.lineWidth = 2.5;
+          ctx.shadowColor = r.color;
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.moveTo(r.trail[0].x, r.trail[0].y);
+          r.trail.forEach((pt) => ctx.lineTo(pt.x, pt.y));
+          ctx.stroke();
+
+          // Rocket head spark
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(r.x, r.y, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        if (r.framesRemaining <= 0) {
+          explodeRocket(r);
+          rockets.splice(i, 1);
+        }
+      }
+
+      // 5. RENDER FIREWORK SKY FLASHES
+      for (let i = skyFlashes.length - 1; i >= 0; i--) {
+        const f = skyFlashes[i];
+        f.radius += (f.maxRadius - f.radius) * 0.18;
+        f.alpha *= 0.86;
+
+        ctx.save();
+        const flashGrad = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.radius);
+        flashGrad.addColorStop(0, `rgba(255, 255, 255, ${f.alpha * 0.8})`);
+        flashGrad.addColorStop(0.4, f.color);
+        flashGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.globalAlpha = f.alpha;
+        ctx.fillStyle = flashGrad;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        if (f.alpha <= 0.02) {
+          skyFlashes.splice(i, 1);
+        }
+      }
+
+      // 6. RENDER FIREWORK SPARKS & WILLOW TRAILS
+      for (let i = fireworkSparks.length - 1; i >= 0; i--) {
+        const s = fireworkSparks[i];
+        if (s.isWillow) {
+          s.trail.push({ x: s.x, y: s.y, a: s.alpha });
+          if (s.trail.length > 6) s.trail.shift();
+        }
+
+        s.x += s.vx;
+        s.y += s.vy;
+        s.vx *= s.drag;
+        s.vy *= s.drag;
+        s.vy += s.gravity;
+        s.alpha -= s.decay;
+
+        if (s.alpha <= 0.01) {
+          fireworkSparks.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, s.alpha);
+
+        if (s.isWillow && s.trail.length > 1) {
+          ctx.strokeStyle = s.color;
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.moveTo(s.trail[0].x, s.trail[0].y);
+          s.trail.forEach((pt) => ctx.lineTo(pt.x, pt.y));
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = s.color;
+        ctx.shadowColor = s.color;
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // White hot center
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 7. FINISH CELEBRATION & SHOW CONTINUE BUTTON (at 16800ms)
+      if (elapsed >= CELEBRATION_END_TIME && !completedRef.current) {
+        completedRef.current = true;
+        if (typeof onCelebrationComplete === 'function') {
+          onCelebrationComplete();
+        }
+      }
+
+      animId = requestAnimationFrame(render);
+    }
+
+    animId = requestAnimationFrame(render);
+
+    return () => {
+      if (animId) cancelAnimationFrame(animId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [onCelebrationComplete]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 pointer-events-none z-40 select-none"
+      style={{ willChange: 'transform' }}
+    />
+  );
+}
+
 export default function LoveCertificate({ onVisible }) {
   const certificateRef = useRef(null);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -87,10 +697,9 @@ export default function LoveCertificate({ onVisible }) {
     }
 
     // T = 0–3 sec: keep certificate hidden
-    // T = EXACTLY 3.0 sec: allow Love Certificate page transition to appear normally
+    // T = EXACTLY 3.0 sec: Certificate card unfolds smoothly
     timerRef.current = setTimeout(() => {
       setIsVisible(true);
-      if (onVisible) onVisible();
     }, 3000);
 
     return () => {
@@ -140,6 +749,9 @@ export default function LoveCertificate({ onVisible }) {
     <div className="w-full flex flex-col items-center justify-center p-2 sm:p-4 text-center z-30 select-none relative animate-fade-in">
       {/* Cinematic Shared Atmosphere */}
       <CinematicSceneAtmosphere accentGlow="amber" />
+
+      {/* Cinematic Final Celebration Climax: Flower Burst + Final Fireworks Canvas */}
+      <CinematicCelebrationClimaxCanvas onCelebrationComplete={onVisible} />
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Great+Vibes&family=Montserrat:wght@400;500;600&display=swap');

@@ -65,8 +65,6 @@ export default function SecretGiftCinematicScene({ onComplete }) {
   const animFrameRef = useRef(null);
   const timersRef = useRef([]);
   const transitionRef = useRef(null);
-  const ddAudioRef = useRef(null);
-  const ddPlayedRef = useRef(false);
 
   // Initialize and pre-warm audio instance immediately on mount
   useEffect(() => {
@@ -86,11 +84,6 @@ export default function SecretGiftCinematicScene({ onComplete }) {
         audioRef.current.pause();
         audioRef.current.src = '';
         audioRef.current = null;
-      }
-      if (ddAudioRef.current) {
-        ddAudioRef.current.pause();
-        ddAudioRef.current.src = '';
-        ddAudioRef.current = null;
       }
     };
   }, []);
@@ -223,21 +216,6 @@ export default function SecretGiftCinematicScene({ onComplete }) {
 
   const handleFinalTransition = () => {
     if (isFinishing) return;
-
-    // Play dd.mp3 exactly once on Continue Journey click (user gesture ensures autoplay works)
-    if (!ddPlayedRef.current) {
-      ddPlayedRef.current = true;
-      try {
-        if (!ddAudioRef.current) {
-          const ddAudio = new Audio('/dd.mp3');
-          ddAudio.loop = false;
-          ddAudioRef.current = ddAudio;
-        }
-        ddAudioRef.current.play().catch(() => {});
-      } catch {
-        // Audio not supported — silently ignore
-      }
-    }
 
     setIsFinishing(true);
     setStage('FADE_OUT');

@@ -169,11 +169,17 @@ function playSoftFireworkPop() {
   } catch (e) {}
 }
 
-function CinematicCelebrationClimaxCanvas({ onCelebrationComplete }) {
+function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
   const canvasRef = useRef(null);
   const completedRef = useRef(false);
+  // Hold callback in a ref so the animation loop never restarts due to
+  // inline arrow function identity changes from the parent (root cause #2)
+  const onCompleteRef = useRef(onCelebrationComplete);
+  useEffect(() => { onCompleteRef.current = onCelebrationComplete; });
 
   useEffect(() => {
+    // Do NOT start until the certificate card is actually visible (root cause #1)
+    if (!active) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -642,8 +648,8 @@ function CinematicCelebrationClimaxCanvas({ onCelebrationComplete }) {
       // 7. FINISH CELEBRATION & SHOW CONTINUE BUTTON (at 16800ms)
       if (elapsed >= CELEBRATION_END_TIME && !completedRef.current) {
         completedRef.current = true;
-        if (typeof onCelebrationComplete === 'function') {
-          onCelebrationComplete();
+        if (typeof onCompleteRef.current === 'function') {
+          onCompleteRef.current();
         }
       }
 
@@ -656,12 +662,13 @@ function CinematicCelebrationClimaxCanvas({ onCelebrationComplete }) {
       if (animId) cancelAnimationFrame(animId);
       window.removeEventListener('resize', handleResize);
     };
-  }, [onCelebrationComplete]);
+  // Only restart if `active` changes — never restart due to callback identity
+  }, [active]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-40 select-none"
+      className="fixed inset-0 pointer-events-none z-[200] select-none"
       style={{ willChange: 'transform' }}
     />
   );
@@ -751,7 +758,8 @@ export default function LoveCertificate({ onVisible }) {
       <CinematicSceneAtmosphere accentGlow="amber" />
 
       {/* Cinematic Final Celebration Climax: Flower Burst + Final Fireworks Canvas */}
-      <CinematicCelebrationClimaxCanvas onCelebrationComplete={onVisible} />
+      {/* active=isVisible ensures celebration only starts after certificate card reveals */}
+      <CinematicCelebrationClimaxCanvas active={isVisible} onCelebrationComplete={onVisible} />
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Great+Vibes&family=Montserrat:wght@400;500;600&display=swap');

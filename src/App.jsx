@@ -41,6 +41,7 @@ import HeartbeatIntro from './components/HeartbeatIntro';
 import EmotionalQuestionGate from './components/EmotionalQuestionGate';
 import CinematicRainbowBorder from './components/CinematicRainbowBorder';
 import AIPencilDrawingScene from './components/AIPencilDrawingScene';
+import UnsentMessageScene from './components/UnsentMessageScene';
 import CinematicSceneAtmosphere from './components/CinematicSceneAtmosphere';
 
 
@@ -85,6 +86,9 @@ function MainApp() {
           break;
         case SCENES.AI_PENCIL:
           setTargetBPM(68, 0.22);
+          break;
+        case SCENES.UNSENT_MESSAGE:
+          setTargetBPM(64, 0.24);
           break;
         default:
           setTargetBPM(88, 0.32);
@@ -260,7 +264,12 @@ function MainApp() {
 
           {/* NEW AI PENCIL DRAWING SCENE */}
           {currentScene === SCENES.AI_PENCIL && (
-            <AIPencilDrawingScene onComplete={() => setCurrentScene(SCENES.LOCK_REVEAL)} />
+            <AIPencilDrawingScene onComplete={() => setCurrentScene(SCENES.UNSENT_MESSAGE)} />
+          )}
+
+          {/* THE LAST UNSENT MESSAGE SCENE */}
+          {currentScene === SCENES.UNSENT_MESSAGE && (
+            <UnsentMessageScene onComplete={() => setCurrentScene(SCENES.LOCK_REVEAL)} />
           )}
 
           {/* FINGERPRINT LOCK GATE */}

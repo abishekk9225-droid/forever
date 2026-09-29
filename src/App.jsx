@@ -40,6 +40,7 @@ import AskDialogueScene from './components/AskDialogueScene';
 import HeartbeatIntro from './components/HeartbeatIntro';
 import EmotionalQuestionGate from './components/EmotionalQuestionGate';
 import CinematicRainbowBorder from './components/CinematicRainbowBorder';
+import AIPencilDrawingScene from './components/AIPencilDrawingScene';
 
 
 
@@ -79,6 +80,9 @@ function MainApp() {
           break;
         case SCENES.CONFESSION:
           // Handled inside SuspenseProposalFlow and ProposalConfession
+          break;
+        case SCENES.AI_PENCIL:
+          setTargetBPM(68, 0.22);
           break;
         default:
           setTargetBPM(88, 0.32);
@@ -244,12 +248,17 @@ function MainApp() {
 
           {/* 5. CONFESSION ("WILL YOU BE MINE FOREVER?") */}
           {currentScene === SCENES.CONFESSION && (
-            <SuspenseProposalFlow onYesAccepted={() => setCurrentScene(SCENES.LOCK_REVEAL)} />
+            <SuspenseProposalFlow onYesAccepted={() => setCurrentScene(SCENES.AI_PENCIL)} />
           )}
 
           {/* CELEBRATION REVEAL */}
           {currentScene === SCENES.CELEBRATION && (
-            <CelebrationReveal onComplete={() => setCurrentScene(SCENES.LOCK_REVEAL)} />
+            <CelebrationReveal onComplete={() => setCurrentScene(SCENES.AI_PENCIL)} />
+          )}
+
+          {/* NEW AI PENCIL DRAWING SCENE */}
+          {currentScene === SCENES.AI_PENCIL && (
+            <AIPencilDrawingScene onComplete={() => setCurrentScene(SCENES.LOCK_REVEAL)} />
           )}
 
           {/* FINGERPRINT LOCK GATE */}

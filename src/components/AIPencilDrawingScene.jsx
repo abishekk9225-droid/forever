@@ -415,6 +415,10 @@ export default function AIPencilDrawingScene({ onComplete }) {
   const timersRef = useRef([]);
   const hasRequestedRef = useRef(false);
 
+  // /km.mp3 — plays ONCE when drawing reaches completion (revealStage 7)
+  const kmAudioRef = useRef(null);
+  const kmPlayedRef = useRef(false);
+
   const { setTargetBPM } = useHeartbeat();
 
   // --------------------------------------------------------------------------
@@ -469,8 +473,33 @@ export default function AIPencilDrawingScene({ onComplete }) {
         audioRef.current.currentTime = 0;
         audioRef.current = null;
       }
+      if (kmAudioRef.current) {
+        kmAudioRef.current.pause();
+        kmAudioRef.current.src = '';
+        kmAudioRef.current = null;
+      }
     };
   }, []);
+
+  // --------------------------------------------------------------------------
+  // KM.MP3: Play ONCE at high cinematic volume when drawing completes (stage 7)
+  // --------------------------------------------------------------------------
+  useEffect(() => {
+    if (revealStage !== 7) return;
+    if (kmPlayedRef.current) return;
+    kmPlayedRef.current = true;
+    try {
+      if (!kmAudioRef.current) {
+        const kmAudio = new Audio('/km.mp3');
+        kmAudio.loop = false;
+        kmAudio.volume = 0.9; // High, clearly audible cinematic volume
+        kmAudioRef.current = kmAudio;
+      }
+      kmAudioRef.current.play().catch(() => {});
+    } catch {
+      // Audio not supported — silently ignore
+    }
+  }, [revealStage]);
 
   // --------------------------------------------------------------------------
   // 2. AI GENERATION TRIGGER (Runs once, internally processes /ap.jpg)

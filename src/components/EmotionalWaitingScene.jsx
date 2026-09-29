@@ -81,6 +81,14 @@ export default function EmotionalWaitingScene({ onComplete }) {
       window.heartbeatEngine.setTargetBPM(60, 0.20);
     }
 
+    // B2. Start /ka.mp3 — the intended background song for this emotional scene.
+    // playKaTrack() fades out any previous track smoothly then starts ka.mp3.
+    if (typeof playKaTrack === 'function') {
+      playKaTrack().catch(() => {});
+    } else if (window.soundController?.playKaTrack) {
+      window.soundController.playKaTrack().catch(() => {});
+    }
+
     // Gradual heartbeat swelling as emotional depth increases
     const tHeartbeat1 = setTimeout(() => {
       if (window.heartbeatEngine) {

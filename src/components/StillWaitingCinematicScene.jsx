@@ -717,37 +717,39 @@ export default function StillWaitingCinematicScene({ onComplete }) {
       window.heartbeatEngine.setTargetBPM(56, 0.18);
     }
 
-    // Start /dd.mp3 synchronized specifically when the rain stage begins (5.0s, played ONLY ONCE, no loop)
-    ddTimerRef.current = setTimeout(() => {
-      if (!isMountedRef.current || hasStartedDdRef.current) return;
-      hasStartedDdRef.current = true;
-
-      try {
-        const ddAudio = new Audio('/dd.mp3');
-        ddAudio.volume = 0.85;
-        ddAudio.loop = false;
-        ddAudio.preload = 'auto';
-        ddAudioRef.current = ddAudio;
-        const playPromise = ddAudio.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((err) => {
-            console.warn('/dd.mp3 autoplay deferred by browser:', err);
-          });
-        }
-      } catch (e) {
-        console.warn('Failed to initialize /dd.mp3:', e);
-      }
-    }, 5000);
-
-    // C. Wait EXACTLY 5.0 seconds before starting /kk.mp3
+    // C. Wait EXACTLY 5.0 seconds before starting the RAIN STAGE.
+    //    /kk.mp3 is the rain ambience track that marks the rain stage start.
+    //    /dd.mp3 is triggered HERE — at the EXACT same moment the rain stage begins —
+    //    not via a separate independent timer.
     kkTimerRef.current = setTimeout(() => {
       if (!isMountedRef.current || hasStartedKkRef.current) return;
       hasStartedKkRef.current = true;
 
+      // Start /kk.mp3 (rain stage ambience)
       if (typeof playKkTrack === 'function') {
         playKkTrack();
       } else if (window.soundController?.playKkTrack) {
         window.soundController.playKkTrack();
+      }
+
+      // Start /dd.mp3 exactly when the rain stage starts — ONE SHOT, no loop, no duplicate
+      if (!hasStartedDdRef.current) {
+        hasStartedDdRef.current = true;
+        try {
+          const ddAudio = new Audio('/dd.mp3');
+          ddAudio.volume = 0.85;
+          ddAudio.loop = false;
+          ddAudio.preload = 'auto';
+          ddAudioRef.current = ddAudio;
+          const playPromise = ddAudio.play();
+          if (playPromise !== undefined) {
+            playPromise.catch((err) => {
+              console.warn('/dd.mp3 autoplay deferred by browser:', err);
+            });
+          }
+        } catch (e) {
+          console.warn('Failed to initialize /dd.mp3:', e);
+        }
       }
     }, 5000);
 

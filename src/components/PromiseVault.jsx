@@ -130,7 +130,7 @@ export default function PromiseVault({ onComplete }) {
     try {
       const audio = new Audio('/pr.mp3');
       audio.volume = 0.85; // Clearly audible and cinematic (0.80 - 0.90)
-      audio.loop = true;
+      audio.loop = false;
       audio.preload = 'auto';
       audioRef.current = audio;
 

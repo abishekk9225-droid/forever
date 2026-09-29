@@ -122,9 +122,9 @@ class UnifiedAudioEngine {
       audio.loop = true;
       audio.preload = 'auto';
 
-      // Fallback element volume: 20-30% volume range safeguarding direct audio
+      // Fallback element volume: calibrated for clear background music
       if (id === 'intro') {
-        audio.volume = 0.32;
+        audio.volume = 0.50;
       } else if (id === 'ka') {
         audio.volume = 0.28;
       } else if (id === 'kk') {
@@ -226,11 +226,11 @@ class UnifiedAudioEngine {
       if (this.musicGain && this.audioCtx) {
         this.musicGain.gain.cancelScheduledValues(now);
         this.musicGain.gain.setValueAtTime(this.musicGain.gain.value || 0.0001, now);
-        // Medium background level around 20–30% volume (0.32)
-        this.musicGain.gain.linearRampToValueAtTime(0.32, now + 2.0);
+        // Clearly audible and balanced background level
+        this.musicGain.gain.linearRampToValueAtTime(0.50, now + 2.0);
       }
 
-      intro.element.volume = 0.32;
+      intro.element.volume = 0.50;
       intro.element.play().then(() => {
         this.isPlayingMusic = true;
         this.notifyState();

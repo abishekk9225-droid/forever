@@ -572,6 +572,13 @@ export default function StillWaitingCinematicScene({ onComplete }) {
   const isMountedRef = useRef(true);
   const timersRef = useRef([]);
 
+  // Dedicated refs & one-shot guards for /oi.mp3 and /dd.mp3
+  const oiAudioRef = useRef(null);
+  const hasStartedOiRef = useRef(false);
+  const ddAudioRef = useRef(null);
+  const hasStartedDdRef = useRef(false);
+  const ddTimerRef = useRef(null);
+
   // ==========================================================================
   // LIGHTNING MOMENT 1 TRIGGER (⚡ T=0.0s Flash -> T=0.65s 🌩️ Deep Thunder Rumble)
   // ==========================================================================
@@ -684,11 +691,53 @@ export default function StillWaitingCinematicScene({ onComplete }) {
       stopKkTrack(0.1);
     }
 
+    // Play /oi.mp3 when Still Waiting scene starts (played ONLY ONCE, no loop, single instance guard)
+    if (!hasStartedOiRef.current) {
+      hasStartedOiRef.current = true;
+      try {
+        const oiAudio = new Audio('/oi.mp3');
+        oiAudio.volume = 0.85;
+        oiAudio.loop = false;
+        oiAudio.preload = 'auto';
+        oiAudioRef.current = oiAudio;
+        const playPromise = oiAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn('/oi.mp3 autoplay deferred by browser:', err);
+          });
+        }
+      } catch (e) {
+        console.warn('Failed to initialize /oi.mp3:', e);
+      }
+    }
+
     // B. Start Heartbeat: very soft (~56 BPM, 0.18 volume)
     if (window.heartbeatEngine) {
       window.heartbeatEngine.start();
       window.heartbeatEngine.setTargetBPM(56, 0.18);
     }
+
+    // Start /dd.mp3 synchronized specifically when the rain stage begins (5.0s, played ONLY ONCE, no loop)
+    ddTimerRef.current = setTimeout(() => {
+      if (!isMountedRef.current || hasStartedDdRef.current) return;
+      hasStartedDdRef.current = true;
+
+      try {
+        const ddAudio = new Audio('/dd.mp3');
+        ddAudio.volume = 0.85;
+        ddAudio.loop = false;
+        ddAudio.preload = 'auto';
+        ddAudioRef.current = ddAudio;
+        const playPromise = ddAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn('/dd.mp3 autoplay deferred by browser:', err);
+          });
+        }
+      } catch (e) {
+        console.warn('Failed to initialize /dd.mp3:', e);
+      }
+    }, 5000);
 
     // C. Wait EXACTLY 5.0 seconds before starting /kk.mp3
     kkTimerRef.current = setTimeout(() => {
@@ -701,6 +750,18 @@ export default function StillWaitingCinematicScene({ onComplete }) {
         window.soundController.playKkTrack();
       }
     }, 5000);
+
+    // User gesture fallback in case browser autoplay policy deferred audio
+    const handleUserGesture = () => {
+      if (oiAudioRef.current && oiAudioRef.current.paused && hasStartedOiRef.current && !oiAudioRef.current.ended) {
+        oiAudioRef.current.play().catch(() => {});
+      }
+      if (ddAudioRef.current && ddAudioRef.current.paused && hasStartedDdRef.current && !ddAudioRef.current.ended) {
+        ddAudioRef.current.play().catch(() => {});
+      }
+    };
+    window.addEventListener('click', handleUserGesture, { passive: true });
+    window.addEventListener('touchstart', handleUserGesture, { passive: true });
 
     // D. Sequence text transitions at a slow, realistic cinematic movie pace
     // Phase 1 at 4.2s (Line 1)
@@ -746,8 +807,27 @@ export default function StillWaitingCinematicScene({ onComplete }) {
         clearTimeout(kkTimerRef.current);
         kkTimerRef.current = null;
       }
+      if (ddTimerRef.current) {
+        clearTimeout(ddTimerRef.current);
+        ddTimerRef.current = null;
+      }
+      window.removeEventListener('click', handleUserGesture);
+      window.removeEventListener('touchstart', handleUserGesture);
+
       timersRef.current.forEach((t) => clearTimeout(t));
       timersRef.current = [];
+
+      // Clean up /oi.mp3 and /dd.mp3
+      if (oiAudioRef.current) {
+        oiAudioRef.current.pause();
+        oiAudioRef.current.currentTime = 0;
+        oiAudioRef.current = null;
+      }
+      if (ddAudioRef.current) {
+        ddAudioRef.current.pause();
+        ddAudioRef.current.currentTime = 0;
+        ddAudioRef.current = null;
+      }
 
       // Clean up kk.mp3 according to project's audio behavior
       if (typeof stopKkTrack === 'function') {

@@ -1,27 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Fingerprint, Heart } from 'lucide-react';
+import { Fingerprint, Heart, Sparkles, ShieldCheck } from 'lucide-react';
+import CinematicSceneAtmosphere from './CinematicSceneAtmosphere';
 
 const GOLDEN_COLORS = ['#FBBF24', '#F59E0B', '#D97706', '#B45309', '#FDE047', '#FEF08A', '#FFF59D', '#FFE082'];
 
 function GoldenButterflyExplosion() {
-  const butterflies = Array.from({ length: 45 });
+  const butterflies = Array.from({ length: 36 });
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
       {butterflies.map((_, i) => {
         const color = GOLDEN_COLORS[i % GOLDEN_COLORS.length];
-        
-        // Start from center area of screen
-        const startX = 50 + (Math.random() * 16 - 8); // 42vw to 58vw
-        const startY = 50 + (Math.random() * 16 - 8); // 42vh to 58vh
-        
-        // Target positions spread outwards and upwards
-        const targetX = Math.random() * 100; // 0vw to 100vw
-        const duration = 2.5 + Math.random() * 3.5;
-        const delay = Math.random() * 0.6;
-        const size = 12 + Math.random() * 18;
+        const startX = 50 + (Math.random() * 16 - 8);
+        const startY = 48 + (Math.random() * 16 - 8);
+        const targetX = Math.random() * 100;
+        const duration = 2.8 + Math.random() * 3.2;
+        const delay = Math.random() * 0.7;
+        const size = 14 + Math.random() * 16;
 
         return (
           <motion.div
@@ -36,7 +33,7 @@ function GoldenButterflyExplosion() {
             animate={{ 
               opacity: [0, 1, 1, 0], 
               x: [`${startX}vw`, `${(startX + targetX) / 2}vw`, `${targetX}vw`], 
-              y: [`${startY}vh`, `${startY - 20}vh`, '-15vh'],
+              y: [`${startY}vh`, `${startY - 18}vh`, '-15vh'],
               scale: [0.1, 1.3, 1, 0.3],
               rotate: Math.random() * 360
             }}
@@ -45,30 +42,26 @@ function GoldenButterflyExplosion() {
               delay: delay, 
               ease: "easeOut" 
             }}
-            className="absolute shadow-lg"
+            className="absolute"
             style={{
               filter: `drop-shadow(0 0 10px ${color})`
             }}
           >
-            {/* Flapping Wings SVG */}
             <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-              {/* Left Wing */}
               <motion.path
                 d="M12 12 C8 4, 2 6, 2 12 C2 18, 8 20, 12 14 Z"
                 fill={color}
-                animate={{ scaleX: [1, 0.1, 1] }}
-                transition={{ duration: 0.2 + Math.random() * 0.1, repeat: Infinity, ease: "easeInOut" }}
+                animate={{ scaleX: [1, 0.15, 1] }}
+                transition={{ duration: 0.22 + Math.random() * 0.08, repeat: Infinity, ease: "easeInOut" }}
                 style={{ transformOrigin: "12px 12px" }}
               />
-              {/* Right Wing */}
               <motion.path
                 d="M12 12 C16 4, 22 6, 22 12 C22 18, 16 20, 12 14 Z"
                 fill={color}
-                animate={{ scaleX: [1, 0.1, 1] }}
-                transition={{ duration: 0.2 + Math.random() * 0.1, repeat: Infinity, ease: "easeInOut" }}
+                animate={{ scaleX: [1, 0.15, 1] }}
+                transition={{ duration: 0.22 + Math.random() * 0.08, repeat: Infinity, ease: "easeInOut" }}
                 style={{ transformOrigin: "12px 12px" }}
               />
-              {/* Center Body */}
               <circle cx="12" cy="12" r="1.5" fill="#FFFFFF" />
             </svg>
           </motion.div>
@@ -82,6 +75,8 @@ export default function FingerprintLock({ onComplete }) {
   const [status, setStatus] = useState('IDLE'); // 'IDLE' | 'SCANNING' | 'SUCCESS'
   const [progress, setProgress] = useState(0);
   const [scanInterval, setScanInterval] = useState(null);
+  const [successPhase, setSuccessPhase] = useState(0); // 0: initial, 1: heart form, 2: text reveal, 3: golden sweep
+  const sweepTimerRef = useRef(null);
 
   const startScan = (e) => {
     if (e) e.preventDefault();
@@ -101,7 +96,7 @@ export default function FingerprintLock({ onComplete }) {
         }
         return next;
       });
-    }, 150); // 3 seconds total
+    }, 150); // 3 seconds total as existing
 
     setScanInterval(interval);
   };
@@ -119,43 +114,72 @@ export default function FingerprintLock({ onComplete }) {
   const triggerCelebration = () => {
     // 1. Confetti burst
     confetti({
-      particleCount: 200,
-      spread: 150,
+      particleCount: 180,
+      spread: 140,
       origin: { y: 0.5 },
-      colors: ['#fbbf24', '#f59e0b', '#ffffff'],
+      colors: ['#fbbf24', '#f59e0b', '#ffffff', '#f43f5e'],
       shapes: ['circle'],
     });
 
-    // 2. Secondary burst
+    // Success staged emotional reveal
+    setTimeout(() => setSuccessPhase(1), 600); // Particles form glowing heart
+    setTimeout(() => setSuccessPhase(2), 1600); // Reveal memory text
+    setTimeout(() => setSuccessPhase(3), 4200); // Golden light sweep across screen
+
+    // Secondary burst
     setTimeout(() => {
       confetti({
-        particleCount: 100,
+        particleCount: 90,
         spread: 100,
-        origin: { y: 0.6 },
+        origin: { y: 0.55 },
         colors: ['#f43f5e', '#fbbf24', '#ffffff'],
       });
-    }, 400);
+    }, 500);
 
-    // 3. Complete and proceed
-    setTimeout(onComplete, 5000);
+    // Complete and proceed (5s total as existing)
+    setTimeout(onComplete, 5200);
   };
 
-  // Cleanup interval on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (scanInterval) clearInterval(scanInterval);
+      if (sweepTimerRef.current) clearTimeout(sweepTimerRef.current);
     };
   }, [scanInterval]);
 
+  // Dynamic intensity factors based on progress
+  const glowOpacity = progress < 30 ? 0.35 : progress < 60 ? 0.65 : progress < 90 ? 0.85 : 1.0;
+  const brightnessBoost = progress >= 90 ? 'brightness(1.08)' : 'brightness(1)';
+
   return (
-    <div className="w-full flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+    <div 
+      className="w-full min-h-[75vh] flex flex-col items-center justify-center p-4 sm:p-6 text-center select-none relative z-30 transition-all duration-700"
+      style={{ filter: brightnessBoost }}
+    >
+      {/* Cinematic Shared Atmosphere */}
+      <CinematicSceneAtmosphere accentGlow={status === 'SUCCESS' ? 'amber' : 'rose'} />
+
+      {/* Golden Light Sweep across the screen before leaving scene */}
+      {successPhase >= 3 && (
+        <motion.div
+          initial={{ x: '-100%', opacity: 0 }}
+          animate={{ x: '100%', opacity: [0, 0.7, 0] }}
+          transition={{ duration: 1.2, ease: 'easeInOut' }}
+          className="fixed inset-y-0 w-full pointer-events-none z-[60]"
+          style={{
+            background: 'linear-gradient(90deg, transparent 0%, rgba(251,191,36,0.35) 50%, transparent 100%)',
+          }}
+        />
+      )}
+
       {status === 'SUCCESS' && <GoldenButterflyExplosion />}
 
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="w-full max-w-md p-8 sm:p-10 rounded-3xl backdrop-blur-3xl bg-zinc-950/85 border border-rose-500/30 shadow-[0_0_50px_rgba(244,63,94,0.25)] space-y-6 sm:space-y-8 relative overflow-hidden animate-glow-pulse"
+        className="w-full max-w-md p-7 sm:p-10 rounded-3xl backdrop-blur-3xl bg-zinc-950/85 border border-amber-400/30 shadow-[0_0_60px_rgba(244,63,94,0.25)] space-y-6 sm:space-y-8 relative overflow-hidden"
       >
         <AnimatePresence mode="wait">
           {status !== 'SUCCESS' ? (
@@ -167,88 +191,101 @@ export default function FingerprintLock({ onComplete }) {
               className="space-y-6 sm:space-y-8 flex flex-col items-center"
             >
               <div>
-                <span className="text-xs font-mono uppercase tracking-[0.2em] text-rose-400">
-                  Security Check
+                <span className="text-xs font-mono uppercase tracking-[0.25em] text-amber-400/90 flex items-center justify-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                  Security Verification • Biometric
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-serif text-white mt-1">
+                <h2 className="text-2xl sm:text-3xl font-serif text-white mt-1.5 drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
                   Unlock Your Soulmate Match 🔒
                 </h2>
               </div>
 
-              {/* Scanning Circular Area */}
-              <div className="relative w-44 h-44 flex items-center justify-center">
+              {/* Scanning Circular Area with Multiple Fingerprint Rings */}
+              <div className="relative w-48 h-48 flex items-center justify-center">
+                {/* Subtle Concentric Glowing Fingerprint Rings */}
+                <div 
+                  className="absolute inset-0 rounded-full border border-amber-400/20 animate-ping pointer-events-none"
+                  style={{ animationDuration: '3s', opacity: glowOpacity * 0.4 }}
+                />
+                <div 
+                  className="absolute inset-3 rounded-full border border-rose-500/25 pointer-events-none"
+                  style={{
+                    boxShadow: status === 'SCANNING' ? `0 0 25px rgba(251,191,36,${glowOpacity * 0.4})` : 'none',
+                  }}
+                />
+
                 {/* SVG Progress Circle Background and Progress */}
                 <svg className="absolute w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                  {/* Track */}
                   <circle
                     cx="50"
                     cy="50"
-                    r="44"
+                    r="45"
                     className="stroke-rose-950/40"
-                    strokeWidth="4"
+                    strokeWidth="3.5"
                     fill="transparent"
                   />
-                  {/* Glowing progress line */}
                   <motion.circle
                     cx="50"
                     cy="50"
-                    r="44"
-                    className="stroke-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
-                    strokeWidth="4.5"
+                    r="45"
+                    className="stroke-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.8)]"
+                    strokeWidth="4"
                     fill="transparent"
-                    strokeDasharray={2 * Math.PI * 44}
-                    strokeDashoffset={2 * Math.PI * 44 * (1 - progress / 100)}
+                    strokeDasharray={2 * Math.PI * 45}
+                    strokeDashoffset={2 * Math.PI * 45 * (1 - progress / 100)}
                     transition={{ ease: "easeOut" }}
                   />
                 </svg>
 
-                {/* Fingerprint Scanning Button */}
+                {/* Living Glowing Fingerprint Sensor Button */}
                 <button
                   onMouseDown={startScan}
                   onMouseUp={stopScan}
                   onMouseLeave={stopScan}
                   onTouchStart={startScan}
                   onTouchEnd={stopScan}
-                  className={`relative z-10 p-9 rounded-full bg-rose-500/10 border border-rose-500/30 transition-all duration-300 select-none cursor-pointer outline-none active:scale-95 ${
+                  className={`relative z-10 p-10 rounded-full transition-all duration-300 select-none cursor-pointer outline-none active:scale-95 ${
                     status === 'SCANNING' 
-                      ? 'shadow-[0_0_40px_rgba(251,191,36,0.4)] border-amber-500/50 bg-amber-500/5' 
-                      : 'shadow-[0_0_25px_rgba(244,63,94,0.2)] hover:border-rose-400/50'
+                      ? 'shadow-[0_0_45px_rgba(251,191,36,0.55)] border border-amber-400/70 bg-gradient-to-tr from-amber-500/15 via-rose-500/10 to-amber-500/20' 
+                      : 'shadow-[0_0_30px_rgba(244,63,94,0.25)] border border-rose-500/35 bg-rose-500/10 hover:border-amber-400/50'
                   }`}
                 >
-                  <Fingerprint className={`w-16 h-16 transition-colors duration-300 ${
-                    status === 'SCANNING' ? 'text-amber-400' : 'text-rose-400'
+                  <Fingerprint className={`w-18 h-18 transition-all duration-300 ${
+                    status === 'SCANNING' 
+                      ? 'text-amber-300 scale-105 filter drop-shadow-[0_0_14px_rgba(251,191,36,0.9)]' 
+                      : 'text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.4)]'
                   }`} />
                   
-                  {/* Scanning sweep laser line */}
+                  {/* Golden Scanning Laser Line */}
                   {status === 'SCANNING' && (
                     <motion.div
-                      initial={{ y: -30 }}
-                      animate={{ y: 30 }}
+                      initial={{ y: -34 }}
+                      animate={{ y: 34 }}
                       transition={{ 
                         repeat: Infinity, 
                         repeatType: "reverse", 
-                        duration: 1.2, 
+                        duration: 1.1, 
                         ease: "easeInOut" 
                       }}
-                      className="absolute left-4 right-4 h-0.5 bg-amber-400 shadow-[0_0_8px_#fbbf24]"
+                      className="absolute left-3 right-3 h-0.5 bg-gradient-to-r from-transparent via-amber-300 to-transparent shadow-[0_0_12px_#fbbf24]"
                     />
                   )}
                 </button>
               </div>
 
-              {/* Progress and status message */}
+              {/* Progress and Staged Message */}
               <div className="space-y-2">
                 {status === 'SCANNING' ? (
-                  <h3 className="text-xl text-amber-400 font-semibold tracking-wide animate-pulse">
-                    {progress}% Scanning...
+                  <h3 className="text-xl text-amber-300 font-semibold tracking-wider font-serif animate-pulse drop-shadow-[0_0_12px_rgba(251,191,36,0.7)]">
+                    {progress}% Verifying Biometrics...
                   </h3>
                 ) : (
-                  <h3 className="text-lg text-rose-300 font-medium">
+                  <h3 className="text-lg text-rose-200 font-medium font-serif">
                     Hold to scan fingerprint
                   </h3>
                 )}
                 
-                <p className="text-xs text-rose-200/60 max-w-[240px] mx-auto leading-relaxed">
+                <p className="text-xs text-rose-200/70 max-w-[260px] mx-auto leading-relaxed font-serif italic">
                   {status === 'SCANNING' 
                     ? "Keep holding to verify biometric connection... ✨" 
                     : "Press and hold your finger on the sensor to initiate Match Analysis... ✨"}
@@ -256,50 +293,63 @@ export default function FingerprintLock({ onComplete }) {
               </div>
             </motion.div>
           ) : (
+            /* ================================================================= */
+            /* SUCCESS STAGE: CINEMATIC HEART FORMATION & VERIFICATION           */
+            /* ================================================================= */
             <motion.div
               key="success-stage"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="space-y-6 py-6"
+              className="space-y-6 py-4 flex flex-col items-center"
             >
-              <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
+              {/* Glowing Heart with Pulse */}
+              <div className="relative w-28 h-28 mx-auto flex items-center justify-center">
                 <motion.div
                   initial={{ scale: 0 }}
-                  animate={{ scale: [0, 1.2, 1] }}
-                  transition={{ duration: 0.6, type: 'spring' }}
-                  className="p-5 rounded-full bg-amber-500/10 border border-amber-400/30 shadow-[0_0_35px_rgba(251,191,36,0.35)]"
+                  animate={{ scale: [0, 1.25, 1] }}
+                  transition={{ duration: 0.7, type: 'spring' }}
+                  className="p-6 rounded-full bg-gradient-to-tr from-amber-500/20 via-rose-500/20 to-yellow-300/20 border border-amber-400/50 shadow-[0_0_45px_rgba(251,191,36,0.5)]"
                 >
-                  <Heart className="w-12 h-12 text-amber-400 fill-amber-400 animate-heartbeat" />
+                  <Heart className="w-14 h-14 text-amber-300 fill-amber-400 drop-shadow-[0_0_20px_rgba(251,191,36,0.85)] animate-heartbeat" />
                 </motion.div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3.5">
+                {/* Match Verified Text */}
                 <motion.h1 
                   initial={{ y: 15, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-3xl sm:text-4xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 drop-shadow-[0_0_20px_rgba(251,191,36,0.3)]"
+                  transition={{ delay: 0.2 }}
+                  className="text-3xl sm:text-4xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-400 drop-shadow-[0_0_25px_rgba(251,191,36,0.6)]"
                 >
-                  100% Soulmate Match Found!
+                  Match Verified ❤️
                 </motion.h1>
                 
                 <motion.p 
                   initial={{ y: 15, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.6 }}
+                  transition={{ delay: 0.5 }}
                   className="text-2xl sm:text-3xl font-serif text-white tracking-wide"
                 >
-                  Abishek <span className="text-rose-500">💖</span> Saranya
+                  Abishek <span className="text-rose-500 animate-pulse inline-block">💖</span> Saranya
                 </motion.p>
 
-                <motion.p 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.7 }}
-                  transition={{ delay: 1 }}
-                  className="text-xs text-rose-300 italic tracking-wider uppercase font-mono mt-4"
-                >
-                  Match verified successfully. Entering Forever.
-                </motion.p>
+                {/* Staged Emotional Poetry Required */}
+                {successPhase >= 2 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1 }}
+                    className="space-y-1.5 pt-2"
+                  >
+                    <p className="text-xs sm:text-sm font-serif italic text-slate-200/90 leading-relaxed drop-shadow-[0_1px_8px_rgba(0,0,0,0.8)]">
+                      "Some things are not verified by fingerprints..."
+                    </p>
+                    <p className="text-xs sm:text-sm font-serif font-medium text-amber-200 drop-shadow-[0_0_12px_rgba(251,191,36,0.7)]">
+                      "Some things are verified by memories. ❤️"
+                    </p>
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           )}

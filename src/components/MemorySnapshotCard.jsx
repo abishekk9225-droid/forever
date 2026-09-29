@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Award } from 'lucide-react';
+import { Download, Award, Sparkles } from 'lucide-react';
 
 export default function MemorySnapshotCard() {
   const handleDownload = () => {
@@ -24,21 +24,21 @@ export default function MemorySnapshotCard() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto my-6 px-4 z-40 relative">
-      <div className="p-8 rounded-3xl backdrop-blur-2xl bg-zinc-950/85 border border-rose-500/30 shadow-[0_0_40px_rgba(244,114,182,0.25)] text-center relative overflow-hidden">
-        <div className="absolute -top-10 -left-10 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl" />
+    <div className="w-full max-w-md mx-auto my-6 px-4 z-40 relative select-none">
+      <div className="p-8 sm:p-9 rounded-3xl backdrop-blur-3xl bg-zinc-950/85 border border-amber-300/35 shadow-[0_0_55px_rgba(251,191,36,0.2)] text-center relative overflow-hidden">
+        <div className="absolute -top-10 -left-10 w-28 h-28 bg-amber-400/10 rounded-full blur-2xl pointer-events-none" />
         
-        <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 mx-auto mb-4">
-          <Award className="w-6 h-6 animate-pulse" />
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-400/20 to-rose-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 mx-auto mb-4 shadow-[0_0_25px_rgba(251,191,36,0.3)]">
+          <Award className="w-7 h-7 animate-pulse" />
         </div>
 
-        <h3 className="text-xl font-serif text-white mb-2">Our Keepsake Certificate 📜</h3>
-        <p className="text-xs text-rose-200/70 mb-6 leading-relaxed">
-          Click below to download your official certificate of forever love as a keepsake.
+        <h3 className="text-xl sm:text-2xl font-serif text-white mb-2">Our Keepsake Certificate 📜</h3>
+        <p className="text-xs sm:text-sm text-rose-200/75 font-serif italic mb-6 leading-relaxed">
+          "Download your official certificate of forever love as an eternal keepsake..."
         </p>
 
-        <div className="p-4 rounded-2xl bg-black/40 border border-rose-500/10 text-left font-mono text-[10px] text-rose-200/90 leading-loose mb-6">
-          <div className="text-center font-bold border-b border-rose-500/20 pb-2 mb-2 text-xs">
+        <div className="p-4 sm:p-5 rounded-2xl bg-black/50 border border-amber-400/20 text-left font-mono text-[11px] text-amber-200/90 leading-loose mb-6 shadow-inner">
+          <div className="text-center font-bold border-b border-amber-400/20 pb-2 mb-2 text-xs tracking-wider text-amber-300">
             CERTIFICATE OF FOREVER
           </div>
           <div>PARTNERS: Saranya & Abishek</div>
@@ -48,10 +48,11 @@ export default function MemorySnapshotCard() {
 
         <button
           onClick={handleDownload}
-          className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-medium text-sm tracking-wide flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(244,114,182,0.4)] transition cursor-pointer"
+          className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-400 to-rose-500 hover:from-amber-500 text-zinc-950 font-bold text-sm tracking-wider flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(251,191,36,0.4)] transition cursor-pointer"
         >
           <Download className="w-4 h-4" />
           <span>Download Keepsake Certificate</span>
+          <Sparkles className="w-4 h-4 text-zinc-950" />
         </button>
       </div>
     </div>

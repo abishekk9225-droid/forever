@@ -41,6 +41,7 @@ import HeartbeatIntro from './components/HeartbeatIntro';
 import EmotionalQuestionGate from './components/EmotionalQuestionGate';
 import CinematicRainbowBorder from './components/CinematicRainbowBorder';
 import AIPencilDrawingScene from './components/AIPencilDrawingScene';
+import CinematicSceneAtmosphere from './components/CinematicSceneAtmosphere';
 
 
 
@@ -317,6 +318,7 @@ function MainApp() {
               animate={{ opacity: 1, y: 0 }}
               className="w-full space-y-6 flex flex-col items-center"
             >
+              <CinematicSceneAtmosphere accentGlow="rose" />
               <SecretMessageCard />
               <MemorySnapshotCard />
               <SpringCoilFinale />

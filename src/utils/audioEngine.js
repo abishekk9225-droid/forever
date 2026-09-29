@@ -27,7 +27,7 @@ class UnifiedAudioEngine {
     // Music state
     this.currentTrack = 'intro'; // 'intro' | 'abi1' | 'celebration' | 'ka' | 'kk'
     this.isPlayingMusic = false;
-    this.baseMusicVolume = 0.28; // Medium background level around 20-30% volume
+    this.baseMusicVolume = 0.65; // High, clear, consistent BGM level
     this.bgmBreathingTimer = null;
     this.tracks = {};
     this.listeners = new Set();
@@ -69,7 +69,7 @@ class UnifiedAudioEngine {
       // 2. Heartbeat Gain & Lowpass Resonant Filter (tuned to 320Hz for rich warmth & punch)
       if (!this.heartbeatGain) {
         this.heartbeatGain = this.audioCtx.createGain();
-        this.heartbeatGain.gain.setValueAtTime(this.targetVolume, now);
+        this.heartbeatGain.gain.setValueAtTime(this.targetVolume * 1.35, now);
         this.heartbeatGain.connect(this.masterCompressor);
 
         this.heartbeatFilter = this.audioCtx.createBiquadFilter();
@@ -124,7 +124,7 @@ class UnifiedAudioEngine {
 
       // Fallback element volume: calibrated for clear background music
       if (id === 'intro') {
-        audio.volume = 0.50;
+        audio.volume = 0.65;
       } else if (id === 'ka') {
         audio.volume = 0.28;
       } else if (id === 'kk') {
@@ -226,11 +226,11 @@ class UnifiedAudioEngine {
       if (this.musicGain && this.audioCtx) {
         this.musicGain.gain.cancelScheduledValues(now);
         this.musicGain.gain.setValueAtTime(this.musicGain.gain.value || 0.0001, now);
-        // Clearly audible and balanced background level
-        this.musicGain.gain.linearRampToValueAtTime(0.50, now + 2.0);
+        // High, clear, and consistent background music level throughout intro
+        this.musicGain.gain.linearRampToValueAtTime(0.65, now + 1.5);
       }
 
-      intro.element.volume = 0.50;
+      intro.element.volume = 0.65;
       intro.element.play().then(() => {
         this.isPlayingMusic = true;
         this.notifyState();
@@ -593,6 +593,8 @@ class UnifiedAudioEngine {
   // Smoothly reduce current music volume to a soft background ambience level (~0.045).
   fadeToSoftAmbience(targetGain = 0.045, durationSec = 3.5) {
     if (!this.audioCtx || !this.musicGain) return;
+    // Do not fade intro if current track is intro
+    if (this.currentTrack === 'intro') return;
 
     const now = this.audioCtx.currentTime;
     const currentGain = this.musicGain.gain.value;
@@ -605,6 +607,7 @@ class UnifiedAudioEngine {
   // General smooth music fade method
   fadeMusic(targetGain, durationSec = 1.5) {
     if (!this.audioCtx || !this.musicGain) return;
+    if (this.currentTrack === 'intro') return;
 
     const now = this.audioCtx.currentTime;
     const currentGain = this.musicGain.gain.value;
@@ -638,7 +641,7 @@ class UnifiedAudioEngine {
       this.resumeContext();
       if (this.audioCtx && this.musicGain) {
         const now = this.audioCtx.currentTime;
-        const targetVol = this.currentTrack === 'abi1' ? 0.15 : 0.09;
+        const targetVol = this.currentTrack === 'intro' ? 0.65 : this.currentTrack === 'abi1' ? 0.15 : 0.28;
         this.musicGain.gain.cancelScheduledValues(now);
         this.musicGain.gain.setValueAtTime(0.0001, now);
         this.musicGain.gain.linearRampToValueAtTime(targetVol, now + 0.5);
@@ -695,7 +698,7 @@ class UnifiedAudioEngine {
     this.isMuted = !!muted;
     if (this.heartbeatGain && this.audioCtx) {
       const now = this.audioCtx.currentTime;
-      const target = this.isMuted ? 0.0001 : this.currentVolume;
+      const target = this.isMuted ? 0.0001 : this.currentVolume * 1.35;
       this.heartbeatGain.gain.setTargetAtTime(target, now, 0.05);
     }
   }
@@ -719,7 +722,7 @@ class UnifiedAudioEngine {
       const now = this.audioCtx.currentTime;
       const currentGain = this.musicGain.gain.value;
 
-      if (this.targetVolume >= 0.48 && currentGain > 0.14) {
+      if (this.currentTrack !== 'intro' && this.targetVolume >= 0.48 && currentGain > 0.14) {
         this.musicGain.gain.cancelScheduledValues(now);
         this.musicGain.gain.setValueAtTime(currentGain, now);
         this.musicGain.gain.linearRampToValueAtTime(0.12, now + 1.2);
@@ -752,7 +755,7 @@ class UnifiedAudioEngine {
       oscLub.frequency.exponentialRampToValueAtTime(48, time + 0.15);
 
       gainLub.gain.setValueAtTime(0.0001, time);
-      gainLub.gain.linearRampToValueAtTime(0.95, time + 0.022);
+      gainLub.gain.linearRampToValueAtTime(1.20, time + 0.022);
       gainLub.gain.exponentialRampToValueAtTime(0.0001, time + 0.16);
 
       // Acoustic chest punch (135Hz -> 68Hz - provides crisp presence on phone & laptop speakers)
@@ -763,7 +766,7 @@ class UnifiedAudioEngine {
       punchLub.frequency.exponentialRampToValueAtTime(68, time + 0.10);
 
       punchGainLub.gain.setValueAtTime(0.0001, time);
-      punchGainLub.gain.linearRampToValueAtTime(0.55, time + 0.018);
+      punchGainLub.gain.linearRampToValueAtTime(0.85, time + 0.018);
       punchGainLub.gain.exponentialRampToValueAtTime(0.0001, time + 0.11);
 
       // Deep sub-harmonic layer for headphone/subwoofer depth (44Hz -> 28Hz)
@@ -774,7 +777,7 @@ class UnifiedAudioEngine {
       subLub.frequency.exponentialRampToValueAtTime(28, time + 0.16);
 
       subGainLub.gain.setValueAtTime(0.0001, time);
-      subGainLub.gain.linearRampToValueAtTime(0.40, time + 0.024);
+      subGainLub.gain.linearRampToValueAtTime(0.60, time + 0.024);
       subGainLub.gain.exponentialRampToValueAtTime(0.0001, time + 0.16);
 
       oscLub.connect(gainLub);
@@ -800,7 +803,7 @@ class UnifiedAudioEngine {
       oscDub.frequency.exponentialRampToValueAtTime(60, tDub + 0.11);
 
       gainDub.gain.setValueAtTime(0.0001, tDub);
-      gainDub.gain.linearRampToValueAtTime(0.72, tDub + 0.016);
+      gainDub.gain.linearRampToValueAtTime(0.95, tDub + 0.016);
       gainDub.gain.exponentialRampToValueAtTime(0.0001, tDub + 0.12);
 
       // DUB chest punch (155Hz -> 82Hz)
@@ -811,7 +814,7 @@ class UnifiedAudioEngine {
       punchDub.frequency.exponentialRampToValueAtTime(82, tDub + 0.08);
 
       punchGainDub.gain.setValueAtTime(0.0001, tDub);
-      punchGainDub.gain.linearRampToValueAtTime(0.42, tDub + 0.014);
+      punchGainDub.gain.linearRampToValueAtTime(0.65, tDub + 0.014);
       punchGainDub.gain.exponentialRampToValueAtTime(0.0001, tDub + 0.09);
 
       oscDub.connect(gainDub);
@@ -844,7 +847,8 @@ class UnifiedAudioEngine {
 
     // Update heartbeat master gain directly and smoothly
     if (this.heartbeatGain && !this.isMuted) {
-      this.heartbeatGain.gain.setValueAtTime(Math.max(0.0001, this.currentVolume), now);
+      const hbGain = Math.max(0.0001, this.currentVolume * 1.35);
+      this.heartbeatGain.gain.setValueAtTime(hbGain, now);
     }
 
     // Schedule beats within lookahead window (120ms)

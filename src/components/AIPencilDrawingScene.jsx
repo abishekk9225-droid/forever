@@ -486,7 +486,12 @@ export default function AIPencilDrawingScene({ onComplete }) {
       .then((result) => {
         // Preload the AI generated pencil portrait artwork in memory (NEVER /ap.jpg in DOM)
         const img = new Image();
-        img.crossOrigin = 'anonymous';
+        // NOTE: crossOrigin is intentionally NOT set here.
+        // /ai_pencil_sketch.jpg is a same-origin asset served by Vite.
+        // Setting crossOrigin='anonymous' on a same-origin asset that lacks
+        // explicit CORS headers causes the browser to reject the load entirely.
+        // We only use drawImage() on canvas (never getImageData), so no
+        // crossOrigin attribute is needed.
         img.onload = () => {
           offscreenImgRef.current = img;
           setArtworkUrl(result.artworkUrl);

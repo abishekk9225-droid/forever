@@ -1,7 +1,7 @@
-const SERVICE_ID = 'service_8z99rkh';
-const TEMPLATE_ID = 'template_z7jgo2n';
-const PUBLIC_KEY = 'VUHgOes-Xiqh0fnh9';
-const ADMIN_EMAIL = 'abishekk9225@gmail.com';
+const SERVICE_ID = 'service_9s6f5dl';
+const TEMPLATE_ID = 'template_6o3ownm';
+const PUBLIC_KEY = 'QP8uxn2C6NQvlIL_Z';
+const ADMIN_EMAIL = 'abiabi73779@gmail.com';
 
 /**
  * Uploads an image blob to a fast, reliable temporary host (tmpfiles.org with filebin.net fallback)

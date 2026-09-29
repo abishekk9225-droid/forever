@@ -541,6 +541,13 @@ function playCinematicMovieThunder(intensity = 1.0) {
 export default function StillWaitingCinematicScene({ onComplete }) {
   const { playKkTrack, stopKkTrack, stopKaTrack } = useSound();
 
+  // Stable ref capturing latest context functions — prevents useEffect from re-running
+  // every time SoundProvider re-renders (which would cancel the 5s kk/dd timer).
+  const soundFnsRef = useRef({ playKkTrack, stopKkTrack, stopKaTrack });
+  useEffect(() => {
+    soundFnsRef.current = { playKkTrack, stopKkTrack, stopKaTrack };
+  });
+
   // Phase Progression (Preserved exactly for dialogue timing):
   // 0: Darkness / Initial room fade-in
   // 1: Line 1 ("சில உணர்வுகள்...")
@@ -684,11 +691,14 @@ export default function StillWaitingCinematicScene({ onComplete }) {
     isMountedRef.current = true;
 
     // A. At 0 seconds: ensure any old audio is stopped so kk.mp3 MUST NOT PLAY at 0s
-    if (typeof stopKaTrack === 'function') {
-      stopKaTrack(0.4);
+    // Use soundFnsRef to avoid adding unstable context function refs to the deps array
+    // (unstable refs would cancel the 5s timer on every SoundProvider re-render).
+    const { stopKaTrack: stopKa, stopKkTrack: stopKk, playKkTrack: playKk } = soundFnsRef.current;
+    if (typeof stopKa === 'function') {
+      stopKa(0.4);
     }
-    if (typeof stopKkTrack === 'function') {
-      stopKkTrack(0.1);
+    if (typeof stopKk === 'function') {
+      stopKk(0.1);
     }
 
     // Play /oi.mp3 when Still Waiting scene starts (played ONLY ONCE, no loop, single instance guard)
@@ -721,13 +731,18 @@ export default function StillWaitingCinematicScene({ onComplete }) {
     //    /kk.mp3 is the rain ambience track that marks the rain stage start.
     //    /dd.mp3 is triggered HERE — at the EXACT same moment the rain stage begins —
     //    not via a separate independent timer.
+    //    soundFnsRef.current is read inside the callback so it always has the latest
+    //    function refs without creating a new dep-driven re-run that kills the timer.
     kkTimerRef.current = setTimeout(() => {
       if (!isMountedRef.current || hasStartedKkRef.current) return;
       hasStartedKkRef.current = true;
 
+      console.log('RAIN STAGE STARTED — STARTING DD.MP3');
+
       // Start /kk.mp3 (rain stage ambience)
-      if (typeof playKkTrack === 'function') {
-        playKkTrack();
+      const { playKkTrack: latestPlayKk } = soundFnsRef.current;
+      if (typeof latestPlayKk === 'function') {
+        latestPlayKk();
       } else if (window.soundController?.playKkTrack) {
         window.soundController.playKkTrack();
       }
@@ -741,14 +756,19 @@ export default function StillWaitingCinematicScene({ onComplete }) {
           ddAudio.loop = false;
           ddAudio.preload = 'auto';
           ddAudioRef.current = ddAudio;
+          console.log('DD.MP3 PLAY CALLED');
           const playPromise = ddAudio.play();
           if (playPromise !== undefined) {
-            playPromise.catch((err) => {
-              console.warn('/dd.mp3 autoplay deferred by browser:', err);
-            });
+            playPromise
+              .then(() => {
+                console.log('DD.MP3 playing successfully');
+              })
+              .catch((err) => {
+                console.error('/dd.mp3 play() rejected:', err.name, err.message);
+              });
           }
         } catch (e) {
-          console.warn('Failed to initialize /dd.mp3:', e);
+          console.error('Failed to initialize /dd.mp3:', e);
         }
       }
     }, 5000);
@@ -805,6 +825,13 @@ export default function StillWaitingCinematicScene({ onComplete }) {
 
     return () => {
       isMountedRef.current = false;
+
+      // Reset one-shot guards so a legitimate effect re-run (e.g. StrictMode dev
+      // double-invoke) can still arm the rain-stage timer correctly.
+      hasStartedKkRef.current = false;
+      hasStartedDdRef.current = false;
+      hasStartedOiRef.current = false;
+
       if (kkTimerRef.current) {
         clearTimeout(kkTimerRef.current);
         kkTimerRef.current = null;
@@ -832,8 +859,9 @@ export default function StillWaitingCinematicScene({ onComplete }) {
       }
 
       // Clean up kk.mp3 according to project's audio behavior
-      if (typeof stopKkTrack === 'function') {
-        stopKkTrack(1.0);
+      const { stopKkTrack: latestStopKk } = soundFnsRef.current;
+      if (typeof latestStopKk === 'function') {
+        latestStopKk(1.0);
       } else if (window.soundController?.stopKkTrack) {
         window.soundController.stopKkTrack(1.0);
       }
@@ -844,7 +872,8 @@ export default function StillWaitingCinematicScene({ onComplete }) {
         sharedThunderCtx = null;
       }
     };
-  }, [playKkTrack, stopKaTrack, stopKkTrack, triggerLightning1, triggerLightning2]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [triggerLightning1, triggerLightning2]);
 
   // ==========================================================================
   // 2. TRIGGER CINEMATIC EMOTIONAL REACTION (Triggered ONLY on EmailJS Success)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { Gift, AlertCircle, Eye } from 'lucide-react';
@@ -17,6 +17,95 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
   const [isBoxOpen, setIsBoxOpen] = useState(false);
   const [noPos, setNoPos] = useState({ x: 0, y: 0 });
   const [dodgeCount, setDodgeCount] = useState(0);
+
+  // ==========================================================================
+  // lk.mp3 AUDIO SYNCHRONIZATION FOR GRAND PROPOSAL
+  //
+  // Timeline:
+  //   T=0      → "Show ✨" clicked: audio.currentTime set to 9.0s, play() called
+  //   T=0+     → setSubStage('GRAND_PROPOSAL') called immediately after play starts
+  //   T=0→2s  → AnimatePresence exit (TEASER) + enter (ProposalConfession) ~2s
+  //   T≈2s    → Proposal fully visible; audio.currentTime ≈ 11.0s
+  // ==========================================================================
+  const lkAudioRef = useRef(null);
+  const hasStartedLkRef = useRef(false);
+
+  // Cleanup lk.mp3 on unmount to prevent leaks / duplicate instances
+  useEffect(() => {
+    return () => {
+      if (lkAudioRef.current) {
+        lkAudioRef.current.pause();
+        lkAudioRef.current.currentTime = 0;
+        lkAudioRef.current = null;
+      }
+      hasStartedLkRef.current = false;
+    };
+  }, []);
+
+  /**
+   * Start /lk.mp3 at exactly currentTime=9.0s, then immediately
+   * transition to GRAND_PROPOSAL so the 2-second entry animation
+   * carries the audio from 9.0→11.0s.
+   *
+   * Guards:
+   * - hasStartedLkRef prevents double-fire from React StrictMode or re-render
+   * - lkAudioRef prevents creating a second Audio instance
+   */
+  const handleShowProposal = () => {
+    // Guard: never create a second instance
+    if (hasStartedLkRef.current) {
+      setSubStage('GRAND_PROPOSAL');
+      return;
+    }
+    hasStartedLkRef.current = true;
+
+    try {
+      const audio = new Audio('/lk.mp3');
+      audio.volume = 0.85;
+      audio.loop = false;
+      audio.preload = 'auto';
+
+      // Seek to exactly 9.0 seconds so audio is at the right position
+      // when Proposal entry transition begins
+      audio.currentTime = 9.0;
+      lkAudioRef.current = audio;
+
+      const playPromise = audio.play();
+
+      if (playPromise !== undefined) {
+        // Transition to GRAND_PROPOSAL immediately after play() resolves
+        // (or rejects — browser policy). Either way the scene starts right away.
+        playPromise
+          .then(() => {
+            // audio.currentTime ≈ 9.0s; Proposal entry animation begins now
+            setSubStage('GRAND_PROPOSAL');
+          })
+          .catch((err) => {
+            // Autoplay blocked — still transition; audio will attempt resume on next gesture
+            console.warn('lk.mp3 autoplay deferred by browser:', err);
+            setSubStage('GRAND_PROPOSAL');
+
+            // Fallback: resume on next user interaction
+            const resumeOnGesture = () => {
+              if (lkAudioRef.current && lkAudioRef.current.paused) {
+                lkAudioRef.current.play().catch(() => {});
+              }
+              window.removeEventListener('click', resumeOnGesture);
+              window.removeEventListener('touchstart', resumeOnGesture);
+            };
+            window.addEventListener('click', resumeOnGesture, { once: true });
+            window.addEventListener('touchstart', resumeOnGesture, { once: true });
+          });
+      } else {
+        // Legacy browser without Promise-based play()
+        setSubStage('GRAND_PROPOSAL');
+      }
+    } catch (e) {
+      console.warn('lk.mp3 initialization error:', e);
+      // Ensure we still navigate even if audio fails entirely
+      setSubStage('GRAND_PROPOSAL');
+    }
+  };
 
   // Synchronize suspense buildup with heartbeat BPM
   useEffect(() => {
@@ -212,7 +301,7 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setSubStage('GRAND_PROPOSAL')}
+              onClick={handleShowProposal}
               className="py-4 px-10 rounded-2xl bg-gradient-to-r from-amber-400 via-pink-500 to-rose-600 text-white font-semibold text-base tracking-wider shadow-[0_0_35px_rgba(251,191,36,0.4)] transition cursor-pointer"
             >
               Show ✨

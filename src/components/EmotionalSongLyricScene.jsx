@@ -15,6 +15,22 @@ export default function EmotionalSongLyricScene({ audioInstance, onComplete }) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const audioRef = useRef(null);
   const isTransitioningRef = useRef(false);
+  // Hard 30-second scene wall — transitions exactly once at mount + 30s
+  const sceneTimerRef = useRef(null);
+
+  useEffect(() => {
+    sceneTimerRef.current = setTimeout(() => {
+      handleComplete();
+    }, 30000);
+    return () => {
+      if (sceneTimerRef.current) {
+        clearTimeout(sceneTimerRef.current);
+        sceneTimerRef.current = null;
+      }
+    };
+    // handleComplete is stable (uses refs only) — intentionally omitted from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Sync with audio instance or initialize fallback
   useEffect(() => {
@@ -46,16 +62,13 @@ export default function EmotionalSongLyricScene({ audioInstance, onComplete }) {
 
       const onPlay = () => setIsPlayingAudio(true);
       const onPause = () => setIsPlayingAudio(false);
-      const onEnded = () => handleComplete();
-
+      // Do NOT trigger handleComplete on ended — the 30-second timer is the sole gate
       audio.addEventListener('play', onPlay);
       audio.addEventListener('pause', onPause);
-      audio.addEventListener('ended', onEnded);
 
       return () => {
         audio.removeEventListener('play', onPlay);
         audio.removeEventListener('pause', onPause);
-        audio.removeEventListener('ended', onEnded);
         audio.pause();
         audio.src = '';
       };
@@ -65,10 +78,8 @@ export default function EmotionalSongLyricScene({ audioInstance, onComplete }) {
   // Cinematic Synced Tamil Typewriter Effect
   useEffect(() => {
     if (currentLineIdx >= TAMIL_LYRICS.length) {
-      const completionTimer = setTimeout(() => {
-        handleComplete();
-      }, 2500);
-      return () => clearTimeout(completionTimer);
+      // All lyrics displayed — stay on screen until the 30-second timer fires
+      return;
     }
 
     const fullLine = TAMIL_LYRICS[currentLineIdx];

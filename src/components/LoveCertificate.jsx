@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useRef, useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import html2canvas from 'html2canvas';
 import { Download, Heart, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -57,9 +57,51 @@ const RosetteSeal = () => (
   </div>
 );
 
-export default function LoveCertificate() {
+export default function LoveCertificate({ onVisible }) {
   const certificateRef = useRef(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const audioRef = useRef(null);
+  const timerRef = useRef(null);
+  const hasStartedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasStartedRef.current) return;
+    hasStartedRef.current = true;
+
+    // T = 0 sec: Start /oo.mp3 immediately with volume 0.85
+    try {
+      const audio = new Audio('/oo.mp3');
+      audio.volume = 0.85;
+      audio.loop = false;
+      audioRef.current = audio;
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.log('Certificate audio pending interaction/ready:', err);
+        });
+      }
+    } catch (e) {
+      console.warn('Certificate audio initialization error:', e);
+    }
+
+    // T = 0–3 sec: keep certificate hidden
+    // T = EXACTLY 3.0 sec: allow Love Certificate page transition to appear normally
+    timerRef.current = setTimeout(() => {
+      setIsVisible(true);
+      if (onVisible) onVisible();
+    }, 3000);
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   const handleDownload = async () => {
     if (!certificateRef.current || isDownloading) return;
@@ -113,123 +155,132 @@ export default function LoveCertificate() {
         }
       `}</style>
 
-      {/* VINTAGE CERTIFICATE CANVAS WITH CINEMATIC LIGHT SWEEP */}
-      <motion.div
-        ref={certificateRef}
-        initial={{ opacity: 0, scale: 0.92, y: 30 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 1.1, ease: 'easeOut' }}
-        className="w-full max-w-2xl p-6 sm:p-12 rounded-sm bg-[#fffefb] border-[14px] border-double border-[#d4af37] text-zinc-900 shadow-[0_0_70px_rgba(212,175,55,0.45)] text-center relative overflow-hidden my-4 sm:my-6"
-      >
-        {/* Subtle Archival Paper Texture Overlay */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-25 z-0"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 50% 50%, rgba(212,175,55,0.1) 0%, transparent 80%)',
-          }}
-        />
+      {/* VINTAGE CERTIFICATE CANVAS WITH CINEMATIC LIGHT SWEEP (REVEALS AT T = 3.0s) */}
+      <AnimatePresence>
+        {isVisible && (
+          <motion.div
+            key="certificate-card"
+            initial={{ opacity: 0, scale: 0.92, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 1.1, ease: 'easeOut' }}
+            className="w-full flex flex-col items-center"
+          >
+            <div
+              ref={certificateRef}
+              className="w-full max-w-2xl p-6 sm:p-12 rounded-sm bg-[#fffefb] border-[14px] border-double border-[#d4af37] text-zinc-900 shadow-[0_0_70px_rgba(212,175,55,0.45)] text-center relative overflow-hidden my-4 sm:my-6"
+            >
+              {/* Subtle Archival Paper Texture Overlay */}
+              <div
+                className="absolute inset-0 pointer-events-none opacity-25 z-0"
+                style={{
+                  backgroundImage:
+                    'radial-gradient(circle at 50% 50%, rgba(212,175,55,0.1) 0%, transparent 80%)',
+                }}
+              />
 
-        {/* Cinematic Light Sweep Across the Certificate */}
-        <div
-          className="absolute inset-y-0 w-32 pointer-events-none z-[12] opacity-40"
-          style={{
-            background:
-              'linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent)',
-            animation: 'certificateSweep 7s ease-in-out infinite',
-          }}
-        />
+              {/* Cinematic Light Sweep Across the Certificate */}
+              <div
+                className="absolute inset-y-0 w-32 pointer-events-none z-[12] opacity-40"
+                style={{
+                  background:
+                    'linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent)',
+                  animation: 'certificateSweep 7s ease-in-out infinite',
+                }}
+              />
 
-        {/* NESTED INNER GOLD LINE */}
-        <div className="absolute inset-2 border border-[#d4af37]/70 pointer-events-none z-[5]" />
+              {/* NESTED INNER GOLD LINE */}
+              <div className="absolute inset-2 border border-[#d4af37]/70 pointer-events-none z-[5]" />
 
-        {/* CORNER ORNAMENTS */}
-        <CornerOrnament className="top-3 left-3 z-[6]" />
-        <CornerOrnament className="top-3 right-3 scale-x-[-1] z-[6]" />
-        <CornerOrnament className="bottom-3 left-3 scale-y-[-1] z-[6]" />
-        <CornerOrnament className="bottom-3 right-3 scale-x-[-1] scale-y-[-1] z-[6]" />
+              {/* CORNER ORNAMENTS */}
+              <CornerOrnament className="top-3 left-3 z-[6]" />
+              <CornerOrnament className="top-3 right-3 scale-x-[-1] z-[6]" />
+              <CornerOrnament className="bottom-3 left-3 scale-y-[-1] z-[6]" />
+              <CornerOrnament className="bottom-3 right-3 scale-x-[-1] scale-y-[-1] z-[6]" />
 
-        {/* TOP ORNAMENT */}
-        <div className="flex justify-center mt-2 mb-4 relative z-10">
-          <CenterOrnament />
-        </div>
+              {/* TOP ORNAMENT */}
+              <div className="flex justify-center mt-2 mb-4 relative z-10">
+                <CenterOrnament />
+              </div>
 
-        {/* AWARD TITLE */}
-        <div className="my-2 sm:my-4 flex flex-col items-center relative z-10">
-          <span className="font-vintage-title text-base sm:text-2xl font-bold tracking-[0.25em] text-amber-900 uppercase">
-            MY FOREVER &
-          </span>
-          <h1 className="font-vintage-title text-3xl sm:text-5xl font-black tracking-[0.05em] text-amber-950 uppercase mt-1">
-            ALWAYS AWARD
-          </h1>
-        </div>
+              {/* AWARD TITLE */}
+              <div className="my-2 sm:my-4 flex flex-col items-center relative z-10">
+                <span className="font-vintage-title text-base sm:text-2xl font-bold tracking-[0.25em] text-amber-900 uppercase">
+                  MY FOREVER &
+                </span>
+                <h1 className="font-vintage-title text-3xl sm:text-5xl font-black tracking-[0.05em] text-amber-950 uppercase mt-1">
+                  ALWAYS AWARD
+                </h1>
+              </div>
 
-        <p className="font-vintage-sans text-xs sm:text-sm font-medium text-zinc-500 tracking-widest uppercase mt-5 relative z-10">
-          Presented to :
-        </p>
+              <p className="font-vintage-sans text-xs sm:text-sm font-medium text-zinc-500 tracking-widest uppercase mt-5 relative z-10">
+                Presented to :
+              </p>
 
-        {/* RECIPIENT NAMES WITH PULSING HEART */}
-        <div className="my-3 py-2 border-b border-zinc-300 max-w-md mx-auto relative z-10">
-          <span className="font-vintage-script text-3xl sm:text-6xl text-rose-600 tracking-wide font-medium flex items-center justify-center gap-2">
-            Abishek <Heart className="w-6 h-6 sm:w-10 sm:h-10 fill-rose-500 text-rose-500 inline-block animate-pulse mx-1" /> Saranya
-          </span>
-        </div>
+              {/* RECIPIENT NAMES WITH PULSING HEART */}
+              <div className="my-3 py-2 border-b border-zinc-300 max-w-md mx-auto relative z-10">
+                <span className="font-vintage-script text-3xl sm:text-6xl text-rose-600 tracking-wide font-medium flex items-center justify-center gap-2">
+                  Abishek <Heart className="w-6 h-6 sm:w-10 sm:h-10 fill-rose-500 text-rose-500 inline-block animate-pulse mx-1" /> Saranya
+                </span>
+              </div>
 
-        <p className="font-vintage-sans text-xs sm:text-sm text-zinc-600 leading-relaxed max-w-lg mx-auto px-4 my-5 relative z-10">
-          For being my peace, my happiness, and the most precious part of my life.
-          Thank you for always being there for me and for turning ordinary moments into extraordinary memories.
-        </p>
+              <p className="font-vintage-sans text-xs sm:text-sm text-zinc-600 leading-relaxed max-w-lg mx-auto px-4 my-5 relative z-10">
+                For being my peace, my happiness, and the most precious part of my life.
+                Thank you for always being there for me and for turning ordinary moments into extraordinary memories.
+              </p>
 
-        {/* SEAL & ROMANTIC SIGNATURE FOOTER */}
-        <div className="grid grid-cols-3 items-end mt-6 sm:mt-10 px-2 sm:px-6 relative z-10">
-          {/* Left: Signature */}
-          <div className="flex flex-col items-center">
-            <span className="font-vintage-script text-base sm:text-2xl text-rose-600 mb-1 select-none">
-              With All My Love ❤️
-            </span>
-            <div className="w-24 sm:w-36 border-b border-zinc-400" />
-            <span className="font-vintage-sans text-[10px] sm:text-xs text-zinc-500 uppercase tracking-widest mt-1">
-              Signature
-            </span>
-          </div>
+              {/* SEAL & ROMANTIC SIGNATURE FOOTER */}
+              <div className="grid grid-cols-3 items-end mt-6 sm:mt-10 px-2 sm:px-6 relative z-10">
+                {/* Left: Signature */}
+                <div className="flex flex-col items-center">
+                  <span className="font-vintage-script text-base sm:text-2xl text-rose-600 mb-1 select-none">
+                    With All My Love ❤️
+                  </span>
+                  <div className="w-24 sm:w-36 border-b border-zinc-400" />
+                  <span className="font-vintage-sans text-[10px] sm:text-xs text-zinc-500 uppercase tracking-widest mt-1">
+                    Signature
+                  </span>
+                </div>
 
-          {/* Center: Rosette Seal */}
-          <div className="flex justify-center -mb-2">
-            <RosetteSeal />
-          </div>
+                {/* Center: Rosette Seal */}
+                <div className="flex justify-center -mb-2">
+                  <RosetteSeal />
+                </div>
 
-          {/* Right: Date */}
-          <div className="flex flex-col items-center">
-            <span className="font-vintage-sans text-xs sm:text-base font-semibold text-zinc-800 mb-2">
-              23/08/2026
-            </span>
-            <div className="w-24 sm:w-36 border-b border-zinc-400" />
-            <span className="font-vintage-sans text-[10px] sm:text-xs text-zinc-500 uppercase tracking-widest mt-1">
-              Date
-            </span>
-          </div>
-        </div>
+                {/* Right: Date */}
+                <div className="flex flex-col items-center">
+                  <span className="font-vintage-sans text-xs sm:text-base font-semibold text-zinc-800 mb-2">
+                    23/08/2026
+                  </span>
+                  <div className="w-24 sm:w-36 border-b border-zinc-400" />
+                  <span className="font-vintage-sans text-[10px] sm:text-xs text-zinc-500 uppercase tracking-widest mt-1">
+                    Date
+                  </span>
+                </div>
+              </div>
 
-        {/* BOTTOM ORNAMENT */}
-        <div className="flex justify-center mt-5 relative z-10">
-          <CenterOrnament className="rotate-180" />
-        </div>
-      </motion.div>
+              {/* BOTTOM ORNAMENT */}
+              <div className="flex justify-center mt-5 relative z-10">
+                <CenterOrnament className="rotate-180" />
+              </div>
+            </div>
 
-      {/* DOWNLOAD BUTTON */}
-      <div className="flex items-center justify-center mt-2 relative z-20">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleDownload}
-          disabled={isDownloading}
-          className="px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-500 to-rose-500 text-zinc-950 font-bold text-sm sm:text-base shadow-[0_0_35px_rgba(251,191,36,0.5)] flex items-center gap-3 cursor-pointer transition"
-        >
-          <Download className="w-5 h-5"/>
-          <span>{isDownloading ? 'Saving Your Certificate...' : 'Download Forever Award Certificate'}</span>
-          <Sparkles className="w-4 h-4 text-amber-950" />
-        </motion.button>
-      </div>
+            {/* DOWNLOAD BUTTON */}
+            <div className="flex items-center justify-center mt-2 relative z-20">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-500 to-rose-500 text-zinc-950 font-bold text-sm sm:text-base shadow-[0_0_35px_rgba(251,191,36,0.5)] flex items-center gap-3 cursor-pointer transition"
+              >
+                <Download className="w-5 h-5"/>
+                <span>{isDownloading ? 'Saving Your Certificate...' : 'Download Forever Award Certificate'}</span>
+                <Sparkles className="w-4 h-4 text-amber-950" />
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

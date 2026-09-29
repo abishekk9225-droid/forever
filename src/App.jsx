@@ -49,6 +49,7 @@ function MainApp() {
   const [showHeartbeat, setShowHeartbeat] = useState(true);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [hasConfirmedFeelings, setHasConfirmedFeelings] = useState(false);
+  const [isCertReady, setIsCertReady] = useState(false);
   const { currentScene, goToScene: setCurrentScene } = useScene();
   const { setTargetBPM } = useHeartbeat();
 
@@ -300,13 +301,15 @@ function MainApp() {
               className="w-full flex flex-col items-center"
             >
               <ButterflyExplosion />
-              <LoveCertificate />
-              <button
-                onClick={() => setCurrentScene(SCENES.FINALE)}
-                className="mt-4 mb-6 py-3.5 px-8 rounded-2xl bg-gradient-to-r from-purple-500 via-rose-500 to-pink-500 hover:scale-105 active:scale-95 text-white font-medium text-sm shadow-lg transition cursor-pointer"
-              >
-                Leave a Note & Final Surprise 💌
-              </button>
+              <LoveCertificate onVisible={() => setIsCertReady(true)} />
+              {isCertReady && (
+                <button
+                  onClick={() => setCurrentScene(SCENES.FINALE)}
+                  className="mt-4 mb-6 py-3.5 px-8 rounded-2xl bg-gradient-to-r from-purple-500 via-rose-500 to-pink-500 hover:scale-105 active:scale-95 text-white font-medium text-sm shadow-lg transition cursor-pointer"
+                >
+                  Leave a Note & Final Surprise 💌
+                </button>
+              )}
             </motion.div>
           )}
 

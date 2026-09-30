@@ -419,6 +419,10 @@ export default function AIPencilDrawingScene({ onComplete }) {
   const kmAudioRef = useRef(null);
   const kmPlayedRef = useRef(false);
 
+  // /dk.mp3 — plays ONCE immediately when Continue button is clicked
+  const dkAudioRef = useRef(null);
+  const dkPlayedRef = useRef(false);
+
   const { setTargetBPM } = useHeartbeat();
 
   // --------------------------------------------------------------------------
@@ -477,6 +481,11 @@ export default function AIPencilDrawingScene({ onComplete }) {
         kmAudioRef.current.pause();
         kmAudioRef.current.src = '';
         kmAudioRef.current = null;
+      }
+      if (dkAudioRef.current) {
+        dkAudioRef.current.pause();
+        dkAudioRef.current.src = '';
+        dkAudioRef.current = null;
       }
     };
   }, []);
@@ -712,6 +721,20 @@ export default function AIPencilDrawingScene({ onComplete }) {
   const handleContinue = () => {
     if (isExiting) return;
     setIsExiting(true);
+
+    // Play /dk.mp3 ONCE immediately on Continue click — one-shot, no loop
+    if (!dkPlayedRef.current) {
+      dkPlayedRef.current = true;
+      try {
+        const dkAudio = new Audio('/dk.mp3');
+        dkAudio.loop = false;
+        dkAudio.volume = 0.9; // Original/full intended volume
+        dkAudioRef.current = dkAudio;
+        dkAudio.play().catch(() => {});
+      } catch {
+        // Audio not supported — silently ignore
+      }
+    }
 
     // Gently fade out /ll.mp3 over 800ms
     if (audioRef.current) {

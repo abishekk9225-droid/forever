@@ -172,6 +172,8 @@ function playSoftFireworkPop() {
 function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
   const canvasRef = useRef(null);
   const completedRef = useRef(false);
+  // Prevent StrictMode double-mount from launching a second loop
+  const mountedRef = useRef(false);
   // Hold callback in a ref so the animation loop never restarts due to
   // inline arrow function identity changes from the parent (root cause #2)
   const onCompleteRef = useRef(onCelebrationComplete);
@@ -180,6 +182,13 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
   useEffect(() => {
     // Do NOT start until the certificate card is actually visible (root cause #1)
     if (!active) return;
+    // StrictMode guard: only one loop per mount
+    if (mountedRef.current) return;
+    mountedRef.current = true;
+
+    // Respect prefers-reduced-motion
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -198,6 +207,9 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
     let animId = null;
     let startTime = null;
     let flowerBurstTriggered = false;
+    // For canvas fade-out after celebration
+    let canvasOpacity = 1;
+    let isFadingOut = false;
 
     const PALETTES = [
       { c1: '#f43f5e', c2: '#fda4af', type: 'rose' },
@@ -218,22 +230,57 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
     const rockets = [];
     const fireworkSparks = [];
     const skyFlashes = [];
+    // Extra glitter that rains down after each firework
+    const glitter = [];
 
     let bloomRadius = 0;
     let bloomOpacity = 0;
     let budGlow = 0;
+    // Screen-wide glow during grand fireworks
+    let screenGlowAlpha = 0;
+    let screenGlowColor = '#ffffff';
 
     const PRE_BURST_TIME = 5600;
     const FLOWER_BURST_TIME = 6600;
-    const CELEBRATION_END_TIME = 16800;
+    // All fireworks + fade complete — show Continue button
+    const CELEBRATION_END_TIME = 17500;
+    // Hard stop for the animation loop after fade-out
+    const ANIMATION_STOP_TIME = 20500;
+
+    // If reduced motion: skip to completion immediately
+    if (prefersReduced) {
+      const rId = setTimeout(() => {
+        completedRef.current = true;
+        if (typeof onCompleteRef.current === 'function') onCompleteRef.current();
+      }, 800);
+      return () => {
+        clearTimeout(rId);
+        window.removeEventListener('resize', handleResize);
+        mountedRef.current = false;
+      };
+    }
 
     const FIREWORK_SCHEDULE = [
-      { launchTime: 10400, sx: 0.15, tx: 0.28, ty: 0.24, color: '#f43f5e', type: 'peony', launched: false },
-      { launchTime: 11200, sx: 0.85, tx: 0.72, ty: 0.22, color: '#d946ef', type: 'peony', launched: false },
-      { launchTime: 12000, sx: 0.25, tx: 0.42, ty: 0.18, color: '#fbbf24', type: 'willow', launched: false },
-      { launchTime: 12700, sx: 0.75, tx: 0.58, ty: 0.20, color: '#ec4899', type: 'peony', launched: false },
-      { launchTime: 13500, sx: 0.35, tx: 0.48, ty: 0.15, color: '#a855f7', type: 'grand', launched: false },
-      { launchTime: 13650, sx: 0.65, tx: 0.52, ty: 0.16, color: '#fb7185', type: 'grand', launched: false },
+      // Large left firework
+      { launchTime: 9600,  sx: 0.12, tx: 0.22, ty: 0.20, color: '#f43f5e', type: 'grand',  launched: false },
+      // Large right firework
+      { launchTime: 10400, sx: 0.88, tx: 0.78, ty: 0.18, color: '#d946ef', type: 'grand',  launched: false },
+      // Medium center willow
+      { launchTime: 11200, sx: 0.50, tx: 0.50, ty: 0.12, color: '#fbbf24', type: 'willow', launched: false },
+      // Medium left-center peony
+      { launchTime: 12000, sx: 0.20, tx: 0.35, ty: 0.22, color: '#ec4899', type: 'peony',  launched: false },
+      // Medium right-center peony
+      { launchTime: 12600, sx: 0.80, tx: 0.65, ty: 0.20, color: '#a855f7', type: 'peony',  launched: false },
+      // Massive grand center-left climax
+      { launchTime: 13400, sx: 0.30, tx: 0.38, ty: 0.10, color: '#f43f5e', type: 'mega',   launched: false },
+      // Massive grand center-right climax
+      { launchTime: 13550, sx: 0.70, tx: 0.62, ty: 0.11, color: '#fb7185', type: 'mega',   launched: false },
+      // Background small left
+      { launchTime: 14200, sx: 0.05, tx: 0.15, ty: 0.30, color: '#fbbf24', type: 'peony',  launched: false },
+      // Background small right
+      { launchTime: 14500, sx: 0.95, tx: 0.85, ty: 0.28, color: '#e11d48', type: 'peony',  launched: false },
+      // Final grand center white
+      { launchTime: 15200, sx: 0.45, tx: 0.50, ty: 0.08, color: '#ffffff', type: 'mega',   launched: false },
     ];
 
     function createFlowerExplosion(cx, cy) {
@@ -319,7 +366,8 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
       const startX = conf.sx * width;
       const targetX = conf.tx * width;
       const targetY = conf.ty * height;
-      const duration = 40; // 40 frames flight (~660ms)
+      // flight frames: mega=38, others=42
+      const duration = conf.type === 'mega' ? 38 : 42;
 
       rockets.push({
         x: startX,
@@ -335,22 +383,57 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
       });
     }
 
+    function spawnGlitter(x, y, count, color) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 2 + 0.5;
+        glitter.push({
+          x: x + (Math.random() - 0.5) * 80,
+          y: y + (Math.random() - 0.5) * 40,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - Math.random() * 1.5,
+          gravity: 0.06,
+          drag: 0.985,
+          size: Math.random() * 2.5 + 1,
+          color,
+          alpha: Math.random() * 0.6 + 0.4,
+          fadeSpeed: Math.random() * 0.008 + 0.004,
+          twinkle: Math.random() * Math.PI * 2,
+        });
+      }
+    }
+
     function explodeRocket(r) {
       playSoftFireworkPop();
+
+      // Screen glow pulse on major fireworks
+      screenGlowColor = r.color;
+      screenGlowAlpha = r.type === 'mega' ? 0.22 : r.type === 'grand' ? 0.14 : 0.09;
+
+      // Flash radius: mega=420, grand=320, willow=260, peony=240
+      const maxRadius = r.type === 'mega' ? 420 : r.type === 'grand' ? 320 : r.type === 'willow' ? 260 : 240;
 
       skyFlashes.push({
         x: r.targetX,
         y: r.targetY,
-        radius: 10,
-        maxRadius: 180,
-        alpha: 0.45,
+        radius: 12,
+        maxRadius,
+        alpha: r.type === 'mega' ? 0.7 : r.type === 'grand' ? 0.55 : 0.45,
         color: r.color,
       });
 
-      const count = r.type === 'grand' ? 64 : r.type === 'willow' ? 52 : 46;
+      // Particle count: mega=90, grand=72, willow=60, peony=54
+      const count = r.type === 'mega' ? 90 : r.type === 'grand' ? 72 : r.type === 'willow' ? 60 : 54;
+      const baseSpeed = r.type === 'mega' ? 7.5 : r.type === 'grand' ? 6.0 : r.type === 'willow' ? 4.8 : 4.2;
+
       for (let i = 0; i < count; i++) {
         const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.25;
-        const speed = r.type === 'grand' ? Math.random() * 4.5 + 2.5 : Math.random() * 3.8 + 1.8;
+        const speed = baseSpeed * (Math.random() * 0.4 + 0.8);
+        const sparkSize = r.type === 'mega' ? Math.random() * 2.5 + 5.5
+          : r.type === 'grand' ? Math.random() * 2 + 4.5
+          : r.type === 'willow' ? Math.random() * 1.5 + 3.5
+          : Math.random() * 1.5 + 3.0;
+
         fireworkSparks.push({
           x: r.targetX,
           y: r.targetY,
@@ -358,24 +441,56 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
           vy: Math.sin(angle) * speed,
           color: r.color,
           alpha: 1.0,
-          decay: r.type === 'willow' ? 0.009 : 0.014 + Math.random() * 0.008,
-          gravity: r.type === 'willow' ? 0.075 : 0.055,
-          drag: r.type === 'willow' ? 0.955 : 0.945,
-          size: r.type === 'grand' ? 2.6 : 2.0,
+          decay: r.type === 'mega' ? 0.007 + Math.random() * 0.004
+            : r.type === 'willow' ? 0.007 + Math.random() * 0.003
+            : 0.011 + Math.random() * 0.006,
+          gravity: r.type === 'willow' ? 0.065 : r.type === 'mega' ? 0.048 : 0.055,
+          drag: r.type === 'willow' ? 0.962 : r.type === 'mega' ? 0.968 : 0.952,
+          size: sparkSize,
           isWillow: r.type === 'willow',
           trail: [],
         });
       }
+
+      // Spawn falling glitter/sparks after explosion
+      const glitterCount = r.type === 'mega' ? 60 : r.type === 'grand' ? 40 : 25;
+      spawnGlitter(r.targetX, r.targetY, glitterCount, r.color);
     }
 
     function render(timestamp) {
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
 
+      // Hard stop after full fade — return without scheduling another frame
+      if (elapsed > ANIMATION_STOP_TIME || (isFadingOut && canvasOpacity <= 0)) {
+        ctx.clearRect(0, 0, width, height);
+        return;
+      }
+
       ctx.clearRect(0, 0, width, height);
+
+      // Apply canvas-wide fade after celebration ends
+      if (isFadingOut) {
+        canvasOpacity = Math.max(0, canvasOpacity - 0.010);
+        canvas.style.opacity = String(canvasOpacity);
+      }
 
       const cx = width / 2;
       const cy = height * 0.48;
+
+      // ── SCREEN GLOW (during major firework explosions) ──────────────────────
+      if (screenGlowAlpha > 0.005) {
+        ctx.save();
+        const glowR = Math.max(width, height) * 0.75;
+        const glowGrad = ctx.createRadialGradient(cx, height * 0.25, 0, cx, height * 0.25, glowR);
+        glowGrad.addColorStop(0, 'rgba(255,255,255,' + (screenGlowAlpha * 0.35) + ')');
+        glowGrad.addColorStop(0.4, 'rgba(255,220,100,' + (screenGlowAlpha * 0.18) + ')');
+        glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = glowGrad;
+        ctx.fillRect(0, 0, width, height);
+        ctx.restore();
+        screenGlowAlpha *= 0.91;
+      }
 
       // 1. FLOWER BURST PRE-GLOW (5600ms -> 6600ms)
       if (elapsed >= PRE_BURST_TIME && elapsed < FLOWER_BURST_TIME) {
@@ -385,15 +500,14 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
 
         ctx.save();
         const budGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, budRadius);
-        budGrad.addColorStop(0, `rgba(255, 255, 255, ${budGlow * 0.95})`);
-        budGrad.addColorStop(0.35, `rgba(251, 191, 36, ${budGlow * 0.8})`);
-        budGrad.addColorStop(0.7, `rgba(244, 63, 94, ${budGlow * 0.5})`);
+        budGrad.addColorStop(0, 'rgba(255, 255, 255, ' + (budGlow * 0.95) + ')');
+        budGrad.addColorStop(0.35, 'rgba(251, 191, 36, ' + (budGlow * 0.8) + ')');
+        budGrad.addColorStop(0.7, 'rgba(244, 63, 94, ' + (budGlow * 0.5) + ')');
         budGrad.addColorStop(1, 'rgba(244, 63, 94, 0)');
         ctx.fillStyle = budGrad;
         ctx.beginPath();
         ctx.arc(cx, cy, budRadius, 0, Math.PI * 2);
         ctx.fill();
-
         drawSparkle(ctx, cx, cy, budRadius * 0.45, budGlow);
         ctx.restore();
       }
@@ -408,12 +522,11 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
         if (bloomOpacity > 0.01) {
           bloomRadius += (340 - bloomRadius) * 0.08;
           bloomOpacity *= 0.94;
-
           ctx.save();
           const bloomGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, bloomRadius);
-          bloomGrad.addColorStop(0, `rgba(255, 255, 255, ${bloomOpacity * 0.9})`);
-          bloomGrad.addColorStop(0.3, `rgba(254, 240, 138, ${bloomOpacity * 0.75})`);
-          bloomGrad.addColorStop(0.65, `rgba(251, 191, 36, ${bloomOpacity * 0.4})`);
+          bloomGrad.addColorStop(0, 'rgba(255, 255, 255, ' + (bloomOpacity * 0.9) + ')');
+          bloomGrad.addColorStop(0.3, 'rgba(254, 240, 138, ' + (bloomOpacity * 0.75) + ')');
+          bloomGrad.addColorStop(0.65, 'rgba(251, 191, 36, ' + (bloomOpacity * 0.4) + ')');
           bloomGrad.addColorStop(1, 'rgba(244, 63, 94, 0)');
           ctx.fillStyle = bloomGrad;
           ctx.beginPath();
@@ -425,19 +538,12 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
         // Golden Sparkles
         for (let i = sparkles.length - 1; i >= 0; i--) {
           const s = sparkles[i];
-          s.x += s.vx;
-          s.y += s.vy;
-          s.vx *= s.drag;
-          s.vy *= s.drag;
+          s.x += s.vx; s.y += s.vy;
+          s.vx *= s.drag; s.vy *= s.drag;
           s.vy += s.gravity;
           s.alpha -= s.fadeSpeed;
           s.twinklePhase += 0.15;
-
-          if (s.alpha <= 0.01) {
-            sparkles.splice(i, 1);
-            continue;
-          }
-
+          if (s.alpha <= 0.01) { sparkles.splice(i, 1); continue; }
           const currentAlpha = Math.max(0, s.alpha * (Math.sin(s.twinklePhase) * 0.3 + 0.7));
           drawSparkle(ctx, s.x, s.y, s.size, currentAlpha);
         }
@@ -445,44 +551,25 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
         // 3D Flower Petals
         for (let i = petals.length - 1; i >= 0; i--) {
           const p = petals[i];
-          p.x += p.vx;
-          p.y += p.vy;
-          p.vx *= p.drag;
-          p.vy *= p.drag;
+          p.x += p.vx; p.y += p.vy;
+          p.vx *= p.drag; p.vy *= p.drag;
           p.vy += p.gravity;
-
           p.swayPhase += p.swaySpeed;
           p.x += Math.sin(p.swayPhase) * p.swayAmount;
-
-          p.roll += p.rollSpeed;
-          p.pitch += p.pitchSpeed;
-          p.yaw += p.yawSpeed;
+          p.roll += p.rollSpeed; p.pitch += p.pitchSpeed; p.yaw += p.yawSpeed;
           p.opacity -= p.fadeSpeed;
-
-          if (p.y > height + 80 || p.opacity <= 0.01) {
-            petals.splice(i, 1);
-            continue;
-          }
-
+          if (p.y > height + 80 || p.opacity <= 0.01) { petals.splice(i, 1); continue; }
           const scaleX = Math.cos(p.roll) * (p.depth === 2 ? 1.3 : p.depth === 0 ? 0.75 : 1.0);
           const scaleY = Math.cos(p.pitch) * p.aspectRatio * (p.depth === 2 ? 1.3 : p.depth === 0 ? 0.75 : 1.0);
-
           ctx.save();
           ctx.translate(p.x, p.y);
           ctx.rotate(p.yaw);
           ctx.scale(scaleX, scaleY);
           ctx.globalAlpha = Math.max(0, Math.min(1, p.opacity));
-
-          if (p.shape === 'rose') {
-            drawRosePetal(ctx, p.size, p.size * 1.3, p.color.c1, p.color.c2);
-          } else if (p.shape === 'heart') {
-            drawHeartPetal(ctx, p.size * 1.1, p.color.c1, p.color.c2);
-          } else if (p.shape === 'blossom') {
-            drawBlossom(ctx, p.size * 0.7, p.color.c1, p.color.c2);
-          } else {
-            drawRosePetal(ctx, p.size * 0.85, p.size * 1.1, p.color.c1, p.color.c2);
-          }
-
+          if (p.shape === 'rose') drawRosePetal(ctx, p.size, p.size * 1.3, p.color.c1, p.color.c2);
+          else if (p.shape === 'heart') drawHeartPetal(ctx, p.size * 1.1, p.color.c1, p.color.c2);
+          else if (p.shape === 'blossom') drawBlossom(ctx, p.size * 0.7, p.color.c1, p.color.c2);
+          else drawRosePetal(ctx, p.size * 0.85, p.size * 1.1, p.color.c1, p.color.c2);
           ctx.restore();
         }
 
@@ -491,42 +578,23 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
           const b = butterflies[i];
           b.vx += (b.targetSpeedX - b.vx) * 0.04;
           b.vy += (b.targetSpeedY - b.vy) * 0.04;
-          b.x += b.vx;
-          b.y += b.vy;
+          b.x += b.vx; b.y += b.vy;
           b.flapPhase += 0.28;
-
-          if (b.x < -60 || b.x > width + 60 || b.y < -60) {
-            butterflies.splice(i, 1);
-            continue;
-          }
-
+          if (b.x < -60 || b.x > width + 60 || b.y < -60) { butterflies.splice(i, 1); continue; }
           ctx.save();
           ctx.translate(b.x, b.y);
           ctx.rotate(Math.atan2(b.vy, b.vx) + Math.PI / 2);
           const wingSpan = Math.sin(b.flapPhase) * 0.85 + 0.15;
-
-          ctx.save();
-          ctx.scale(wingSpan, 1);
-          ctx.beginPath();
-          ctx.moveTo(0, 0);
-          ctx.bezierCurveTo(-b.size * 0.9, -b.size * 0.8, -b.size * 1.2, b.size * 0.4, 0, b.size * 0.6);
-          ctx.fillStyle = b.color;
-          ctx.fill();
-          ctx.restore();
-
-          ctx.save();
-          ctx.scale(-wingSpan, 1);
-          ctx.beginPath();
-          ctx.moveTo(0, 0);
-          ctx.bezierCurveTo(-b.size * 0.9, -b.size * 0.8, -b.size * 1.2, b.size * 0.4, 0, b.size * 0.6);
-          ctx.fillStyle = b.color;
-          ctx.fill();
-          ctx.restore();
-
+          ctx.save(); ctx.scale(wingSpan, 1);
+          ctx.beginPath(); ctx.moveTo(0, 0);
+          ctx.bezierCurveTo(-b.size*0.9,-b.size*0.8,-b.size*1.2,b.size*0.4,0,b.size*0.6);
+          ctx.fillStyle = b.color; ctx.fill(); ctx.restore();
+          ctx.save(); ctx.scale(-wingSpan, 1);
+          ctx.beginPath(); ctx.moveTo(0, 0);
+          ctx.bezierCurveTo(-b.size*0.9,-b.size*0.8,-b.size*1.2,b.size*0.4,0,b.size*0.6);
+          ctx.fillStyle = b.color; ctx.fill(); ctx.restore();
           ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.arc(0, b.size * 0.2, 1.8, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.beginPath(); ctx.arc(0, b.size * 0.2, 1.8, 0, Math.PI * 2); ctx.fill();
           ctx.restore();
         }
       }
@@ -539,32 +607,46 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
         }
       });
 
-      // Render Rockets
+      // Render Rockets (bright, thick, glowing)
       for (let i = rockets.length - 1; i >= 0; i--) {
         const r = rockets[i];
         r.trail.push({ x: r.x, y: r.y });
-        if (r.trail.length > 7) r.trail.shift();
-
-        r.x += r.vx;
-        r.y += r.vy;
+        if (r.trail.length > 12) r.trail.shift();
+        r.x += r.vx; r.y += r.vy;
         r.framesRemaining--;
 
-        // Draw glowing rocket trail
         if (r.trail.length > 1) {
           ctx.save();
+          // Outer glow trail
           ctx.strokeStyle = r.color;
-          ctx.lineWidth = 2.5;
+          ctx.lineWidth = r.type === 'mega' ? 5 : r.type === 'grand' ? 4 : 3;
           ctx.shadowColor = r.color;
-          ctx.shadowBlur = 8;
+          ctx.shadowBlur = r.type === 'mega' ? 20 : 14;
+          ctx.globalAlpha = 0.7;
           ctx.beginPath();
           ctx.moveTo(r.trail[0].x, r.trail[0].y);
           r.trail.forEach((pt) => ctx.lineTo(pt.x, pt.y));
           ctx.stroke();
-
-          // Rocket head spark
+          // White core trail
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = r.type === 'mega' ? 2.5 : 1.8;
+          ctx.shadowBlur = 6;
+          ctx.globalAlpha = 0.9;
+          const mid = Math.floor(r.trail.length / 2);
+          ctx.beginPath();
+          ctx.moveTo(r.trail[mid].x, r.trail[mid].y);
+          r.trail.forEach((pt) => ctx.lineTo(pt.x, pt.y));
+          ctx.stroke();
+          // Rocket head
+          ctx.shadowBlur = 0; ctx.globalAlpha = 1;
           ctx.fillStyle = '#ffffff';
           ctx.beginPath();
-          ctx.arc(r.x, r.y, 2.5, 0, Math.PI * 2);
+          ctx.arc(r.x, r.y, r.type === 'mega' ? 4.5 : 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 0.6;
+          ctx.fillStyle = r.color;
+          ctx.beginPath();
+          ctx.arc(r.x, r.y, r.type === 'mega' ? 8 : 5.5, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         }
@@ -578,24 +660,21 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
       // 5. RENDER FIREWORK SKY FLASHES
       for (let i = skyFlashes.length - 1; i >= 0; i--) {
         const f = skyFlashes[i];
-        f.radius += (f.maxRadius - f.radius) * 0.18;
-        f.alpha *= 0.86;
-
+        f.radius += (f.maxRadius - f.radius) * 0.15;
+        f.alpha *= 0.88;
+        if (f.alpha <= 0.02) { skyFlashes.splice(i, 1); continue; }
         ctx.save();
         const flashGrad = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.radius);
-        flashGrad.addColorStop(0, `rgba(255, 255, 255, ${f.alpha * 0.8})`);
-        flashGrad.addColorStop(0.4, f.color);
-        flashGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.globalAlpha = f.alpha;
+        flashGrad.addColorStop(0, 'rgba(255,255,255,' + f.alpha + ')');
+        flashGrad.addColorStop(0.25, 'rgba(255,255,255,' + (f.alpha * 0.8) + ')');
+        flashGrad.addColorStop(0.6, 'rgba(255,220,100,' + (f.alpha * 0.5) + ')');
+        flashGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.globalAlpha = Math.min(1, f.alpha);
         ctx.fillStyle = flashGrad;
         ctx.beginPath();
         ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
-
-        if (f.alpha <= 0.02) {
-          skyFlashes.splice(i, 1);
-        }
       }
 
       // 6. RENDER FIREWORK SPARKS & WILLOW TRAILS
@@ -603,41 +682,33 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
         const s = fireworkSparks[i];
         if (s.isWillow) {
           s.trail.push({ x: s.x, y: s.y, a: s.alpha });
-          if (s.trail.length > 6) s.trail.shift();
+          if (s.trail.length > 10) s.trail.shift();
         }
-
-        s.x += s.vx;
-        s.y += s.vy;
-        s.vx *= s.drag;
-        s.vy *= s.drag;
+        s.x += s.vx; s.y += s.vy;
+        s.vx *= s.drag; s.vy *= s.drag;
         s.vy += s.gravity;
         s.alpha -= s.decay;
-
-        if (s.alpha <= 0.01) {
-          fireworkSparks.splice(i, 1);
-          continue;
-        }
+        if (s.alpha <= 0.01) { fireworkSparks.splice(i, 1); continue; }
 
         ctx.save();
         ctx.globalAlpha = Math.max(0, s.alpha);
-
         if (s.isWillow && s.trail.length > 1) {
           ctx.strokeStyle = s.color;
-          ctx.lineWidth = 1.6;
+          ctx.lineWidth = 1.8;
+          ctx.shadowColor = s.color;
+          ctx.shadowBlur = 4;
           ctx.beginPath();
           ctx.moveTo(s.trail[0].x, s.trail[0].y);
           s.trail.forEach((pt) => ctx.lineTo(pt.x, pt.y));
           ctx.stroke();
         }
-
-        ctx.fillStyle = s.color;
         ctx.shadowColor = s.color;
-        ctx.shadowBlur = 6;
+        ctx.shadowBlur = 12;
+        ctx.fillStyle = s.color;
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
         ctx.fill();
-
-        // White hot center
+        ctx.shadowBlur = 0;
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.size * 0.45, 0, Math.PI * 2);
@@ -645,9 +716,31 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
         ctx.restore();
       }
 
-      // 7. FINISH CELEBRATION & SHOW CONTINUE BUTTON (at 16800ms)
+      // 7. RENDER FALLING GLITTER / SPARKS
+      for (let i = glitter.length - 1; i >= 0; i--) {
+        const g = glitter[i];
+        g.x += g.vx; g.y += g.vy;
+        g.vx *= g.drag; g.vy *= g.drag;
+        g.vy += g.gravity;
+        g.alpha -= g.fadeSpeed;
+        g.twinkle += 0.12;
+        if (g.alpha <= 0.01) { glitter.splice(i, 1); continue; }
+        const tAlpha = Math.max(0, g.alpha * (Math.sin(g.twinkle) * 0.4 + 0.6));
+        ctx.save();
+        ctx.globalAlpha = tAlpha;
+        ctx.fillStyle = g.color;
+        ctx.shadowColor = g.color;
+        ctx.shadowBlur = 5;
+        ctx.beginPath();
+        ctx.arc(g.x, g.y, g.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 8. FINISH CELEBRATION & SHOW CONTINUE BUTTON (at 17500ms)
       if (elapsed >= CELEBRATION_END_TIME && !completedRef.current) {
         completedRef.current = true;
+        isFadingOut = true;
         if (typeof onCompleteRef.current === 'function') {
           onCompleteRef.current();
         }
@@ -661,6 +754,7 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
     return () => {
       if (animId) cancelAnimationFrame(animId);
       window.removeEventListener('resize', handleResize);
+      mountedRef.current = false;
     };
   // Only restart if `active` changes — never restart due to callback identity
   }, [active]);
@@ -669,10 +763,11 @@ function CinematicCelebrationClimaxCanvas({ active, onCelebrationComplete }) {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-[200] select-none"
-      style={{ willChange: 'transform' }}
+      style={{ willChange: 'transform', transition: 'opacity 0.8s ease-out' }}
     />
   );
 }
+
 
 export default function LoveCertificate({ onVisible }) {
   const certificateRef = useRef(null);

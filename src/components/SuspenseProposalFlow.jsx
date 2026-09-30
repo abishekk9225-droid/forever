@@ -30,7 +30,14 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
   const lkAudioRef = useRef(null);
   const hasStartedLkRef = useRef(false);
 
-  // Cleanup lk.mp3 on unmount to prevent leaks / duplicate instances
+  // ==========================================================================
+  // mm.mp3 AUDIO TRIGGER ON YES CLICK (EXACT 5-SECOND DELAY, ONE-SHOT)
+  // ==========================================================================
+  const mmAudioRef = useRef(null);
+  const mmTimerRef = useRef(null);
+  const mmPlayedRef = useRef(false);
+
+  // Cleanup audio timers and instances on unmount to prevent leaks
   useEffect(() => {
     return () => {
       if (lkAudioRef.current) {
@@ -39,8 +46,54 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
         lkAudioRef.current = null;
       }
       hasStartedLkRef.current = false;
+
+      if (mmTimerRef.current) {
+        clearTimeout(mmTimerRef.current);
+        mmTimerRef.current = null;
+      }
+      if (mmAudioRef.current) {
+        mmAudioRef.current.pause();
+        mmAudioRef.current.currentTime = 0;
+        mmAudioRef.current = null;
+      }
+      mmPlayedRef.current = false;
     };
   }, []);
+
+  /**
+   * Start /mm.mp3 at EXACTLY 5.0 seconds AFTER the user clicks the YES button.
+   *
+   * Guards:
+   * - mmPlayedRef ensures single-shot execution (no replay on re-renders / StrictMode)
+   * - mmAudioRef holds single Audio instance
+   * - Original full intended volume (1.0)
+   * - No loop (loop: false)
+   */
+  const triggerMmAudioOnYes = () => {
+    if (mmPlayedRef.current) return;
+    mmPlayedRef.current = true;
+
+    mmTimerRef.current = setTimeout(() => {
+      try {
+        if (!mmAudioRef.current) {
+          const audio = new Audio('/mm.mp3');
+          audio.preload = 'auto';
+          audio.loop = false;
+          audio.volume = 1.0; // Original / full intended volume 🔊
+          mmAudioRef.current = audio;
+        }
+
+        const playPromise = mmAudioRef.current.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+          playPromise.catch((err) => {
+            console.warn('/mm.mp3 playback restricted by browser policy:', err);
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to initialize /mm.mp3:', err);
+      }
+    }, 5000);
+  };
 
   /**
    * Start /lk.mp3 at exactly currentTime=9.0s, then immediately
@@ -134,6 +187,9 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
   };
 
   const handleYes = async () => {
+    // 0. Trigger exactly 5-second one-shot timer for /mm.mp3 (if not already started from YES click event)
+    triggerMmAudioOnYes();
+
     // 1. Audio jump to climax 219s
     if (typeof window.triggerClimaxAudio === 'function') {
       window.triggerClimaxAudio();
@@ -311,7 +367,12 @@ export default function SuspenseProposalFlow({ onYesAccepted }) {
 
         {/* SUBSTAGE 4: GRAND PROPOSAL CONFESSION ("THE LAST FRAME") */}
         {subStage === 'GRAND_PROPOSAL' && (
-          <ProposalConfession key="grand_proposal" onAccept={handleYes} onReject={() => setSubStage('SUSPENSE')} />
+          <ProposalConfession
+            key="grand_proposal"
+            onAccept={handleYes}
+            onYesClick={triggerMmAudioOnYes}
+            onReject={() => setSubStage('SUSPENSE')}
+          />
         )}
 
         {/* SUBSTAGE 5: EXISTING EMOTIONAL WAITING SCENE ("100 ஜென்மம் காத்திருப்பேன்...") */}

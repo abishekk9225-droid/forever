@@ -54,15 +54,12 @@ export default function EmotionalWaitingScene({ onComplete }) {
   const [isClimaxReached, setIsClimaxReached] = useState(false);
   const [showCallPrompt, setShowCallPrompt] = useState(false);
   const [isCalling, setIsCalling] = useState(false);
-  const [isAutoplayBlocked, setIsAutoplayBlocked] = useState(false);
 
   const hasSentEmailRef = useRef(false);
   const timersRef = useRef([]);
-  const mmAudioRef = useRef(null);
-  const audioTimerRef = useRef(null);
   const isMountedRef = useRef(true);
 
-  // 1. Scene Entry: EmailJS notification, Heartbeat progression, /mm.mp3 autoplay after 3 seconds
+  // 1. Scene Entry: EmailJS notification, Heartbeat progression, /ka.mp3 background
   useEffect(() => {
     isMountedRef.current = true;
 
@@ -110,49 +107,10 @@ export default function EmotionalWaitingScene({ onComplete }) {
 
     timersRef.current.push(tHeartbeat1, tHeartbeat2, tHeartbeat3);
 
-    // C. Wait exactly 3.0 seconds before automatically playing /mm.mp3
-    audioTimerRef.current = setTimeout(() => {
-      if (!isMountedRef.current) return;
-
-      try {
-        if (!mmAudioRef.current) {
-          const audio = new Audio('/mm.mp3');
-          audio.preload = 'auto';
-          audio.loop = false;
-          audio.volume = 0.8;
-          mmAudioRef.current = audio;
-        }
-
-        const playPromise = mmAudioRef.current.play();
-        if (playPromise && typeof playPromise.catch === 'function') {
-          playPromise.catch((err) => {
-            console.warn('/mm.mp3 autoplay restricted by browser:', err);
-            if (isMountedRef.current) {
-              setIsAutoplayBlocked(true);
-            }
-          });
-        }
-      } catch (err) {
-        console.warn('Failed to play /mm.mp3:', err);
-      }
-    }, 3000);
-
-    // Cleanup when leaving Emotional Waiting Scene:
-    // Clear 3s timer and stop /mm.mp3 playback cleanly
+    // Cleanup when leaving Emotional Waiting Scene
     return () => {
       isMountedRef.current = false;
       timersRef.current.forEach((t) => clearTimeout(t));
-
-      if (audioTimerRef.current) {
-        clearTimeout(audioTimerRef.current);
-        audioTimerRef.current = null;
-      }
-
-      if (mmAudioRef.current) {
-        mmAudioRef.current.pause();
-        mmAudioRef.current.currentTime = 0;
-        mmAudioRef.current = null;
-      }
 
       if (typeof stopKaTrack === 'function') {
         stopKaTrack(0.5);
@@ -160,24 +118,7 @@ export default function EmotionalWaitingScene({ onComplete }) {
     };
   }, [stopKaTrack]);
 
-  // 2. User gesture fallback if browser autoplay policy blocked /mm.mp3
-  const handleUnblockAudio = (e) => {
-    if (e) e.stopPropagation();
-    setIsAutoplayBlocked(false);
-    if (!mmAudioRef.current) {
-      const audio = new Audio('/mm.mp3');
-      audio.preload = 'auto';
-      audio.loop = false;
-      audio.volume = 0.8;
-      mmAudioRef.current = audio;
-    }
-    mmAudioRef.current.play().catch(() => {});
-    if (window.heartbeatEngine) {
-      window.heartbeatEngine.resumeContext();
-    }
-  };
-
-  // 3. Sequential Tamil subtitle-like line transitions (3.8s per line)
+  // 2. Sequential Tamil subtitle-like line transitions (3.8s per line)
   useEffect(() => {
     if (isClimaxReached) return;
 
@@ -199,7 +140,7 @@ export default function EmotionalWaitingScene({ onComplete }) {
     }
   }, [currentLineIdx, isClimaxReached]);
 
-  // 4. Climax timing: reveal Call Me & Continue buttons after climax lines sink in
+  // 3. Climax timing: reveal Call Me & Continue buttons after climax lines sink in
   useEffect(() => {
     if (isClimaxReached) {
       const promptTimer = setTimeout(() => {
@@ -224,16 +165,6 @@ export default function EmotionalWaitingScene({ onComplete }) {
   };
 
   const handleContinue = () => {
-    // Cleanly stop /mm.mp3 timer and audio before completing scene
-    if (audioTimerRef.current) {
-      clearTimeout(audioTimerRef.current);
-      audioTimerRef.current = null;
-    }
-    if (mmAudioRef.current) {
-      mmAudioRef.current.pause();
-      mmAudioRef.current.currentTime = 0;
-      mmAudioRef.current = null;
-    }
     if (typeof stopKaTrack === 'function') {
       stopKaTrack(1.0);
     }
@@ -244,7 +175,6 @@ export default function EmotionalWaitingScene({ onComplete }) {
 
   return (
     <div
-      onClick={isAutoplayBlocked ? handleUnblockAudio : undefined}
       className="fixed inset-0 w-full h-full bg-[#050208] text-slate-100 flex flex-col items-center justify-center p-6 md:p-12 overflow-hidden select-none z-[120] animate-in fade-in duration-1000"
     >
       {/* SCREEN-LEVEL CONTINUOUS TRAVELLING RAINBOW BORDER */}

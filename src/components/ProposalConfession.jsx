@@ -989,7 +989,7 @@ function Butterfly({ pathClass, duration, delay = '0s', wingGradientId, size = 3
 // ==========================================
 // MAIN COMPONENT
 // ==========================================
-export default function ProposalConfession({ onAccept, onReject, onNext }) {
+export default function ProposalConfession({ onAccept, onReject, onNext, onYesClick }) {
   // Timeline Stages: 'BLACKOUT' -> 'PHOTO' -> 'SARANYA' -> 'ILOVEYOU' -> 'BUTTONS'
   const [stage, setStage] = useState('BLACKOUT');
   const [echoPhoto, setEchoPhoto] = useState(null);
@@ -1069,6 +1069,9 @@ export default function ProposalConfession({ onAccept, onReject, onNext }) {
   }, []);
 
   const handleYesClick = (e) => {
+    if (typeof onYesClick === 'function') {
+      onYesClick(e);
+    }
     setCelebratingYes(true);
     if (window.heartbeatEngine) {
       window.heartbeatEngine.setTargetBPM(88, 0.35);

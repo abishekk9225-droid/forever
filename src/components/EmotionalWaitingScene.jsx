@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, ArrowRight, Heart, Sparkles, Volume2 } from 'lucide-react';
+import { Phone, ArrowRight, Heart, Sparkles } from 'lucide-react';
 import { sendEmail } from '../utils/emailService';
 import { useSound } from '../context/SoundContext';
 import CinematicRainbowBorder from './CinematicRainbowBorder';
@@ -351,23 +351,7 @@ export default function EmotionalWaitingScene({ onComplete }) {
       </div>
 
       {/* =========================================================================
-          LAYER 6: AUTOPLAY BLOCKED USER FALLBACK BADGE (Graceful Non-Intrusive)
-          ========================================================================= */}
-      {isAutoplayBlocked && (
-        <motion.button
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          onClick={handleUnblockAudio}
-          className="absolute top-6 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-full bg-zinc-950/80 hover:bg-rose-950/90 border border-rose-400/50 text-rose-200 text-xs font-serif tracking-wide shadow-[0_0_25px_rgba(244,63,94,0.4)] backdrop-blur-md flex items-center gap-2 cursor-pointer transition-all"
-        >
-          <Volume2 className="w-4 h-4 text-rose-300 animate-pulse" />
-          <span>Tap anywhere to listen with music 🎵</span>
-        </motion.button>
-      )}
-
-      {/* =========================================================================
-          LAYER 7: MAIN EMOTIONAL DIALOGUE CONTAINER
+          LAYER 6: MAIN EMOTIONAL DIALOGUE CONTAINER
           Soft white/rose-gold glow, smooth typewriter fade, cinematic line spacing
           ========================================================================= */}
       <div className="relative z-20 max-w-xl w-full mx-auto text-center flex flex-col items-center justify-center space-y-8 px-4">

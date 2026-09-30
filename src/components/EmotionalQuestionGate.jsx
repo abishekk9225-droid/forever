@@ -75,21 +75,22 @@ export default function EmotionalQuestionGate({ onFeelings, onNoFeelings, onAcce
       message: 'Saranya unlocked the passcode "SARANYA26" and accepted the emotional question by clicking: "Feelings ❤️"!',
     }).catch(() => {});
 
-    // 3. Trigger audio directly on click to bypass browser autoplay blocks
-    let song = new Audio('/abi.mp3');
+    // 3. Create Audio element inside the click handler to satisfy browser autoplay policy,
+    //    then hand it to the engine's duck method which owns volume + play + restore.
+    //    Do NOT duplicate if already playing (engine's _abiDuckPlaying guard handles this).
+    const song = new Audio('/abi.mp3');
     song.preload = 'auto';
-    song.volume = 0.18;
-    const playPromise = song.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        // fallback if file name is abi.mp3.mpeg
-        const fallbackSong = new Audio('/abi.mp3.mpeg');
-        fallbackSong.preload = 'auto';
-        fallbackSong.volume = 0.18;
-        fallbackSong.play().catch((e) => console.log('Audio playback error:', e));
-        song = fallbackSong;
-        setLyricAudio(fallbackSong);
-      });
+    song.loop = false;
+    // Volume will be set to 0.85 by duckIntroForAbi; set a safe default in case engine is absent
+    song.volume = 0.85;
+
+    // Delegate to the unified engine: ducks bgm-intro, plays abi.mp3 at full volume,
+    // and restores bgm-intro smoothly when abi.mp3 ends naturally.
+    if (window.soundController && typeof window.soundController.duckIntroForAbi === 'function') {
+      window.soundController.duckIntroForAbi(song);
+    } else {
+      // Graceful fallback if engine is not yet available
+      song.play().catch((e) => console.log('abi.mp3 fallback play error:', e));
     }
     setLyricAudio(song);
 

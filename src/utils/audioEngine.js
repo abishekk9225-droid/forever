@@ -6,6 +6,9 @@
 // ============================================================================
 
 class UnifiedAudioEngine {
+  // abi.mp3 ducking guard — prevents duplicate instances in StrictMode / rapid clicks
+  _abiDuckPlaying = false;
+  _abiDuckEndHandler = null;
   constructor() {
     this.audioCtx = null;
     this.masterCompressor = null;
@@ -874,6 +877,84 @@ class UnifiedAudioEngine {
         cb(type, bpm, volume);
       } catch {}
     });
+  }
+
+  // ==========================================================================
+  // ABI.MP3 AUDIO DUCKING (bgm-intro only)
+  // Smoothly ducks the intro BGM while abi.mp3 plays, then restores.
+  // Accepts a pre-created Audio element so the caller can bypass autoplay blocks.
+  // ==========================================================================
+
+  duckIntroForAbi(abiAudio) {
+    // Guard: never start a second instance
+    if (this._abiDuckPlaying) return;
+    // Only duck when intro is the active, playing track
+    if (this.currentTrack !== 'intro' || !this.isPlayingMusic) {
+      // Still play abi even if no ducking needed
+      if (abiAudio && typeof abiAudio.play === 'function') {
+        abiAudio.play().catch(() => {});
+      }
+      return;
+    }
+
+    if (!this.audioCtx || !this.musicGain) {
+      // Fallback: just play abi at whatever volume it has
+      if (abiAudio && typeof abiAudio.play === 'function') {
+        abiAudio.play().catch(() => {});
+      }
+      return;
+    }
+
+    this._abiDuckPlaying = true;
+
+    const now = this.audioCtx.currentTime;
+    // Remember the pre-duck gain so we can restore it exactly
+    const preDuckGain = this.musicGain.gain.value || this.baseMusicVolume;
+    // Duck target: low enough for abi to be clearly audible, not silent
+    const duckTarget = 0.18;
+    const duckRamp = 1.2;   // seconds to reach ducked level
+    const restoreRamp = 2.0; // seconds to restore after abi ends
+
+    // Smoothly reduce musicGain — do NOT pause or restart intro
+    this.musicGain.gain.cancelScheduledValues(now);
+    this.musicGain.gain.setValueAtTime(preDuckGain, now);
+    this.musicGain.gain.linearRampToValueAtTime(duckTarget, now + duckRamp);
+
+    // Set abi to full intended volume
+    if (abiAudio) {
+      abiAudio.volume = 0.85;
+    }
+
+    // Remove any stale ended listener from a previous call
+    if (this._abiDuckEndHandler && abiAudio) {
+      abiAudio.removeEventListener('ended', this._abiDuckEndHandler);
+    }
+
+    // Restore musicGain when abi ends naturally
+    this._abiDuckEndHandler = () => {
+      this._abiDuckPlaying = false;
+      this._abiDuckEndHandler = null;
+      if (!this.audioCtx || !this.musicGain) return;
+      const t = this.audioCtx.currentTime;
+      // Restore to exactly the level it was before ducking
+      this.musicGain.gain.cancelScheduledValues(t);
+      this.musicGain.gain.setValueAtTime(this.musicGain.gain.value, t);
+      this.musicGain.gain.linearRampToValueAtTime(preDuckGain, t + restoreRamp);
+    };
+
+    if (abiAudio) {
+      abiAudio.addEventListener('ended', this._abiDuckEndHandler, { once: true });
+      abiAudio.play().catch(() => {
+        // Playback failed — restore immediately
+        this._abiDuckPlaying = false;
+        const t = this.audioCtx ? this.audioCtx.currentTime : 0;
+        if (this.audioCtx && this.musicGain) {
+          this.musicGain.gain.cancelScheduledValues(t);
+          this.musicGain.gain.setValueAtTime(this.musicGain.gain.value, t);
+          this.musicGain.gain.linearRampToValueAtTime(preDuckGain, t + 0.5);
+        }
+      });
+    }
   }
 
   destroy() {

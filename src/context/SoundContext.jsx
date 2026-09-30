@@ -54,6 +54,7 @@ export const SoundProvider = ({ children }) => {
       playKkTrack: () => globalAudioEngine.playKkTrack(),
       stopKkTrack: (fadeDuration) => globalAudioEngine.stopKkTrack(fadeDuration),
       fadeToSoftAmbience: (target, duration) => globalAudioEngine.fadeToSoftAmbience(target, duration),
+      duckIntroForAbi: (abiAudio) => globalAudioEngine.duckIntroForAbi(abiAudio),
       toggleSound: () => globalAudioEngine.toggleSound(),
       toggleAudio: () => globalAudioEngine.toggleSound(),
     };

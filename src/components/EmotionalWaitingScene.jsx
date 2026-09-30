@@ -62,7 +62,7 @@ export default function EmotionalWaitingScene({ onComplete }) {
   const audioTimerRef = useRef(null);
   const isMountedRef = useRef(true);
 
-  // 1. Scene Entry: EmailJS notification, Heartbeat progression, /mm.mp3 autoplay after 5 seconds
+  // 1. Scene Entry: EmailJS notification, Heartbeat progression, /mm.mp3 autoplay after 3 seconds
   useEffect(() => {
     isMountedRef.current = true;
 
@@ -110,7 +110,7 @@ export default function EmotionalWaitingScene({ onComplete }) {
 
     timersRef.current.push(tHeartbeat1, tHeartbeat2, tHeartbeat3);
 
-    // C. Wait exactly 5.0 seconds before automatically playing /mm.mp3
+    // C. Wait exactly 3.0 seconds before automatically playing /mm.mp3
     audioTimerRef.current = setTimeout(() => {
       if (!isMountedRef.current) return;
 
@@ -118,7 +118,7 @@ export default function EmotionalWaitingScene({ onComplete }) {
         if (!mmAudioRef.current) {
           const audio = new Audio('/mm.mp3');
           audio.preload = 'auto';
-          audio.loop = true;
+          audio.loop = false;
           audio.volume = 0.8;
           mmAudioRef.current = audio;
         }
@@ -135,10 +135,10 @@ export default function EmotionalWaitingScene({ onComplete }) {
       } catch (err) {
         console.warn('Failed to play /mm.mp3:', err);
       }
-    }, 5000);
+    }, 3000);
 
     // Cleanup when leaving Emotional Waiting Scene:
-    // Clear 5s timer and stop /mm.mp3 playback cleanly
+    // Clear 3s timer and stop /mm.mp3 playback cleanly
     return () => {
       isMountedRef.current = false;
       timersRef.current.forEach((t) => clearTimeout(t));
@@ -167,7 +167,7 @@ export default function EmotionalWaitingScene({ onComplete }) {
     if (!mmAudioRef.current) {
       const audio = new Audio('/mm.mp3');
       audio.preload = 'auto';
-      audio.loop = true;
+      audio.loop = false;
       audio.volume = 0.8;
       mmAudioRef.current = audio;
     }

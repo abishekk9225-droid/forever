@@ -468,7 +468,7 @@ export default function AIPencilDrawingScene({ onComplete }) {
       }
     }, 3000); // 3000ms = 3.0 seconds
 
-    // Scene cleanup: clear timer, stop & nullify audio immediately
+    // Scene cleanup: clear timer, stop & nullify background audio immediately
     return () => {
       if (musicTimerRef.current) clearTimeout(musicTimerRef.current);
       if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
@@ -482,11 +482,7 @@ export default function AIPencilDrawingScene({ onComplete }) {
         kmAudioRef.current.src = '';
         kmAudioRef.current = null;
       }
-      if (dkAudioRef.current) {
-        dkAudioRef.current.pause();
-        dkAudioRef.current.src = '';
-        dkAudioRef.current = null;
-      }
+      // Note: dkAudioRef continues playing through once naturally after Continue click
     };
   }, []);
 
@@ -722,15 +718,18 @@ export default function AIPencilDrawingScene({ onComplete }) {
     if (isExiting) return;
     setIsExiting(true);
 
-    // Play /dk.mp3 ONCE immediately on Continue click — one-shot, no loop
+    // Play /dk.mp3 ONCE immediately on Continue click — one-shot, high sound (volume 1.0)
     if (!dkPlayedRef.current) {
       dkPlayedRef.current = true;
       try {
         const dkAudio = new Audio('/dk.mp3');
+        dkAudio.preload = 'auto';
         dkAudio.loop = false;
-        dkAudio.volume = 0.9; // Original/full intended volume
+        dkAudio.volume = 1.0; // High sound / full volume 🔊
         dkAudioRef.current = dkAudio;
-        dkAudio.play().catch(() => {});
+        dkAudio.play().catch((err) => {
+          console.warn('dk.mp3 playback deferred:', err);
+        });
       } catch {
         // Audio not supported — silently ignore
       }

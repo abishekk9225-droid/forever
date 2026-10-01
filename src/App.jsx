@@ -1,0 +1,379 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Heart, Sparkles, ArrowRight } from 'lucide-react';
+import { SceneProvider, useScene, SCENES } from './context/SceneProvider';
+import { SoundProvider } from './context/SoundContext';
+import { HeartbeatProvider, HeartbeatVisualSync, useHeartbeat } from './context/HeartbeatContext';
+
+// Visual canvases and companion components
+import BackgroundEffects from './components/BackgroundEffects';
+import LeftDecorations from './components/LeftDecorations';
+import RightDecorations from './components/RightDecorations';
+import EasterEggs from './components/EasterEggs';
+import ErrorBoundary from './components/ErrorBoundary';
+import HeartBurst from './components/HeartBurst';
+import ButterflyExplosion from './components/ButterflyExplosion';
+
+// Journey core components
+import PasscodeGate from './components/PasscodeGate';
+import AdminSecurityGate from './components/AdminSecurityGate';
+import LiveLoveClock from './components/LiveLoveClock';
+import InteractiveLoveLetter from './components/InteractiveLoveLetter';
+import MiniGame from './components/MiniGame';
+import AudioPlayer from './components/AudioPlayer';
+
+import PromiseEntryGate from './components/PromiseEntryGate';
+import SuspenseProposalFlow from './components/SuspenseProposalFlow';
+import WarmthMeltScene from './components/WarmthMeltScene';
+
+// Climax components
+import PostProposalQuiz from './components/PostProposalQuiz';
+import LoveCertificate from './components/LoveCertificate';
+import SecretMessageCard from './components/SecretMessageCard';
+import MemorySnapshotCard from './components/MemorySnapshotCard';
+import SpringCoilFinale from './components/SpringCoilFinale';
+import FingerprintLock from './components/FingerprintLock';
+import LoveSurveyQuestions from './components/LoveSurveyQuestions';
+import CelebrationReveal from './components/CelebrationReveal';
+import PromiseVault from './components/PromiseVault';
+import AskDialogueScene from './components/AskDialogueScene';
+import HeartbeatIntro from './components/HeartbeatIntro';
+import EmotionalQuestionGate from './components/EmotionalQuestionGate';
+import CinematicRainbowBorder from './components/CinematicRainbowBorder';
+import AIPencilDrawingScene from './components/AIPencilDrawingScene';
+import UnsentMessageScene from './components/UnsentMessageScene';
+import CinematicSceneAtmosphere from './components/CinematicSceneAtmosphere';
+
+
+
+function MainApp() {
+  const [showHeartbeat, setShowHeartbeat] = useState(true);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [hasConfirmedFeelings, setHasConfirmedFeelings] = useState(false);
+  const [isCertReady, setIsCertReady] = useState(false);
+  const { currentScene, goToScene: setCurrentScene } = useScene();
+  const { setTargetBPM } = useHeartbeat();
+
+  React.useEffect(() => {
+    if (showHeartbeat) {
+      setTargetBPM(54, 0.24);
+    } else if (!isUnlocked) {
+      setTargetBPM(56, 0.24);
+    } else if (!hasConfirmedFeelings) {
+      // Dynamic progression inside EmotionalQuestionGate steps
+    } else {
+      switch (currentScene) {
+        case SCENES.INTRO:
+          setTargetBPM(92, 0.34);
+          break;
+        case SCENES.ASK_DIALOGUE:
+          setTargetBPM(96, 0.36);
+          break;
+        case SCENES.MEMORIES:
+          setTargetBPM(102, 0.38);
+          break;
+        case SCENES.GAME:
+          setTargetBPM(108, 0.40);
+          break;
+        case SCENES.LETTER:
+          setTargetBPM(114, 0.42);
+          break;
+        case SCENES.MELT:
+          setTargetBPM(120, 0.45);
+          break;
+        case SCENES.CONFESSION:
+          // Handled inside SuspenseProposalFlow and ProposalConfession
+          break;
+        case SCENES.AI_PENCIL:
+          setTargetBPM(68, 0.22);
+          break;
+        case SCENES.UNSENT_MESSAGE:
+          setTargetBPM(64, 0.24);
+          break;
+        default:
+          setTargetBPM(88, 0.32);
+          break;
+      }
+    }
+  }, [showHeartbeat, isUnlocked, hasConfirmedFeelings, currentScene, setTargetBPM]);
+
+  // 1. Heartbeat ECG Entry Scene
+  if (showHeartbeat) {
+    return <HeartbeatIntro onUnlock={() => setShowHeartbeat(false)} />;
+  }
+
+  // 2. Password Protection Gate (Opens with 'SARANYA26')
+  if (!isUnlocked) {
+    return <PasscodeGate onUnlock={() => setIsUnlocked(true)} onUnlocked={() => setIsUnlocked(true)} />;
+  }
+
+  // 3. Emotional Question Gate (Opens immediately after entering secret code 'saranya')
+  if (!hasConfirmedFeelings) {
+    return (
+      <EmotionalQuestionGate
+        onFeelings={() => {
+          setHasConfirmedFeelings(true);
+          setCurrentScene(SCENES.INTRO);
+        }}
+        onNoFeelings={() => {
+          setIsUnlocked(false);
+        }}
+        onAccept={() => {
+          setHasConfirmedFeelings(true);
+          setCurrentScene(SCENES.INTRO);
+        }}
+        onReset={() => {
+          setIsUnlocked(false);
+        }}
+      />
+    );
+  }
+
+  return (
+    <main className="relative w-full min-h-screen overflow-hidden bg-[#05020a] text-white select-none flex items-center justify-center font-sans">
+      {/* Universal Continuous Travelling Rainbow Border for all Main Scenes */}
+      <CinematicRainbowBorder mode="screen" />
+
+      <AudioPlayer />
+      
+      {/* Reusable Canvas Heart Burst System */}
+      <ErrorBoundary>
+        <HeartBurst />
+      </ErrorBoundary>
+
+      {/* Persistent living GardenCanvas */}
+      <ErrorBoundary>
+        <BackgroundEffects />
+      </ErrorBoundary>
+
+      {/* Left Bird & Right Mascot Companions */}
+      <ErrorBoundary>
+        <LeftDecorations />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <RightDecorations />
+      </ErrorBoundary>
+
+      {/* Easter Egg Overlay */}
+      <ErrorBoundary>
+        <EasterEggs />
+      </ErrorBoundary>
+
+      <div className={`relative ${currentScene === SCENES.CONFESSION ? 'z-50' : 'z-30'} w-full max-w-xl px-4 py-8 flex flex-col items-center`}>
+        <AnimatePresence mode="wait">
+          {/* 1. INTRO SCENE WITH BEAUTIFUL LINES */}
+          {currentScene === SCENES.INTRO && (
+            <AskDialogueScene onNext={() => setCurrentScene(SCENES.ASK_DIALOGUE)} />
+          )}
+
+          {/* ASK DIALOGUE SCENE */}
+          {currentScene === SCENES.ASK_DIALOGUE && (
+            <PromiseEntryGate onProceed={() => setCurrentScene(SCENES.MEMORIES)} />
+          )}
+
+          {/* 2. MEMORIES & QUALITIES SCENE */}
+          {currentScene === SCENES.MEMORIES && (
+            <motion.div
+              key="memories"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full text-center p-8 rounded-3xl bg-zinc-950/80 backdrop-blur-2xl border border-rose-500/30 shadow-[0_0_50px_rgba(244,114,182,0.2)] space-y-5"
+            >
+              <span className="text-xs font-mono uppercase tracking-[0.25em] text-rose-400">
+                Our Beautiful Memories
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-serif text-white">
+                Why You Are So Special To Me 💖
+              </h2>
+              <div className="space-y-3 text-left">
+                <div className="p-4 rounded-2xl bg-white/[0.04] border border-rose-400/20 text-rose-100 text-sm">
+                  ✨ <strong>உன்னோட குழந்தைத் தனம்:</strong> என்னை எப்பவுமே சிரிக்க வச்சு ரசிக்க வைக்கிற ஒரு தனி அழகு! 🥰
+                </div>
+                <div className="p-4 rounded-2xl bg-white/[0.04] border border-rose-400/20 text-rose-100 text-sm">
+                  🥰 <strong>உன் அன்பும் அக்கறையும்:</strong> எனக்குக் கிடைத்த மிக அழகான வரம்.
+                </div>
+                <div className="p-4 rounded-2xl bg-white/[0.04] border border-rose-400/20 text-rose-100 text-sm">
+                  💫 <strong>உன் அமைதி:</strong> என் வாழ்க்கையின் மிக அழகான நிம்மதி.
+                </div>
+              </div>
+              <button
+                onClick={() => setCurrentScene(SCENES.GAME)}
+                className="w-full mt-4 py-3.5 px-8 rounded-2xl bg-gradient-to-r from-rose-500 to-purple-600 hover:scale-105 active:scale-95 text-white font-medium text-sm shadow-lg transition cursor-pointer"
+              >
+                Let's Play Our Mini-Game ⚡
+              </button>
+            </motion.div>
+          )}
+
+          {/* 3. LOVE CHARGER 100% MINI-GAME */}
+          {currentScene === SCENES.GAME && (
+            <motion.div
+              key="game"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full"
+            >
+              <MiniGame onComplete={() => setCurrentScene(SCENES.LETTER)} />
+            </motion.div>
+          )}
+
+          {/* 4. LIVE LOVE CLOCK & LOVE LETTER SCENE */}
+          {currentScene === SCENES.LETTER && (
+            <motion.div
+              key="letter"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="w-full space-y-6 flex flex-col items-center"
+            >
+              <LiveLoveClock />
+              <InteractiveLoveLetter />
+              <button
+                onClick={() => setCurrentScene(SCENES.MELT)}
+                className="py-3.5 px-8 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:scale-105 active:scale-95 text-white font-medium text-sm shadow-[0_0_25px_rgba(244,114,182,0.4)] transition cursor-pointer"
+              >
+                Read Abishek's Final Question 💖
+              </button>
+            </motion.div>
+          )}
+
+          {/* 4.5. WARMTH OF MY HEART (FROZEN HEART MELT INTERACTION) */}
+          {currentScene === SCENES.MELT && (
+            <motion.div
+              key="melt"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full"
+            >
+              <WarmthMeltScene onComplete={() => setCurrentScene(SCENES.CONFESSION)} />
+            </motion.div>
+          )}
+
+          {/* 5. CONFESSION ("WILL YOU BE MINE FOREVER?") */}
+          {currentScene === SCENES.CONFESSION && (
+            <SuspenseProposalFlow onYesAccepted={() => setCurrentScene(SCENES.AI_PENCIL)} />
+          )}
+
+          {/* CELEBRATION REVEAL */}
+          {currentScene === SCENES.CELEBRATION && (
+            <CelebrationReveal onComplete={() => setCurrentScene(SCENES.AI_PENCIL)} />
+          )}
+
+          {/* NEW AI PENCIL DRAWING SCENE */}
+          {currentScene === SCENES.AI_PENCIL && (
+            <AIPencilDrawingScene onComplete={() => setCurrentScene(SCENES.UNSENT_MESSAGE)} />
+          )}
+
+          {/* THE LAST UNSENT MESSAGE SCENE */}
+          {currentScene === SCENES.UNSENT_MESSAGE && (
+            <UnsentMessageScene onComplete={() => setCurrentScene(SCENES.LOCK_REVEAL)} />
+          )}
+
+          {/* FINGERPRINT LOCK GATE */}
+          {currentScene === SCENES.LOCK_REVEAL && (
+            <FingerprintLock onComplete={() => setCurrentScene(SCENES.LOVE_SURVEY)} />
+          )}
+
+          {/* LOVE SURVEY QUESTIONS */}
+          {currentScene === SCENES.LOVE_SURVEY && (
+            <LoveSurveyQuestions onComplete={() => setCurrentScene(SCENES.QUIZ)} />
+          )}
+
+          {/* 6. POST-PROPOSAL 3 QUESTIONS */}
+          {currentScene === SCENES.QUIZ && (
+            <motion.div
+              key="quiz"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full"
+            >
+              <PostProposalQuiz onComplete={() => setCurrentScene(SCENES.PROMISE_VAULT)} />
+            </motion.div>
+          )}
+
+          {/* PROMISE VAULT */}
+          {currentScene === SCENES.PROMISE_VAULT && (
+            <PromiseVault onComplete={() => setCurrentScene(SCENES.CERTIFICATE)} />
+          )}
+
+          {/* 7. CERTIFICATE OF FOREVER */}
+          {currentScene === SCENES.CERTIFICATE && (
+            <motion.div
+              key="certificate"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full flex flex-col items-center"
+            >
+              <ButterflyExplosion />
+              <LoveCertificate onVisible={() => setIsCertReady(true)} />
+              {isCertReady && (
+                <button
+                  onClick={() => setCurrentScene(SCENES.FINALE)}
+                  className="mt-4 mb-6 py-3.5 px-8 rounded-2xl bg-gradient-to-r from-purple-500 via-rose-500 to-pink-500 hover:scale-105 active:scale-95 text-white font-medium text-sm shadow-lg transition cursor-pointer"
+                >
+                  Leave a Note & Final Surprise 💌
+                </button>
+              )}
+            </motion.div>
+          )}
+
+          {/* 8. FINALE SCENE */}
+          {currentScene === SCENES.FINALE && (
+            <motion.div
+              key="finale"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full space-y-6 flex flex-col items-center"
+            >
+              <CinematicSceneAtmosphere accentGlow="rose" />
+              <SecretMessageCard />
+              <MemorySnapshotCard />
+              <SpringCoilFinale />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </main>
+  );
+}
+
+function RunawayNoButton() {
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const dodge = () => {
+    setPos({
+      x: (Math.random() - 0.5) * 240,
+      y: (Math.random() - 0.5) * 160,
+    });
+  };
+  return (
+    <button
+      style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}
+      onMouseEnter={dodge}
+      onTouchStart={dodge}
+      onClick={dodge}
+      className="py-3 px-6 rounded-2xl bg-zinc-900/80 border border-white/20 text-white/50 text-sm transition-transform duration-200 select-none cursor-pointer"
+    >
+      No 😢
+    </button>
+  );
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <SceneProvider>
+        <SoundProvider>
+          <HeartbeatProvider>
+            <HeartbeatVisualSync />
+            <MainApp />
+          </HeartbeatProvider>
+        </SoundProvider>
+      </SceneProvider>
+    </ErrorBoundary>
+  );
+}

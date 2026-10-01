@@ -1,0 +1,361 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background-color: #040107;
+  color: #f3f4f6;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #040107;
+}
+::-webkit-scrollbar-thumb {
+  background: #3b0918;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #d64577;
+}
+
+/* Custom styles */
+.glass-panel {
+  background: rgba(12, 4, 20, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+.text-gold-luxury {
+  background: linear-gradient(180deg, #FFFDF0 0%, #FDE08B 45%, #DFAC38 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #FDE08B;
+}
+
+/* Core Button Material System */
+.btn-primary {
+  min-height: 48px !important;
+  padding: 0.875rem 2rem !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 9999px !important;
+  color: #f8fafc !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.025em !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 8px 24px -4px rgba(0, 0, 0, 0.5) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-transform: none !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02) !important;
+  border-color: rgba(253, 224, 139, 0.4) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 12px 30px -4px rgba(234, 179, 8, 0.25) !important;
+  color: #ffffff !important;
+  background: rgba(30, 41, 59, 0.85) !important;
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.96) !important;
+}
+
+.btn-secondary {
+  min-height: 48px !important;
+  padding: 0.875rem 2rem !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 9999px !important;
+  color: #cbd5e1 !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-transform: none !important;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: scale(0.96) !important;
+}
+
+
+/* Paper Cast Shadow and Textures */
+.shadow-paper {
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.75), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Glow effects */
+.glow-pink {
+  box-shadow: 0 0 50px rgba(242, 133, 168, 0.12);
+}
+
+.glow-purple {
+  box-shadow: 0 0 50px rgba(109, 40, 217, 0.12);
+}
+
+/* Sparkle Twinkle Animation */
+@keyframes sparkleTwinkle {
+  0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
+  50% { transform: scale(1.1) rotate(45deg); opacity: 0.95; }
+}
+.animate-sparkle-twinkle {
+  animation: sparkleTwinkle 2s ease-in-out infinite;
+}
+
+/* Concentric Call Ripple Wave Animations */
+@keyframes pingSlow {
+  0% { transform: scale(0.85); opacity: 0.8; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+@keyframes pingMedium {
+  0% { transform: scale(0.9); opacity: 0.9; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+@keyframes pingFast {
+  0% { transform: scale(0.95); opacity: 1; }
+  100% { transform: scale(1.22); opacity: 0; }
+}
+.animate-ping-slow { animation: pingSlow 3.2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite; }
+.animate-ping-medium { animation: pingMedium 2.4s cubic-bezier(0.1, 0.8, 0.3, 1) infinite 0.4s; }
+.animate-ping-fast { animation: pingFast 1.6s cubic-bezier(0.1, 0.8, 0.3, 1) infinite 0.8s; }
+
+/* Gold Shimmer Sweep Animation */
+@keyframes goldSweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer-sweep {
+  background: linear-gradient(90deg, transparent 35%, rgba(255, 255, 255, 0.68) 50%, transparent 65%);
+  background-size: 200% 100%;
+  animation: goldSweep 1.25s ease-out 1;
+}
+
+/* Breathing Glow Animation */
+@keyframes breathingGlow {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(253, 224, 139, 0.4)) drop-shadow(0 0 24px rgba(223, 172, 56, 0.2)); }
+  50% { filter: drop-shadow(0 0 16px rgba(253, 224, 139, 0.6)) drop-shadow(0 0 36px rgba(223, 172, 56, 0.35)); }
+}
+.animate-breathing-glow {
+  animation: breathingGlow 4.5s ease-in-out infinite;
+}
+
+/* Animated Waveform keyframes */
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1.0); }
+}
+
+/* Text selections */
+::selection {
+  background: rgba(214, 69, 119, 0.35);
+  color: #ffffff;
+}
+
+/* 3D Heart Rotation */
+@keyframes spinHeart3D {
+  0% { transform: rotateY(0deg) rotateX(12deg); }
+  50% { transform: rotateY(180deg) rotateX(-12deg); }
+  100% { transform: rotateY(360deg) rotateX(12deg); }
+}
+
+/* Photo 2 Coil Keyframe & Track */
+.coil {
+  width: 9em;
+  height: 9em;
+  animation: jolt 3s linear infinite;
+  filter: drop-shadow(0 0 14px rgba(244, 114, 182, 0.55));
+}
+
+.coil-track {
+  fill: none;
+  stroke: hsla(330, 85%, 65%, 0.9);
+  stroke-width: 14;
+  stroke-linecap: round;
+  transition: stroke 0.3s;
+}
+
+@keyframes jolt {
+  0%, 100% { transform: scaleY(1) translateY(0); }
+  50% { transform: scaleY(1.15) translateY(-8px); }
+}
+
+/* Shake animation for incorrect secret code */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+/* Continuous rising floating neon hearts animation */
+@keyframes riseHeart {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.65) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(-55vh) translateX(14px) scale(1) rotate(8deg);
+    opacity: 0.9;
+  }
+  85% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(-120vh) translateX(-14px) scale(1.15) rotate(-8deg);
+    opacity: 0;
+  }
+}
+.animate-rise-heart {
+  animation: riseHeart linear infinite;
+}
+
+/* Ken Burns Slow Zoom */
+@keyframes slowZoom {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.08);
+  }
+}
+
+.animate-slow-zoom {
+  animation: slowZoom 14s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Pulsing Vignette Heartbeat */
+@keyframes vignettePulse {
+  0%, 100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+.animate-vignette-pulse {
+  animation: vignettePulse 3s ease-in-out infinite;
+}
+
+/* Massive Rising Hearts */
+@keyframes riseHeartExplosion {
+  0% {
+    transform: translateY(110vh) scale(0.4) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  85% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-20vh) scale(1.2) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-heart-rise {
+  animation: riseHeartExplosion linear forwards;
+}
+
+/* Radial Background utility */
+.bg-radial {
+  background-image: radial-gradient(circle at center, var(--tw-gradient-stops));
+}
+
+/* Vivid Bloom & Darkness Fade-in Animations */
+@keyframes fadeInZoom95 {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+    filter: brightness(0.4) blur(6px);
+  }
+  50% {
+    filter: brightness(1.15) blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1) blur(0px);
+  }
+}
+
+.animate-in.fade-in.zoom-in-95,
+.animate-vivid-bloom {
+  animation: fadeInZoom95 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.duration-1000 {
+  animation-duration: 1000ms;
+}
+
+/* Butterfly Flying Animation */
+@keyframes butterflyFlight {
+  0% {
+    opacity: 0;
+    transform: translate(0px, 0px) scale(0.6);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(calc(var(--dx, 0px) * 0.2), calc(var(--dy, 0px) * 0.2)) scale(1.15);
+  }
+  75% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(var(--s, 1));
+  }
+}
+
+.animate-butterfly-flight {
+  animation: butterflyFlight ease-out forwards;
+}
+

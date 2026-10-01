@@ -15,7 +15,7 @@ import { sendEmail } from '../utils/emailService';
 import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 const MAX_RECORD_SECONDS = 40;
-const TARGET_EMAIL = 'abishekk9225@gmail.com';
+const TARGET_EMAIL = 'kabishekkabishek677@gmail.com';
 
 export default function VoiceMessageScene({ onComplete }) {
   // 10. Proper states: 'IDLE' | 'RECORDING' | 'PROCESSING' | 'SENT' | 'ERROR'

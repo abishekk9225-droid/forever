@@ -43,20 +43,31 @@ export default function PostProposalQuiz({ onComplete }) {
   const [completed, setCompleted] = useState(false);
   const [selectedOptIdx, setSelectedOptIdx] = useState(null);
 
+  const safeQuestions = Array.isArray(QUESTIONS) && QUESTIONS.length > 0 ? QUESTIONS : [];
+  const currentItem = safeQuestions[currentIndex] || safeQuestions[0] || {};
+  const currentCategory = currentItem?.category || '';
+  const currentQuestionText = currentItem?.question || '';
+  const currentOptions = Array.isArray(currentItem?.options) ? currentItem.options : [];
+  const totalQuestions = safeQuestions.length || 3;
+
   const handleSelectOption = async (option, optIdx) => {
     setSelectedOptIdx(optIdx);
 
-    const updatedAnswers = { ...answers, [QUESTIONS[currentIndex].category]: option.text };
+    const activeItem = safeQuestions[currentIndex] || {};
+    const catName = activeItem?.category || `Question ${currentIndex + 1}`;
+    const selectedText = option?.text || '';
+
+    const updatedAnswers = { ...answers, [catName]: selectedText };
     setAnswers(updatedAnswers);
 
     setTimeout(async () => {
       setSelectedOptIdx(null);
-      if (currentIndex < QUESTIONS.length - 1) {
+      if (currentIndex < safeQuestions.length - 1) {
         setCurrentIndex((prev) => prev + 1);
       } else {
         setCompleted(true);
 
-        const summaryText = `Proposal Answers:\n1. Memory: ${updatedAnswers['Our Memory']}\n2. Bond: ${updatedAnswers['The Bond']}\n3. Promise: ${updatedAnswers['The Promise']}`;
+        const summaryText = `Proposal Answers:\n1. Memory: ${updatedAnswers['Our Memory'] || ''}\n2. Bond: ${updatedAnswers['The Bond'] || ''}\n3. Promise: ${updatedAnswers['The Promise'] || ''}`;
 
         // 1. Fast2SMS Trigger
         try {
@@ -68,7 +79,7 @@ export default function PostProposalQuiz({ onComplete }) {
             },
             body: JSON.stringify({
               route: 'q',
-              message: `Saranya answered YES! Answers:\n1. ${updatedAnswers['Our Memory']}\n2. ${updatedAnswers['The Bond']}\n3. ${updatedAnswers['The Promise']}`,
+              message: `Saranya answered YES! Answers:\n1. ${updatedAnswers['Our Memory'] || ''}\n2. ${updatedAnswers['The Bond'] || ''}\n3. ${updatedAnswers['The Promise'] || ''}`,
               language: 'english',
               numbers: ADMIN_PHONE,
             }),
@@ -114,19 +125,19 @@ export default function PostProposalQuiz({ onComplete }) {
             <div className="flex items-center justify-between mb-5">
               <span className="text-xs font-mono uppercase tracking-[0.25em] text-amber-300/90 flex items-center gap-1.5">
                 <Stars className="w-3.5 h-3.5 text-amber-400"/>
-                {QUESTIONS[currentIndex].category} • {currentIndex + 1} of 3
+                {currentCategory} • {currentIndex + 1} of {totalQuestions}
               </span>
               <Heart className="w-5 h-5 text-rose-400 fill-rose-400 animate-pulse"/>
             </div>
 
             {/* Question Text */}
             <h3 className="text-xl sm:text-2xl font-serif text-white/95 mb-8 leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
-              "{QUESTIONS[currentIndex].question}"
+              "{currentQuestionText}"
             </h3>
 
             {/* Options */}
             <div className="space-y-4">
-              {QUESTIONS[currentIndex].options.map((opt, idx) => {
+              {currentOptions.map((opt, idx) => {
                 const isSelected = selectedOptIdx === idx;
                 return (
                   <motion.button
@@ -140,7 +151,7 @@ export default function PostProposalQuiz({ onComplete }) {
                         : 'bg-white/[0.04] border border-amber-400/25 hover:border-amber-300/60 hover:bg-white/[0.07] text-white'
                     }`}
                   >
-                    <span className="font-serif pr-4 text-slate-100">{opt.text}</span>
+                    <span className="font-serif pr-4 text-slate-100">{opt?.text || ''}</span>
                     <div className="w-8 h-8 rounded-full bg-amber-400/20 border border-amber-300/40 flex items-center justify-center text-amber-300 group-hover:bg-amber-400 group-hover:text-zinc-950 transition duration-300 shrink-0">
                       <ArrowRight className="w-4 h-4"/>
                     </div>

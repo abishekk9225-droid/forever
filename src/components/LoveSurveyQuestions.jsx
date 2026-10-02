@@ -42,11 +42,14 @@ export default function LoveSurveyQuestions({ onComplete }) {
     }
   ];
 
-  const handleNext = () => {
-    const activeKey = questions[currentQuestion - 1].key;
-    if (!answers[activeKey].trim()) return;
+  const safeQuestions = Array.isArray(questions) && questions.length > 0 ? questions : [];
+  const currentQ = safeQuestions[currentQuestion - 1] || safeQuestions[0] || {};
 
-    if (currentQuestion < 3) {
+  const handleNext = () => {
+    const activeKey = currentQ?.key || 'q1';
+    if (!answers[activeKey]?.trim()) return;
+
+    if (currentQuestion < safeQuestions.length) {
       setCurrentQuestion(prev => prev + 1);
     } else {
       submitAllAnswers();
@@ -60,13 +63,13 @@ export default function LoveSurveyQuestions({ onComplete }) {
       💖 Saranya's Love Survey Answers:
       ---------------------------------
       1️⃣ Why/How much she likes you:
-      "${answers.q1}"
+      "${answers.q1 || ''}"
 
       2️⃣ What she expects from you:
-      "${answers.q2}"
+      "${answers.q2 || ''}"
 
       3️⃣ Does she feel disturbed by you:
-      "${answers.q3}"
+      "${answers.q3 || ''}"
       ---------------------------------
       Time: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
     `;
@@ -104,11 +107,9 @@ export default function LoveSurveyQuestions({ onComplete }) {
 
     // After cards converge into the final words, call onComplete
     setTimeout(() => {
-      onComplete();
+      onComplete?.();
     }, 4500);
   };
-
-  const currentQ = questions[currentQuestion - 1];
 
   return (
     <div className="w-full max-w-xl mx-auto px-4 z-30 relative select-none animate-fade-in">

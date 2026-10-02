@@ -1,0 +1,124 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+const SceneContext = createContext(null);
+
+export const SCENES = {
+  INTRO: 'INTRO',
+  ASK_DIALOGUE: 'ASK_DIALOGUE',
+  MEMORIES: 'MEMORIES',
+  GAME: 'GAME',
+  LETTER: 'LETTER',
+  MELT: 'MELT',
+  CONFESSION: 'CONFESSION',
+  CELEBRATION: 'CELEBRATION',
+  AI_PENCIL: 'AI_PENCIL',
+  UNSENT_MESSAGE: 'UNSENT_MESSAGE',
+  LOCK_REVEAL: 'LOCK_REVEAL',
+  LOVE_SURVEY: 'LOVE_SURVEY',
+  QUIZ: 'QUIZ',
+  PROMISE_VAULT: 'PROMISE_VAULT',
+  CERTIFICATE: 'CERTIFICATE',
+  FINALE: 'FINALE',
+};
+
+const INTENSITY_MAP = {
+  [SCENES.INTRO]: 0.1,
+  [SCENES.ASK_DIALOGUE]: 0.2,
+  [SCENES.MEMORIES]: 0.45,
+  [SCENES.GAME]: 0.6,
+  [SCENES.LETTER]: 0.75,
+  [SCENES.MELT]: 0.85,
+  [SCENES.CONFESSION]: 0.05,
+  [SCENES.CELEBRATION]: 1.0,
+  [SCENES.AI_PENCIL]: 0.95,
+  [SCENES.UNSENT_MESSAGE]: 0.98,
+  [SCENES.LOCK_REVEAL]: 1.0,
+  [SCENES.LOVE_SURVEY]: 1.0,
+  [SCENES.QUIZ]: 1.0,
+  [SCENES.PROMISE_VAULT]: 1.0,
+  [SCENES.CERTIFICATE]: 1.0,
+  [SCENES.FINALE]: 1.0,
+};
+
+export function SceneProvider({ children }) {
+  const [currentScene, setCurrentScene] = useState(SCENES.INTRO);
+  const [historyStack, setHistoryStack] = useState([]);
+  const [muted, setMuted] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isLowEnd, setIsLowEnd] = useState(false);
+  const [isGardenAwakened, setIsGardenAwakened] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    // Simple check to identify low performance / memory limits
+    const isMobileDevice = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+    const cores = navigator.hardwareConcurrency || 4;
+    setIsLowEnd(isMobileDevice || cores <= 4);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const goToScene = (sceneId) => {
+    if (!Object.values(SCENES).includes(sceneId)) {
+      console.warn(`[SceneProvider] Invalid scene requested: ${sceneId}`);
+      return;
+    }
+    console.log(`[SceneRouter] ${currentScene} ➔ ${sceneId}`);
+    setHistoryStack((prev) => [...prev, currentScene]);
+    setCurrentScene(sceneId);
+  };
+
+  const goBack = () => {
+    if (historyStack.length === 0) return;
+    const prev = historyStack[historyStack.length - 1];
+    setHistoryStack((prevStack) => prevStack.slice(0, -1));
+    setCurrentScene(prev);
+  };
+
+  const toggleMute = () => {
+    setMuted((prev) => {
+      const nextMuted = !prev;
+      console.log(`[AudioEngine] Muted state: ${nextMuted}`);
+      if (window.setAudioMuted) {
+        window.setAudioMuted(nextMuted);
+      }
+      return nextMuted;
+    });
+  };
+
+  const storyIntensity = INTENSITY_MAP[currentScene] || 0.0;
+
+  return (
+    <SceneContext.Provider
+      value={{
+        currentScene,
+        historyStack,
+        storyIntensity,
+        muted,
+        isMobile,
+        isLowEnd,
+        isGardenAwakened,
+        setIsGardenAwakened,
+        goToScene,
+        goBack,
+        toggleMute,
+        setMuted
+      }}
+    >
+      {children}
+    </SceneContext.Provider>
+  );
+}
+
+export function useScene() {
+  const context = useContext(SceneContext);
+  if (!context) {
+    throw new Error('useScene must be used within a SceneProvider');
+  }
+  return context;
+}

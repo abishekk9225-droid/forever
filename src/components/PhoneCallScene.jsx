@@ -79,7 +79,7 @@ PARAGRAPHS_TAMIL.forEach((pText, pIndex) => {
 export default function PhoneCallScene({ onComplete }) {
   const { startPhoneCallTrack, stopPhoneCallTrack } = useSound();
 
-  // Controls the 5-second initial delay before the message box appears
+  // Controls the 6-second initial delay before the message box appears
   const [isMessageBoxVisible, setIsMessageBoxVisible] = useState(false);
   // Current typed word index: strictly starts at 0 so no message is visible at entry
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -266,11 +266,11 @@ export default function PhoneCallScene({ onComplete }) {
     }
   }, [stopRingingSound]);
 
-  // Exactly 5 seconds after the scene becomes active, smoothly reveal the message box
+  // Exactly 6 seconds after the scene becomes active, smoothly reveal the message box
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsMessageBoxVisible(true);
-    }, 5000);
+    }, 6000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -412,7 +412,7 @@ export default function PhoneCallScene({ onComplete }) {
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [currentWordIndex, isFinished]);
+  }, [isMessageBoxVisible, currentWordIndex, isFinished]);
 
   // Gentle auto-scroll to keep the latest typed word visible (unless user scrolled up)
   useEffect(() => {

@@ -556,7 +556,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
       <div className="w-full h-full flex items-center justify-between gap-4 md:gap-6 lg:gap-8 max-w-[1920px] mx-auto z-10">
         {/* Left Side Dynamic Full Photo (/sa.jpg) with RGB Lighting */}
         <div
-          className={`hidden md:flex flex-1 h-[88vh] relative group animate-fade-in transition-opacity duration-700 ${
+          className={`hidden md:flex flex-1 h-[88vh] relative group transition-opacity duration-700 ${
             stage === 'BLACKOUT' ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         >
@@ -570,6 +570,9 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
               <img
                 src="/sa.jpg"
                 alt="Saranya"
+                loading="eager"
+                decoding="sync"
+                fetchPriority="high"
                 className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-slate-950/20 via-transparent to-slate-950/80 pointer-events-none"></div>
@@ -858,7 +861,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
 
         {/* Right Side Dynamic Full Photo (/sk.jpg) with RGB Lighting */}
         <div
-          className={`hidden md:flex flex-1 h-[88vh] relative group animate-fade-in transition-opacity duration-700 ${
+          className={`hidden md:flex flex-1 h-[88vh] relative group transition-opacity duration-700 ${
             stage === 'BLACKOUT' ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         >
@@ -872,6 +875,9 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
               <img
                 src="/sk.jpg"
                 alt="Saranya & Abishek"
+                loading="eager"
+                decoding="sync"
+                fetchPriority="high"
                 className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
               />
               <div className="absolute inset-0 bg-gradient-to-l from-slate-950/20 via-transparent to-slate-950/80 pointer-events-none"></div>

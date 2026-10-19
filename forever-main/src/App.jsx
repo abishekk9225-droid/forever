@@ -56,6 +56,14 @@ function MainApp() {
   const { currentScene, goToScene: setCurrentScene } = useScene();
   const { setTargetBPM } = useHeartbeat();
 
+  // Preload Passcode Gate photos immediately so they are cached in memory when gate opens
+  React.useEffect(() => {
+    const img1 = new Image();
+    img1.src = '/sa.jpg';
+    const img2 = new Image();
+    img2.src = '/sk.jpg';
+  }, []);
+
   React.useEffect(() => {
     if (showHeartbeat) {
       setTargetBPM(54, 0.24);

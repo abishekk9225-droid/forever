@@ -17,6 +17,7 @@ import ButterflyExplosion from './components/ButterflyExplosion';
 // Journey core components
 import PasscodeGate from './components/PasscodeGate';
 import PhoneCallScene from './components/PhoneCallScene';
+import RomanticAdventureGame from './components/RomanticAdventureGame';
 import AdminSecurityGate from './components/AdminSecurityGate';
 import LiveLoveClock from './components/LiveLoveClock';
 import InteractiveLoveLetter from './components/InteractiveLoveLetter';
@@ -51,6 +52,7 @@ function MainApp() {
   const [showHeartbeat, setShowHeartbeat] = useState(true);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [hasCompletedPhoneCall, setHasCompletedPhoneCall] = useState(false);
+  const [hasCompletedLoveGame, setHasCompletedLoveGame] = useState(false);
   const [hasConfirmedFeelings, setHasConfirmedFeelings] = useState(false);
   const [isCertReady, setIsCertReady] = useState(false);
   const { currentScene, goToScene: setCurrentScene } = useScene();
@@ -71,6 +73,8 @@ function MainApp() {
       setTargetBPM(56, 0.24);
     } else if (!hasCompletedPhoneCall) {
       setTargetBPM(58, 0.22);
+    } else if (!hasCompletedLoveGame) {
+      setTargetBPM(72, 0.26);
     } else if (!hasConfirmedFeelings) {
       // Dynamic progression inside EmotionalQuestionGate steps
     } else {
@@ -107,7 +111,7 @@ function MainApp() {
           break;
       }
     }
-  }, [showHeartbeat, isUnlocked, hasCompletedPhoneCall, hasConfirmedFeelings, currentScene, setTargetBPM]);
+  }, [showHeartbeat, isUnlocked, hasCompletedPhoneCall, hasCompletedLoveGame, hasConfirmedFeelings, currentScene, setTargetBPM]);
 
   // 1. Heartbeat ECG Entry Scene
   if (showHeartbeat) {
@@ -130,7 +134,18 @@ function MainApp() {
     );
   }
 
-  // 4. Emotional Question Gate (Opens immediately after Phone Call Scene)
+  // 3.5. SARANYA'S CINEMATIC EMOTIONAL LOVE GAME (Immediately after Phone Call Scene)
+  if (!hasCompletedLoveGame) {
+    return (
+      <RomanticAdventureGame
+        onComplete={() => {
+          setHasCompletedLoveGame(true);
+        }}
+      />
+    );
+  }
+
+  // 4. Emotional Question Gate (Opens immediately after Game)
   if (!hasConfirmedFeelings) {
     return (
       <EmotionalQuestionGate
@@ -141,6 +156,7 @@ function MainApp() {
         onNoFeelings={() => {
           setIsUnlocked(false);
           setHasCompletedPhoneCall(false);
+          setHasCompletedLoveGame(false);
         }}
         onAccept={() => {
           setHasConfirmedFeelings(true);
@@ -149,6 +165,7 @@ function MainApp() {
         onReset={() => {
           setIsUnlocked(false);
           setHasCompletedPhoneCall(false);
+          setHasCompletedLoveGame(false);
         }}
       />
     );

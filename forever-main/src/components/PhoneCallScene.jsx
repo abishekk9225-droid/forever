@@ -79,6 +79,8 @@ PARAGRAPHS_TAMIL.forEach((pText, pIndex) => {
 export default function PhoneCallScene({ onComplete }) {
   const { startPhoneCallTrack, stopPhoneCallTrack } = useSound();
 
+  // Controls the 5-second initial delay before the message box appears
+  const [isMessageBoxVisible, setIsMessageBoxVisible] = useState(false);
   // Current typed word index: strictly starts at 0 so no message is visible at entry
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
@@ -264,6 +266,15 @@ export default function PhoneCallScene({ onComplete }) {
     }
   }, [stopRingingSound]);
 
+  // Exactly 5 seconds after the scene becomes active, smoothly reveal the message box
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsMessageBoxVisible(true);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   // --------------------------------------------------------------------------
   // 2. CANVAS RAIN STREAKS & WINDOW DROPLETS
   // --------------------------------------------------------------------------
@@ -352,7 +363,8 @@ export default function PhoneCallScene({ onComplete }) {
   // 3. SLOW EMOTIONAL TYPING ENGINE (1–2 WORDS/SEC + NATURAL SENTENCE PAUSES)
   // --------------------------------------------------------------------------
   useEffect(() => {
-    if (isFinished) return;
+    // Only begin typing once the message box is visible
+    if (!isMessageBoxVisible || isFinished) return;
 
     if (currentWordIndex >= ALL_TOKENS.length) {
       setIsFinished(true);
@@ -361,11 +373,11 @@ export default function PhoneCallScene({ onComplete }) {
 
     const currentToken = ALL_TOKENS[currentWordIndex];
 
-    // Initial pause before typing starts: exactly 5 seconds (5000ms)
+    // Gentle 600ms pause after message box reveals so user appreciates the entrance before words appear
     if (currentWordIndex === 0) {
       const initialTimer = setTimeout(() => {
         setCurrentWordIndex(1);
-      }, 5000);
+      }, 600);
       return () => clearTimeout(initialTimer);
     }
 
@@ -421,6 +433,7 @@ export default function PhoneCallScene({ onComplete }) {
   };
 
   const handleSkipTyping = () => {
+    setIsMessageBoxVisible(true);
     setCurrentWordIndex(ALL_TOKENS.length);
     setIsFinished(true);
   };
@@ -578,7 +591,7 @@ export default function PhoneCallScene({ onComplete }) {
           {isRainMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
         </button>
 
-        {!isFinished && (
+        {isMessageBoxVisible && !isFinished && (
           <button
             onClick={handleSkipTyping}
             className="px-3.5 py-1.5 rounded-full bg-black/60 hover:bg-rose-950/70 backdrop-blur-md border border-rose-400/30 text-rose-200 hover:text-white text-xs font-medium flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-lg"
@@ -596,18 +609,21 @@ export default function PhoneCallScene({ onComplete }) {
           top: 'clamp(48px, 12vh, 90px)',
         }}
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 15 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="pointer-events-auto rounded-3xl bg-[#140420]/80 backdrop-blur-md border border-rose-400/30 shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_25px_rgba(244,114,182,0.18)] overflow-hidden flex flex-col"
-          style={{
-            width: 'min(500px, 88vw)',
-            height: 'min(46vh, 410px)',
-            minHeight: '260px',
-            boxSizing: 'border-box',
-          }}
-        >
+        <AnimatePresence>
+          {isMessageBoxVisible && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: -15 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="pointer-events-auto rounded-3xl bg-[#140420]/80 backdrop-blur-md border border-rose-400/30 shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_25px_rgba(244,114,182,0.18)] overflow-hidden flex flex-col"
+              style={{
+                width: 'min(500px, 88vw)',
+                height: 'min(46vh, 410px)',
+                minHeight: '260px',
+                boxSizing: 'border-box',
+              }}
+            >
           {/* Header: “அபிஷேக் சரண்யாவுக்காக எழுதுகிறார்…” */}
           <div className="px-5 py-3 border-b border-white/10 bg-white/[0.04] flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2.5">
@@ -703,6 +719,8 @@ export default function PhoneCallScene({ onComplete }) {
             )}
           </div>
         </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* 7. REALISTIC INCOMING-CALL OVERLAY (Triggered by Button B) */}

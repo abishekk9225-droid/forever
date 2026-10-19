@@ -95,6 +95,7 @@ class UnifiedAudioEngine {
       this.initTrack('celebration', '/bgm.mp3');
       this.initTrack('ka', '/ka.mp3');
       this.initTrack('kk', '/kk.mp3');
+      this.initTrack('mk', '/mk.mp3');
 
       this.nextBeatTime = now + 0.1;
 
@@ -119,7 +120,11 @@ class UnifiedAudioEngine {
     if (this.tracks[id] || typeof window === 'undefined') return;
 
     try {
-      const candidates = id === 'ka' ? ['/ka.mp3', '/ka.m4a', '/bgm.mp3'] : [src];
+      const candidates = id === 'ka' 
+        ? ['/ka.mp3', '/ka.m4a', '/bgm.mp3'] 
+        : id === 'mk' 
+          ? ['/mk.mp3', '/mk.mp3.mp3'] 
+          : [src];
       let currentCandidateIdx = 0;
       const audio = new Audio(candidates[0]);
       audio.loop = true;
@@ -134,6 +139,8 @@ class UnifiedAudioEngine {
         audio.volume = 0.35;
       } else if (id === 'celebration') {
         audio.volume = 0.40;
+      } else if (id === 'mk') {
+        audio.volume = 0.75;
       } else {
         audio.volume = 0.35;
       }
@@ -153,7 +160,11 @@ class UnifiedAudioEngine {
         try {
           trackGain = this.audioCtx.createGain();
           trackGain.gain.setValueAtTime(id === this.currentTrack ? 1.0 : 0.0001, this.audioCtx.currentTime);
-          trackGain.connect(this.musicGain);
+          if (id === 'mk' && this.masterCompressor) {
+            trackGain.connect(this.masterCompressor);
+          } else {
+            trackGain.connect(this.musicGain);
+          }
 
           sourceNode = this.audioCtx.createMediaElementSource(audio);
           sourceNode.connect(trackGain);
@@ -590,6 +601,112 @@ class UnifiedAudioEngine {
         this.notifyState();
       }
     }
+  }
+
+  // ==========================================================================
+  // PHONE CALL SCENE AUDIO CONTROLLER (mk.mp3 foreground + intro/BGM ducking)
+  // Ducks current background music to 0.05, plays mk.mp3 as foreground song,
+  // and smoothly restores original background music when scene ends.
+  // ==========================================================================
+
+  startPhoneCallTrack() {
+    this.init();
+    this.resumeContext();
+
+    if (this.currentTrack === 'mk' && this.isPlayingMusic) {
+      return;
+    }
+
+    if (!this.tracks['mk']) {
+      this.initTrack('mk', '/mk.mp3');
+    }
+
+    const now = this.audioCtx ? this.audioCtx.currentTime : 0;
+
+    // 1. Capture current track and music gain
+    this._phoneCallPreviousTrack = this.currentTrack;
+    this._phoneCallPreviousGain = (this.musicGain && this.musicGain.gain.value > 0.1)
+      ? this.musicGain.gain.value
+      : (this.currentTrack === 'intro' ? 0.65 : 0.28);
+    this._phoneCallWasPlaying = this.isPlayingMusic;
+
+    // 2. Smoothly duck background music to low ambient level (~0.05) over 1.6s
+    // Do NOT stop, pause, or reset the background music!
+    if (this.musicGain && this.audioCtx) {
+      this.musicGain.gain.cancelScheduledValues(now);
+      this.musicGain.gain.setValueAtTime(this.musicGain.gain.value || this.baseMusicVolume, now);
+      this.musicGain.gain.linearRampToValueAtTime(0.05, now + 1.6);
+    }
+
+    // 3. Start mk as clearly audible foreground track
+    const mk = this.tracks['mk'];
+    if (mk && mk.element) {
+      this.currentTrack = 'mk';
+
+      if (mk.trackGain && this.audioCtx) {
+        mk.trackGain.gain.cancelScheduledValues(now);
+        mk.trackGain.gain.setValueAtTime(0.0001, now);
+        mk.trackGain.gain.linearRampToValueAtTime(1.0, now + 2.0);
+      }
+
+      mk.element.loop = true;
+      mk.element.volume = 0.75;
+      mk.element.currentTime = 0;
+      mk.element.play().then(() => {
+        this.isPlayingMusic = true;
+        this.notifyState();
+      }).catch((e) => {
+        console.warn('mk track playback error:', e);
+      });
+    }
+
+    // Steady emotional heartbeat underneath
+    this.setTargetBPM(58, 0.22);
+  }
+
+  stopPhoneCallTrack(fadeDuration = 1.5) {
+    const mk = this.tracks['mk'];
+    const now = this.audioCtx ? this.audioCtx.currentTime : 0;
+
+    // 1. Smoothly fade mk down
+    if (mk && mk.element && !mk.element.paused) {
+      if (mk.trackGain && this.audioCtx) {
+        mk.trackGain.gain.cancelScheduledValues(now);
+        mk.trackGain.gain.setValueAtTime(mk.trackGain.gain.value || 1.0, now);
+        mk.trackGain.gain.linearRampToValueAtTime(0.0001, now + fadeDuration);
+        setTimeout(() => {
+          mk.element.pause();
+          mk.element.currentTime = 0;
+        }, fadeDuration * 1000 + 50);
+      } else {
+        setTimeout(() => {
+          mk.element.pause();
+          mk.element.currentTime = 0;
+        }, fadeDuration * 1000 + 50);
+      }
+    }
+
+    // 2. Smoothly restore original background track volume over 2.0s
+    const prevTrack = this._phoneCallPreviousTrack || 'intro';
+    const targetGain = this._phoneCallPreviousGain || (prevTrack === 'intro' ? 0.65 : 0.28);
+    this.currentTrack = prevTrack;
+
+    if (this.musicGain && this.audioCtx) {
+      const t = this.audioCtx.currentTime;
+      this.musicGain.gain.cancelScheduledValues(t);
+      this.musicGain.gain.setValueAtTime(this.musicGain.gain.value || 0.05, t);
+      this.musicGain.gain.linearRampToValueAtTime(targetGain, t + 2.0);
+    }
+
+    // Ensure the original track continues playing
+    const prevObj = this.tracks[prevTrack];
+    if (prevObj && prevObj.element) {
+      if (prevObj.element.paused && this._phoneCallWasPlaying) {
+        prevObj.element.play().catch(() => {});
+      }
+      this.isPlayingMusic = true;
+    }
+    this.notifyState();
   }
 
   // Requirement 3: After voice recording scene is completed, DO NOT stop audio.

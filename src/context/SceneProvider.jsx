@@ -4,6 +4,7 @@ const SceneContext = createContext(null);
 
 export const SCENES = {
   INTRO: 'INTRO',
+  PHONE_CALL: 'PHONE_CALL',
   ASK_DIALOGUE: 'ASK_DIALOGUE',
   MEMORIES: 'MEMORIES',
   GAME: 'GAME',
@@ -23,6 +24,7 @@ export const SCENES = {
 
 const INTENSITY_MAP = {
   [SCENES.INTRO]: 0.1,
+  [SCENES.PHONE_CALL]: 0.25,
   [SCENES.ASK_DIALOGUE]: 0.2,
   [SCENES.MEMORIES]: 0.45,
   [SCENES.GAME]: 0.6,

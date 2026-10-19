@@ -11,6 +11,8 @@ const defaultSoundState = {
   stopKaTrack: () => {},
   playKkTrack: () => {},
   stopKkTrack: () => {},
+  startPhoneCallTrack: () => {},
+  stopPhoneCallTrack: () => {},
   toggleSound: () => globalAudioEngine.toggleSound(),
   toggleAudio: () => globalAudioEngine.toggleSound(),
   fadeToSoftAmbience: () => {},
@@ -53,6 +55,8 @@ export const SoundProvider = ({ children }) => {
       stopKaTrack: (fadeDuration) => globalAudioEngine.stopKaTrack(fadeDuration),
       playKkTrack: () => globalAudioEngine.playKkTrack(),
       stopKkTrack: (fadeDuration) => globalAudioEngine.stopKkTrack(fadeDuration),
+      startPhoneCallTrack: () => globalAudioEngine.startPhoneCallTrack(),
+      stopPhoneCallTrack: (fadeDuration) => globalAudioEngine.stopPhoneCallTrack(fadeDuration),
       fadeToSoftAmbience: (target, duration) => globalAudioEngine.fadeToSoftAmbience(target, duration),
       duckIntroForAbi: (abiAudio) => globalAudioEngine.duckIntroForAbi(abiAudio),
       toggleSound: () => globalAudioEngine.toggleSound(),
@@ -92,6 +96,14 @@ export const SoundProvider = ({ children }) => {
     globalAudioEngine.stopKkTrack(fadeDuration);
   };
 
+  const startPhoneCallTrack = () => {
+    globalAudioEngine.startPhoneCallTrack();
+  };
+
+  const stopPhoneCallTrack = (fadeDuration = 1.5) => {
+    globalAudioEngine.stopPhoneCallTrack(fadeDuration);
+  };
+
   const toggleSound = () => {
     globalAudioEngine.toggleSound();
   };
@@ -112,6 +124,8 @@ export const SoundProvider = ({ children }) => {
         stopKaTrack,
         playKkTrack,
         stopKkTrack,
+        startPhoneCallTrack,
+        stopPhoneCallTrack,
         toggleSound,
         toggleAudio: toggleSound,
         fadeToSoftAmbience,

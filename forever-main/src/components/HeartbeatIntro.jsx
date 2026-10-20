@@ -6,7 +6,7 @@ import CinematicRainbowBorder from './CinematicRainbowBorder';
 import { globalAudioEngine as globalHeartbeatEngine } from '../utils/audioEngine';
 
 // ============================================================================
-// THE FOUR CINEMATIC INTRO MOMENTS & ASSET PATHS
+// THE FOUR CINEMATIC INTRO MOMENTS & ASSET PATHS (PRESERVED EXACTLY)
 // ============================================================================
 const MOMENTS = [
   {
@@ -15,6 +15,10 @@ const MOMENTS = [
     subtitle: 'மாய வனத்தின் தொடக்கம்',
     image: '/eternal-forest.png',
     fallbackImage: '/eternal-forest.png.png',
+    accentColor: '#a855f7',
+    glowColor: 'rgba(168, 85, 247, 0.45)',
+    borderGradient: 'from-purple-500/60 via-pink-500/40 to-indigo-500/60',
+    storyNote: 'A mystical realm where timeless memories begin',
   },
   {
     id: 2,
@@ -22,6 +26,10 @@ const MOMENTS = [
     subtitle: 'ஸ்படிக இதயத்தின் துடிப்பு',
     image: '/crystal-heart.png',
     fallbackImage: '/crysteternal-forest.png.png',
+    accentColor: '#f43f5e',
+    glowColor: 'rgba(244, 63, 94, 0.55)',
+    borderGradient: 'from-rose-500/70 via-pink-500/50 to-purple-600/70',
+    storyNote: 'Every unspoken heartbeat pulses with true feeling',
   },
   {
     id: 3,
@@ -29,6 +37,10 @@ const MOMENTS = [
     subtitle: 'சரண்யாவின் பிரகாசம்',
     image: '/saranya-reveal.png',
     fallbackImage: '/saranya-reveal.png.png',
+    accentColor: '#fbbf24',
+    glowColor: 'rgba(251, 191, 36, 0.5)',
+    borderGradient: 'from-amber-400/70 via-rose-400/50 to-pink-500/70',
+    storyNote: 'The luminous name sculpted in celestial starlight',
   },
   {
     id: 4,
@@ -36,6 +48,10 @@ const MOMENTS = [
     subtitle: 'காதல் தோட்டத்தின் அழைப்பு',
     image: '/enter-our-story.png',
     fallbackImage: '/enter-our-story.png.png',
+    accentColor: '#ec4899',
+    glowColor: 'rgba(236, 72, 153, 0.55)',
+    borderGradient: 'from-rose-500/80 via-amber-300/60 to-purple-600/80',
+    storyNote: 'The gateway into our eternal romantic journey',
   },
 ];
 
@@ -141,58 +157,237 @@ const DIALOGUES = [
   },
 ];
 
+// 3D Entrance choreography variants tailored for each of the 4 photos
+const PHOTO_ENTRANCE_VARIANTS = {
+  // Moment 1: Low-angle misty roll entrance emerging from enchanted forest depth
+  1: {
+    initial: {
+      opacity: 0,
+      scale: 0.78,
+      rotateX: 24,
+      rotateY: -18,
+      y: 65,
+      z: -160,
+      filter: 'blur(14px)',
+    },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      rotateX: 0,
+      rotateY: 0,
+      y: 0,
+      z: 0,
+      filter: 'blur(0px)',
+      transition: {
+        duration: 1.35,
+        ease: [0.16, 1, 0.3, 1],
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 1.08,
+      rotateX: -12,
+      rotateY: 10,
+      y: -25,
+      z: 80,
+      filter: 'blur(10px)',
+      transition: {
+        duration: 0.85,
+        ease: [0.32, 0, 0.67, 0],
+      },
+    },
+  },
+
+  // Moment 2: Sweeping 3D helical spiral from left with crystalline refraction angle
+  2: {
+    initial: {
+      opacity: 0,
+      scale: 0.82,
+      rotateX: -14,
+      rotateY: 28,
+      x: -80,
+      z: -140,
+      filter: 'blur(14px)',
+    },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      rotateX: 0,
+      rotateY: 0,
+      x: 0,
+      z: 0,
+      filter: 'blur(0px)',
+      transition: {
+        duration: 1.4,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.9,
+      rotateY: -24,
+      z: -100,
+      filter: 'blur(10px)',
+      transition: {
+        duration: 0.85,
+        ease: [0.32, 0, 0.67, 0],
+      },
+    },
+  },
+
+  // Moment 3: Grand royal descending vantage with rose-gold light trails
+  3: {
+    initial: {
+      opacity: 0,
+      scale: 0.84,
+      rotateX: -20,
+      rotateY: -14,
+      y: -55,
+      z: -150,
+      filter: 'blur(14px)',
+    },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      rotateX: 0,
+      rotateY: 0,
+      y: 0,
+      z: 0,
+      filter: 'blur(0px)',
+      transition: {
+        duration: 1.45,
+        ease: [0.16, 1, 0.3, 1],
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 1.12,
+      rotateX: 14,
+      z: 110,
+      filter: 'blur(10px)',
+      transition: {
+        duration: 0.9,
+        ease: [0.32, 0, 0.67, 0],
+      },
+    },
+  },
+
+  // Moment 4: Expansive floral portal zoom & forward perspective invitation
+  4: {
+    initial: {
+      opacity: 0,
+      scale: 1.2,
+      rotateX: 16,
+      z: 130,
+      filter: 'blur(14px)',
+    },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      rotateX: 0,
+      z: 0,
+      filter: 'blur(0px)',
+      transition: {
+        duration: 1.5,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.84,
+      z: -160,
+      filter: 'blur(12px)',
+      transition: {
+        duration: 0.85,
+      },
+    },
+  },
+};
+
 export default function HeartbeatIntro({ onUnlock }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFinalSceneReady, setIsFinalSceneReady] = useState(false);
   const [pulseScale, setPulseScale] = useState(1);
+  const [beatType, setBeatType] = useState('IDLE'); // 'IDLE' | 'LUB' | 'DUB'
   const [isMuted, setIsMuted] = useState(false);
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   const canvasRef = useRef(null);
   const advanceTimerRef = useRef(null);
 
-  // Audio refs
+  // Audio refs for clean single-instance management
   const introAudioRef = useRef(null);
   const rainAudioContextRef = useRef(null);
   const rainGainNodeRef = useRef(null);
   const thunderTimeoutRef = useRef(null);
+  const isAudioCleanedUpRef = useRef(false);
 
   const currentDialogue = DIALOGUES[currentIndex] || DIALOGUES[0];
   const currentMoment = MOMENTS[currentDialogue.momentIndex] || MOMENTS[0];
 
+  // Preload all 4 photos immediately for instant zero-lag transitions
+  useEffect(() => {
+    MOMENTS.forEach((m) => {
+      const img1 = new Image();
+      img1.src = m.image;
+      if (m.fallbackImage) {
+        const img2 = new Image();
+        img2.src = m.fallbackImage;
+      }
+    });
+
+    if (typeof window !== 'undefined') {
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      setPrefersReducedMotion(mediaQuery.matches);
+      const listener = (e) => setPrefersReducedMotion(e.matches);
+      mediaQuery.addEventListener('change', listener);
+      return () => mediaQuery.removeEventListener('change', listener);
+    }
+  }, []);
+
   // --------------------------------------------------------------------------
-  // 1. AUDIO MANAGEMENT: intro.mp3 (Full Volume) + Web Audio Rain/Thunder
-  // STRICTLY PRESERVES EXISTING HEARTBEAT
+  // 1. SYNCHRONIZE WITH HEARTBEAT & INTRO AUDIO
   // --------------------------------------------------------------------------
   useEffect(() => {
-    // Preserve existing heartbeat sound
+    isAudioCleanedUpRef.current = false;
+
+    // Start Web Audio synthetic heartbeat engine
     if (window.heartbeatEngine) {
       window.heartbeatEngine.start();
+      window.heartbeatEngine.setTargetBPM(54, 0.24);
     }
 
-    // Subscribe to pulse beats for crystal heart visual pulse
+    // Subscribe to real-time LUB-DUB beat events
     const unsubscribeHeartbeat = globalHeartbeatEngine.subscribeBeat((type) => {
+      if (isAudioCleanedUpRef.current) return;
       if (type === 'LUB') {
-        setPulseScale(1.08);
-        setTimeout(() => setPulseScale(1.02), 120);
+        setBeatType('LUB');
+        setPulseScale(1.028);
+        setTimeout(() => setPulseScale(1.008), 120);
       } else if (type === 'DUB') {
-        setPulseScale(1.14);
+        setBeatType('DUB');
+        setPulseScale(1.045);
         setTimeout(() => setPulseScale(1.0), 160);
       }
     });
 
-    // Background Music: public/intro.mp3 at full volume (volume: 1.0)
+    // Play public/intro.mp3 at full volume (looping)
     const introAudio = new Audio('/intro.mp3');
     introAudio.loop = true;
     introAudio.volume = 1.0;
     introAudioRef.current = introAudio;
 
     const playIntroMusic = () => {
+      if (isAudioCleanedUpRef.current) return;
       if (introAudioRef.current && introAudioRef.current.paused) {
         introAudioRef.current.play().catch(() => {});
       }
       if (rainAudioContextRef.current && rainAudioContextRef.current.state === 'suspended') {
         rainAudioContextRef.current.resume().catch(() => {});
+      }
+      if (window.heartbeatEngine && window.heartbeatEngine.audioCtx?.state === 'suspended') {
+        window.heartbeatEngine.audioCtx.resume().catch(() => {});
       }
     };
 
@@ -202,7 +397,7 @@ export default function HeartbeatIntro({ onUnlock }) {
     window.addEventListener('touchstart', playIntroMusic, { once: true });
     window.addEventListener('keydown', playIntroMusic, { once: true });
 
-    // Web Audio Synthesizer for Rain and Distant Rolling Thunder
+    // Web Audio Synthesizer for soft Rain and Distant Rolling Thunder Ambience
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
@@ -245,12 +440,18 @@ export default function HeartbeatIntro({ onUnlock }) {
         rainGain.connect(ctx.destination);
         noiseNode.start(0);
 
-        // Distant subtle thunder every 24-32s
+        // Distant subtle thunder every 26-34s
         const scheduleThunder = () => {
-          const delay = 24000 + Math.random() * 8000;
+          if (isAudioCleanedUpRef.current) return;
+          const delay = 26000 + Math.random() * 8000;
           thunderTimeoutRef.current = setTimeout(() => {
             try {
-              if (!rainAudioContextRef.current || rainAudioContextRef.current.state !== 'running') return;
+              if (
+                isAudioCleanedUpRef.current ||
+                !rainAudioContextRef.current ||
+                rainAudioContextRef.current.state !== 'running'
+              )
+                return;
               const tCtx = rainAudioContextRef.current;
               const now = tCtx.currentTime;
 
@@ -279,15 +480,23 @@ export default function HeartbeatIntro({ onUnlock }) {
         scheduleThunder();
       }
     } catch (e) {
-      console.warn('Rain ambience init deferred:', e);
+      console.warn('Atmospheric audio init deferred:', e);
     }
 
+    // Cleanup when component unmounts
     return () => {
+      isAudioCleanedUpRef.current = true;
       unsubscribeHeartbeat();
       window.removeEventListener('click', playIntroMusic);
       window.removeEventListener('touchstart', playIntroMusic);
       window.removeEventListener('keydown', playIntroMusic);
 
+      // Stop heartbeat engine immediately
+      if (window.heartbeatEngine) {
+        window.heartbeatEngine.pause();
+      }
+
+      // Stop intro music
       if (introAudioRef.current) {
         introAudioRef.current.pause();
         introAudioRef.current.currentTime = 0;
@@ -307,21 +516,21 @@ export default function HeartbeatIntro({ onUnlock }) {
     };
   }, []);
 
-  // Soft ducking of rain during important lines so Tamil text is completely clear
+  // Duck rain audio during important emotional lines so Tamil dialogue is crystalline
   useEffect(() => {
-    if (rainGainNodeRef.current && rainAudioContextRef.current) {
+    if (rainGainNodeRef.current && rainAudioContextRef.current && !isMuted) {
       try {
         const now = rainAudioContextRef.current.currentTime;
-        const targetGain = currentDialogue.isName || currentDialogue.isFinal ? 0.04 : 0.065;
+        const targetGain = currentDialogue.isName || currentDialogue.isFinal ? 0.035 : 0.065;
         rainGainNodeRef.current.gain.cancelScheduledValues(now);
         rainGainNodeRef.current.gain.setValueAtTime(rainGainNodeRef.current.gain.value, now);
         rainGainNodeRef.current.gain.linearRampToValueAtTime(targetGain, now + 0.5);
       } catch {}
     }
-  }, [currentDialogue]);
+  }, [currentDialogue, isMuted]);
 
   // --------------------------------------------------------------------------
-  // 2. SEQUENTIAL DIALOGUE ADVANCE TIMING
+  // 2. SEQUENTIAL DIALOGUE TIMING
   // --------------------------------------------------------------------------
   useEffect(() => {
     if (currentDialogue.isFinal) {
@@ -358,16 +567,31 @@ export default function HeartbeatIntro({ onUnlock }) {
   };
 
   // --------------------------------------------------------------------------
-  // 3. PARALLAX EFFECT FOR 3D DEPTH
+  // 3. LAYERED 3D PARALLAX INTERACTION (Smooth mouse & touch coordinate map)
   // --------------------------------------------------------------------------
-  const handleMouseMove = useCallback((e) => {
-    const x = (e.clientX / window.innerWidth - 0.5) * 2;
-    const y = (e.clientY / window.innerHeight - 0.5) * 2;
-    setParallax({ x, y });
-  }, []);
+  const handleMouseMove = useCallback(
+    (e) => {
+      if (prefersReducedMotion) return;
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const y = (e.clientY / window.innerHeight - 0.5) * 2;
+      setParallax({ x, y });
+    },
+    [prefersReducedMotion]
+  );
+
+  const handleTouchMove = useCallback(
+    (e) => {
+      if (prefersReducedMotion || !e.touches || e.touches.length === 0) return;
+      const touch = e.touches[0];
+      const x = (touch.clientX / window.innerWidth - 0.5) * 2;
+      const y = (touch.clientY / window.innerHeight - 0.5) * 2;
+      setParallax({ x, y });
+    },
+    [prefersReducedMotion]
+  );
 
   // --------------------------------------------------------------------------
-  // 4. FLOATING FIREFLIES & MAGIC DUST CANVAS OVERLAY
+  // 4. ATMOSPHERIC CANVAS: 3D TUMBLING ROSE PETALS, GOD-RAYS, FIREFLIES, MIST
   // --------------------------------------------------------------------------
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -386,41 +610,126 @@ export default function HeartbeatIntro({ onUnlock }) {
     };
     window.addEventListener('resize', handleResize);
 
-    const particles = Array.from({ length: 48 }).map(() => ({
+    // 1. Realistic 3D Tumbling Rose Petals with Euler/Quaternion projection
+    const petals = Array.from({ length: 32 }).map(() => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      size: Math.random() * 2.8 + 1.2,
-      speedY: Math.random() * 0.45 + 0.15,
-      speedX: (Math.random() - 0.5) * 0.35,
-      opacity: Math.random() * 0.65 + 0.25,
-      color: Math.random() > 0.45 ? 'rgba(255, 215, 0,' : 'rgba(244, 114, 182,',
-      pulse: Math.random() * Math.PI * 2,
+      z: Math.random() * 400 - 200, // Z-depth for stereoscopic perspective
+      length: Math.random() * 12 + 10,
+      width: Math.random() * 8 + 6,
+      rotX: Math.random() * Math.PI * 2,
+      rotY: Math.random() * Math.PI * 2,
+      rotZ: Math.random() * Math.PI * 2,
+      vRotX: (Math.random() - 0.5) * 0.04,
+      vRotY: (Math.random() - 0.5) * 0.05,
+      vRotZ: (Math.random() - 0.5) * 0.03,
+      speedY: Math.random() * 0.85 + 0.65,
+      speedX: (Math.random() - 0.5) * 0.45,
+      driftPhase: Math.random() * Math.PI * 2,
+      colorTop: Math.random() > 0.3 ? '#f43f5e' : '#fb7185',
+      colorBottom: Math.random() > 0.4 ? '#881337' : '#9d174d',
+      alpha: Math.random() * 0.55 + 0.35,
     }));
+
+    // 2. Luminous Stardust Fireflies & Embers
+    const fireflies = Array.from({ length: 42 }).map(() => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      size: Math.random() * 2.6 + 1.2,
+      speedY: Math.random() * 0.4 + 0.15,
+      speedX: (Math.random() - 0.5) * 0.3,
+      opacity: Math.random() * 0.7 + 0.3,
+      color: Math.random() > 0.5 ? '255, 215, 0' : '244, 114, 182',
+      pulse: Math.random() * Math.PI * 2,
+      pulseSpeed: Math.random() * 0.035 + 0.02,
+    }));
+
+    // 3. Volumetric God-Rays parameters
+    let rayPhase = 0;
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
+      rayPhase += 0.008;
 
-      particles.forEach((p) => {
-        p.pulse += 0.035;
-        const currentOpacity = p.opacity * (0.6 + 0.4 * Math.sin(p.pulse));
+      // Draw Volumetric God-Rays streaming from top-left and top-right
+      const ray1Grad = ctx.createLinearGradient(0, 0, width * 0.7, height);
+      const ray1Alpha = 0.035 + 0.015 * Math.sin(rayPhase);
+      ray1Grad.addColorStop(0, `rgba(251, 191, 36, ${ray1Alpha})`);
+      ray1Grad.addColorStop(0.4, `rgba(244, 114, 182, ${ray1Alpha * 0.6})`);
+      ray1Grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = ray1Grad;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(width * 0.35, 0);
+      ctx.lineTo(width * 0.85, height);
+      ctx.lineTo(width * 0.25, height);
+      ctx.closePath();
+      ctx.fill();
 
-        ctx.fillStyle = `${p.color} ${currentOpacity})`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
+      // Render 3D Tumbling Rose Petals
+      petals.forEach((p) => {
+        p.rotX += p.vRotX;
+        p.rotY += p.vRotY;
+        p.rotZ += p.vRotZ;
+        p.driftPhase += 0.02;
 
-        // Soft glow halo
-        ctx.fillStyle = `${p.color} ${currentOpacity * 0.3})`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
-        ctx.fill();
+        p.y += p.speedY;
+        p.x += p.speedX + Math.sin(p.driftPhase) * 0.5;
 
-        p.y -= p.speedY;
-        p.x += p.speedX + Math.sin(p.pulse * 0.5) * 0.2;
-
-        if (p.y < -10) {
-          p.y = height + 10;
+        if (p.y > height + 20) {
+          p.y = -20;
           p.x = Math.random() * width;
+        }
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotZ);
+
+        // 3D projection scaling based on rotX and rotY
+        const scaleX = Math.cos(p.rotX);
+        const scaleY = Math.sin(p.rotY);
+        ctx.scale(scaleX !== 0 ? scaleX : 0.05, scaleY !== 0 ? scaleY : 0.05);
+
+        // Petal curved silhouette
+        ctx.beginPath();
+        ctx.moveTo(0, -p.length / 2);
+        ctx.bezierCurveTo(p.width / 2, -p.length / 3, p.width / 2, p.length / 3, 0, p.length / 2);
+        ctx.bezierCurveTo(-p.width / 2, p.length / 3, -p.width / 2, -p.length / 3, 0, -p.length / 2);
+
+        const grad = ctx.createLinearGradient(0, -p.length / 2, 0, p.length / 2);
+        grad.addColorStop(0, p.colorTop);
+        grad.addColorStop(1, p.colorBottom);
+        ctx.fillStyle = grad;
+        ctx.globalAlpha = p.alpha;
+        ctx.shadowColor = 'rgba(244, 63, 94, 0.4)';
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Render Fireflies & Stardust Embers
+      fireflies.forEach((f) => {
+        f.pulse += f.pulseSpeed;
+        const currentOpacity = f.opacity * (0.6 + 0.4 * Math.sin(f.pulse));
+
+        // Core light mote
+        ctx.fillStyle = `rgba(${f.color}, ${currentOpacity})`;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Ambient glow halo
+        ctx.fillStyle = `rgba(${f.color}, ${currentOpacity * 0.28})`;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.size * 2.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        f.y -= f.speedY;
+        f.x += f.speedX + Math.sin(f.pulse * 0.6) * 0.25;
+
+        if (f.y < -15) {
+          f.y = height + 15;
+          f.x = Math.random() * width;
         }
       });
 
@@ -436,9 +745,11 @@ export default function HeartbeatIntro({ onUnlock }) {
   }, []);
 
   // --------------------------------------------------------------------------
-  // 5. CLEAN EXIT TO PASSCODE GATE (Stops audio & triggers confetti)
+  // 5. CLEAN EXIT & SCENE TRANSITION (Stops all audio cleanly & fires confetti)
   // --------------------------------------------------------------------------
   const handleFinalUnlock = () => {
+    isAudioCleanedUpRef.current = true;
+
     // Smoothly fade out intro.mp3
     if (introAudioRef.current) {
       const audio = introAudioRef.current;
@@ -447,13 +758,19 @@ export default function HeartbeatIntro({ onUnlock }) {
         vol = Math.max(0, vol - 0.16);
         audio.volume = vol;
         if (vol > 0) {
-          setTimeout(fadeStep, 50);
+          setTimeout(fadeStep, 45);
         } else {
           audio.pause();
           audio.currentTime = 0;
+          introAudioRef.current = null;
         }
       };
       fadeStep();
+    }
+
+    // Stop synthetic heartbeat engine cleanly
+    if (window.heartbeatEngine) {
+      window.heartbeatEngine.pause();
     }
 
     // Stop rain & thunder
@@ -464,20 +781,21 @@ export default function HeartbeatIntro({ onUnlock }) {
     if (rainGainNodeRef.current && rainAudioContextRef.current) {
       try {
         const now = rainAudioContextRef.current.currentTime;
-        rainGainNodeRef.current.gain.linearRampToValueAtTime(0.0001, now + 0.5);
+        rainGainNodeRef.current.gain.linearRampToValueAtTime(0.0001, now + 0.4);
         setTimeout(() => {
           if (rainAudioContextRef.current && rainAudioContextRef.current.state !== 'closed') {
             rainAudioContextRef.current.close().catch(() => {});
           }
-        }, 600);
+        }, 500);
       } catch {}
     }
 
+    // Grand cinematic confetti explosion
     confetti({
-      particleCount: 120,
-      spread: 85,
-      origin: { y: 0.6 },
-      colors: ['#f43f5e', '#ffd700', '#ffffff', '#ff69b4', '#c084fc'],
+      particleCount: 140,
+      spread: 95,
+      origin: { y: 0.62 },
+      colors: ['#f43f5e', '#ffd700', '#ffffff', '#ff69b4', '#c084fc', '#e11d48'],
     });
 
     setTimeout(() => {
@@ -501,109 +819,74 @@ export default function HeartbeatIntro({ onUnlock }) {
     });
   };
 
+  // Active moment 3D tilt coordinates (safely dampened for mobile & comfort)
+  const tiltX = prefersReducedMotion ? 0 : -parallax.y * 8;
+  const tiltY = prefersReducedMotion ? 0 : parallax.x * 10;
+
   return (
     <div
       onMouseMove={handleMouseMove}
-      className="fixed inset-0 w-full h-full bg-[#05010a] text-white select-none overflow-hidden z-30 font-sans flex flex-col items-center justify-between [perspective:1200px]"
+      onTouchMove={handleTouchMove}
+      className="fixed inset-0 w-full h-full bg-[#040107] text-white select-none overflow-hidden z-30 font-sans flex flex-col justify-between items-center [perspective:1400px]"
     >
-      {/* 1. CINEMATIC RAINBOW BORDER ACROSS SCREEN PERIMETER */}
+      {/* 1. CINEMATIC CONTINUOUS TRAVELLING RAINBOW BORDER */}
       <CinematicRainbowBorder mode="screen" />
 
-      {/* 2. LAYERED 3D BACKGROUND ARTWORK FOR THE FOUR MOMENTS */}
+      {/* 2. ATMOSPHERIC 3D WORLD BACKGROUND (Deep depth-of-field blurred dreamscape) */}
       <div className="fixed inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentMoment.id}
-            initial={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
+            initial={{ opacity: 0, scale: 1.12, filter: 'blur(28px)' }}
             animate={{
-              opacity: 1,
-              scale: currentMoment.id === 2 ? pulseScale : 1.02,
-              filter: 'blur(0px)',
-              x: parallax.x * 12,
-              y: parallax.y * 10,
-              rotateX: -parallax.y * 2.5,
-              rotateY: parallax.x * 2.5,
+              opacity: 0.42,
+              scale: currentMoment.id === 2 ? 1.04 * pulseScale : 1.05,
+              filter: 'blur(22px)',
+              x: prefersReducedMotion ? 0 : -parallax.x * 18,
+              y: prefersReducedMotion ? 0 : -parallax.y * 14,
             }}
-            exit={{ opacity: 0, scale: 1.08, filter: 'blur(8px)' }}
-            transition={{
-              duration: 1.2,
-              ease: [0.22, 1, 0.36, 1],
+            exit={{ opacity: 0, scale: 1.15, filter: 'blur(30px)' }}
+            transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-0 w-full h-full bg-cover bg-center"
+            style={{
+              backgroundImage: `url('${currentMoment.image}'), url('${currentMoment.fallbackImage}')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
             }}
-            className="absolute inset-0 w-full h-full [transform-style:preserve-3d]"
-          >
-            {/* Background Image with Fallback and 3D Depth */}
-            <div
-              className="absolute inset-0 w-full h-full bg-cover bg-center transition-all duration-700"
-              style={{
-                backgroundImage: `url('${currentMoment.image}'), url('${currentMoment.fallbackImage}')`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                filter: currentMoment.id === 2
-                  ? 'brightness(1.08) contrast(1.08) drop-shadow(0 0 45px rgba(236,72,153,0.35))'
-                  : currentMoment.id === 3
-                  ? 'brightness(1.06) contrast(1.06)'
-                  : 'brightness(0.98)',
-              }}
-            />
-
-            {/* Moment-specific 3D lighting & bloom overlay */}
-            {currentMoment.id === 2 && (
-              /* Moment B: Crystal Heart Radial Light Pulse */
-              <div
-                className="absolute inset-0 pointer-events-none transition-opacity duration-300"
-                style={{
-                  background: 'radial-gradient(circle at 50% 48%, rgba(244,63,94,0.28) 0%, rgba(168,85,247,0.18) 40%, transparent 75%)',
-                  opacity: pulseScale > 1.05 ? 1 : 0.75,
-                }}
-              />
-            )}
-
-            {currentMoment.id === 3 && (
-              /* Moment C: SARANYA Reveal Atmospheric Light Sweep */
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background: 'radial-gradient(ellipse at 50% 50%, rgba(244,114,182,0.22) 0%, rgba(192,132,252,0.14) 45%, transparent 75%)',
-                }}
-              />
-            )}
-
-            {currentMoment.id === 4 && (
-              /* Moment D: Enter Our Story Golden Magical Garden Glow */
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background: 'radial-gradient(circle at 50% 65%, rgba(251,191,36,0.18) 0%, rgba(244,63,94,0.14) 45%, transparent 75%)',
-                }}
-              />
-            )}
-          </motion.div>
+          />
         </AnimatePresence>
 
-        {/* Cinematic Vignette & Deep Violet Shadow Frame */}
-        <div className="absolute inset-0 bg-radial from-transparent via-black/25 to-black/85 pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/55 pointer-events-none" />
+        {/* Cinematic Vignette & Deep Burgundy Shadow Frame */}
+        <div className="absolute inset-0 bg-radial from-transparent via-[#06010b]/55 to-[#040107]/95 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#040107] via-transparent to-[#040107]/80 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/85 pointer-events-none" />
       </div>
 
-      {/* 3. FLOATING FIREFLIES & MAGIC DUST CANVAS */}
-      <canvas
-        ref={canvasRef}
-        className="fixed inset-0 w-full h-full pointer-events-none z-10"
-      />
+      {/* 3. ATMOSPHERIC CANVAS OVERLAY (3D Petals, Fireflies, Light Rays) */}
+      <canvas ref={canvasRef} className="fixed inset-0 w-full h-full pointer-events-none z-10" />
 
-      {/* 4. TOP UTILITY BAR (Scene indicator, Mute, Skip) */}
-      <div className="relative z-40 w-full px-5 sm:px-8 py-5 flex items-center justify-between pointer-events-auto">
-        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/55 backdrop-blur-md border border-rose-400/25 text-rose-300 text-xs font-mono shadow-lg">
-          <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.9)]" />
-          <span className="font-semibold">Moment {currentMoment.id} of 4</span>
-          <span className="text-gray-400">·</span>
-          <span className="text-rose-200/90 font-serif italic">{currentMoment.name}</span>
+      {/* 4. TOP CINEMATIC UTILITY BAR (Moment Tracker, Mute, Skip) */}
+      <header className="relative z-40 w-full px-4 sm:px-8 pt-4 sm:pt-6 pb-2 flex items-center justify-between pointer-events-auto">
+        <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-rose-400/30 text-rose-300 text-xs font-mono shadow-[0_4px_25px_rgba(0,0,0,0.5)]">
+          <span
+            className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.9)]"
+            style={{
+              transform: `scale(${pulseScale > 1.02 ? 1.4 : 1})`,
+              transition: 'transform 0.15s ease-out',
+            }}
+          />
+          <span className="font-semibold text-rose-200">Moment {currentMoment.id} of 4</span>
+          <span className="text-white/30">|</span>
+          <span className="text-white/90 font-serif italic">{currentMoment.name}</span>
+          <span className="hidden sm:inline text-rose-300/80 font-sans text-[11px]">
+            ({currentMoment.subtitle})
+          </span>
         </div>
 
         <div className="flex items-center gap-2.5">
           <button
             onClick={toggleMute}
-            className="p-2.5 rounded-full bg-black/55 hover:bg-black/75 backdrop-blur-md border border-white/15 text-rose-200 hover:text-white transition active:scale-95 cursor-pointer shadow-lg"
+            className="p-2.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-xl border border-white/20 text-rose-200 hover:text-white transition active:scale-95 cursor-pointer shadow-lg"
             title={isMuted ? 'ஒலியை இயக்கு' : 'ஒலியை நிறுத்து'}
             aria-label="Toggle Mute"
           >
@@ -613,7 +896,7 @@ export default function HeartbeatIntro({ onUnlock }) {
           {!isFinalSceneReady && (
             <button
               onClick={handleSkipToFinal}
-              className="px-3.5 py-1.5 rounded-full bg-black/60 hover:bg-rose-950/70 backdrop-blur-md border border-rose-400/35 text-rose-200 hover:text-white text-xs font-medium flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-lg"
+              className="px-3.5 py-1.5 rounded-full bg-black/65 hover:bg-rose-950/80 backdrop-blur-xl border border-rose-400/40 text-rose-200 hover:text-white text-xs font-medium flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-lg"
               title="நேரடியாக இறுதி அழைப்புக்கு செல்ல"
             >
               <Sparkles size={12} className="text-amber-300 animate-spin" />
@@ -621,89 +904,230 @@ export default function HeartbeatIntro({ onUnlock }) {
             </button>
           )}
         </div>
-      </div>
+      </header>
 
-      {/* 5. CENTRAL 3D GLASS DIALOGUE CARD — ELEGANT TAMIL STORYTELLING */}
-      <div className="relative z-40 w-full max-w-2xl px-6 py-4 flex-1 flex flex-col items-center justify-center text-center pointer-events-auto">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentDialogue.id}
-            initial={{ opacity: 0, y: 22, scale: 0.95, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: -20, scale: 0.97, filter: 'blur(6px)' }}
-            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full flex flex-col items-center justify-center space-y-4"
-          >
-            {/* Elegant Translucent Scrim for 100% Text Readability against rich artwork */}
-            <div className="w-full max-w-xl px-6 sm:px-8 py-6 rounded-3xl bg-black/55 backdrop-blur-xl border border-rose-400/30 shadow-[0_12px_45px_rgba(0,0,0,0.7),0_0_30px_rgba(244,114,182,0.18)] flex flex-col items-center space-y-4">
-              {currentDialogue.isName ? (
-                /* Dramatic Name Reveal: “சரண்யா…” */
-                <div className="space-y-2 py-1">
-                  <span className="text-[11px] uppercase tracking-[0.3em] font-mono text-rose-300 font-semibold drop-shadow">
-                    Dedicated To My One & Only
-                  </span>
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-white tracking-wider drop-shadow-[0_0_30px_rgba(244,114,182,0.9)]">
-                    {currentDialogue.text}
-                  </h1>
-                </div>
-              ) : (
-                /* Emotional Tamil Dialogue Line */
-                <div className="space-y-3 py-1">
-                  <p className="text-lg sm:text-2xl md:text-3xl font-serif font-medium text-white leading-relaxed drop-shadow-[0_2px_20px_rgba(244,63,94,0.55)]">
-                    “{currentDialogue.text}”
-                  </p>
-
-                  {currentDialogue.isFinal && (
-                    <motion.p
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.6, duration: 0.8 }}
-                      className="text-xs sm:text-sm font-serif italic text-amber-200/90 tracking-wide drop-shadow"
-                    >
-                      ஒரு அழகான கதை… உன்னால்தான் ஆரம்பிக்குது. ✨
-                    </motion.p>
-                  )}
-                </div>
-              )}
-
-              {/* Tap to continue faster button */}
-              {!currentDialogue.isFinal && (
-                <button
-                  onClick={handleNextDialogue}
-                  className="mt-1 px-4 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/[0.15] border border-white/15 text-rose-200 hover:text-white text-xs font-mono flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow"
-                >
-                  <span>தொடர தட்டவும்</span>
-                  <ArrowRight size={12} />
-                </button>
-              )}
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* 6. MOMENT D: FINAL STORY BUTTON — “என் மனசுக்குள்ள வா ❤️” */}
-        {isFinalSceneReady && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 24 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full max-w-sm mt-6"
-          >
-            <motion.button
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
-              onClick={handleFinalUnlock}
-              className="w-full py-4 sm:py-4.5 px-6 rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-bold text-base sm:text-lg shadow-[0_0_45px_rgba(244,63,94,0.65),0_0_20px_rgba(168,85,247,0.45)] border border-rose-400/40 flex items-center justify-center gap-3 transition cursor-pointer group"
+      {/* 5. HERO 3D FLOATING PHOTO GALLERY & CENTRAL STAGE */}
+      <main className="relative z-30 w-full flex-1 flex flex-col items-center justify-center px-4 py-2 sm:py-4 pointer-events-auto overflow-visible">
+        {/* ================================================================== */}
+        {/* 3D FLOATING PHOTO FRAME (Suspended Precious Memory)                */}
+        {/* ================================================================== */}
+        <div className="relative w-full max-w-[92vw] sm:max-w-[560px] md:max-w-[620px] lg:max-w-[660px] flex items-center justify-center [transform-style:preserve-3d]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentMoment.id}
+              variants={PHOTO_ENTRANCE_VARIANTS[currentMoment.id]}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="relative w-full [transform-style:preserve-3d] flex items-center justify-center"
             >
-              <Heart className="w-5 h-5 fill-white group-hover:scale-120 transition-transform duration-300" />
-              <span>என் மனசுக்குள்ள வா ❤️</span>
-            </motion.button>
-          </motion.div>
-        )}
-      </div>
+              {/* Outer Interactive 3D Frame with Springy Tilt & Breathing Physics */}
+              <motion.div
+                animate={{
+                  rotateX: tiltX,
+                  rotateY: tiltY,
+                  scale: pulseScale,
+                }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 120,
+                  damping: 18,
+                  mass: 0.8,
+                }}
+                className="relative w-full aspect-[16/10] sm:aspect-[16/9.8] rounded-3xl [transform-style:preserve-3d] will-change-transform group"
+              >
+                {/* 3D Layer -1: Deep Cast Shadow Plane onto Atmosphere */}
+                <div
+                  className="absolute inset-0 rounded-3xl pointer-events-none transition-all duration-300"
+                  style={{
+                    transform: `translate3d(${-tiltY * 1.5}px, ${30 + tiltX * 1.5}px, -45px)`,
+                    boxShadow: `0 45px 95px -10px rgba(0, 0, 0, 0.95), 0 0 70px ${currentMoment.glowColor}`,
+                    background: 'rgba(0, 0, 0, 0.45)',
+                    filter: 'blur(16px)',
+                  }}
+                />
 
-      {/* 7. BOTTOM PROGRESS DOTS & CARDIAC INDICATOR */}
-      <div className="relative z-40 w-full px-6 py-5 flex flex-col items-center gap-2.5 pointer-events-none">
-        {/* Dialogue beats indicator */}
+                {/* 3D Layer 0: Royal Beveled Frame Base in Rose-Gold & Obsidian Lacquer */}
+                <div
+                  className="absolute -inset-[3px] sm:-inset-[4px] rounded-[28px] pointer-events-none [transform-style:preserve-3d]"
+                  style={{
+                    transform: 'translateZ(0px)',
+                    background: `linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(244,114,182,0.6) 25%, rgba(30,10,25,0.95) 50%, rgba(251,191,36,0.6) 75%, rgba(255,255,255,0.4) 100%)`,
+                    boxShadow: `0 0 35px ${currentMoment.glowColor}, inset 0 1px 2px rgba(255,255,255,0.5)`,
+                  }}
+                />
+
+                {/* 3D Layer 1: Chamfered Inner Obsidian Bezel */}
+                <div
+                  className="absolute inset-0 rounded-[25px] overflow-hidden bg-[#0c0410] border border-rose-400/40 shadow-[inset_0_0_40px_rgba(0,0,0,0.85)] [transform-style:preserve-3d]"
+                  style={{ transform: 'translateZ(10px)' }}
+                >
+                  {/* The Pristine Original Photo Asset (Untouched Content & Full Resolution) */}
+                  <img
+                    src={currentMoment.image}
+                    alt={currentMoment.name}
+                    className="w-full h-full object-cover object-center select-none pointer-events-none transition-transform duration-1000 ease-out group-hover:scale-105"
+                    onError={(e) => {
+                      if (e.currentTarget.src !== currentMoment.fallbackImage) {
+                        e.currentTarget.src = currentMoment.fallbackImage;
+                      }
+                    }}
+                  />
+
+                  {/* Inner Soft Vignette Edge for Luxury Cinema Blend */}
+                  <div className="absolute inset-0 bg-radial from-transparent via-black/10 to-black/60 pointer-events-none" />
+
+                  {/* Dynamic Specular Glass Glare Layer (Shifts across photo as cursor/device tilts) */}
+                  <div
+                    className="absolute inset-0 pointer-events-none transition-transform duration-200 ease-out"
+                    style={{
+                      transform: `translate3d(${tiltY * 5}px, ${tiltX * 5}px, 15px)`,
+                      background:
+                        'linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0.04) 60%, transparent 80%)',
+                      mixBlendMode: 'overlay',
+                    }}
+                  />
+                </div>
+
+                {/* 3D Layer 2: Real-time Heartbeat Shockwave Aura (Intensifies on Moment 2 & 4) */}
+                <div
+                  className="absolute -inset-4 sm:-inset-6 rounded-[34px] pointer-events-none transition-opacity duration-200"
+                  style={{
+                    transform: 'translateZ(18px)',
+                    border: `1.5px solid ${currentMoment.accentColor}`,
+                    opacity: pulseScale > 1.02 ? 0.75 : 0.15,
+                    boxShadow: `0 0 45px ${currentMoment.glowColor}`,
+                    transformStyle: 'preserve-3d',
+                  }}
+                />
+
+                {/* 3D Layer 3: Floating Rose-Gold Corner Filigrees Hovering in True 3D */}
+                <div
+                  className="absolute inset-0 pointer-events-none [transform-style:preserve-3d]"
+                  style={{ transform: 'translateZ(34px)' }}
+                >
+                  {/* Top-Left Filigree */}
+                  <div className="absolute top-2.5 left-2.5 w-6 h-6 border-t-2 border-l-2 border-amber-300/80 rounded-tl-lg drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] flex items-center justify-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_#f43f5e]" />
+                  </div>
+                  {/* Top-Right Filigree */}
+                  <div className="absolute top-2.5 right-2.5 w-6 h-6 border-t-2 border-r-2 border-amber-300/80 rounded-tr-lg drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] flex items-center justify-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_#f43f5e]" />
+                  </div>
+                  {/* Bottom-Left Filigree */}
+                  <div className="absolute bottom-2.5 left-2.5 w-6 h-6 border-b-2 border-l-2 border-amber-300/80 rounded-bl-lg drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] flex items-center justify-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_#f43f5e]" />
+                  </div>
+                  {/* Bottom-Right Filigree */}
+                  <div className="absolute bottom-2.5 right-2.5 w-6 h-6 border-b-2 border-r-2 border-amber-300/80 rounded-br-lg drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] flex items-center justify-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_#f43f5e]" />
+                  </div>
+
+                  {/* Top Center Floating Romantic Jewel Badge */}
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/85 backdrop-blur-md border border-amber-300/60 shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_15px_rgba(244,63,94,0.6)] flex items-center gap-1.5 text-[11px] font-mono text-amber-200">
+                    <Heart
+                      size={11}
+                      className="fill-rose-500 text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,1)] animate-pulse"
+                    />
+                    <span className="tracking-widest uppercase font-semibold">Memory {currentMoment.id}</span>
+                  </div>
+
+                  {/* Bottom Floating Subtitle Pill */}
+                  <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 max-w-[88%] px-4 py-1 rounded-full bg-black/85 backdrop-blur-md border border-rose-400/40 shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_15px_rgba(168,85,247,0.5)] flex items-center gap-2 text-xs font-serif text-rose-100 whitespace-nowrap overflow-hidden text-ellipsis">
+                    <Sparkles size={11} className="text-amber-300 shrink-0" />
+                    <span className="italic">{currentMoment.subtitle}</span>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* ================================================================== */}
+        {/* CINEMATIC LOWER DIALOGUE CONSOLE (Unobscured & Crystal Clear)       */}
+        {/* ================================================================== */}
+        <div className="relative z-40 w-full max-w-xl mt-5 sm:mt-6 flex flex-col items-center text-center pointer-events-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentDialogue.id}
+              initial={{ opacity: 0, y: 16, scale: 0.96, filter: 'blur(6px)' }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: -14, scale: 0.98, filter: 'blur(5px)' }}
+              transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full"
+            >
+              <div className="w-full px-5 sm:px-7 py-4 sm:py-5 rounded-2xl bg-black/70 backdrop-blur-2xl border border-rose-400/35 shadow-[0_15px_45px_rgba(0,0,0,0.85),0_0_30px_rgba(244,63,94,0.18)] flex flex-col items-center space-y-2.5">
+                {currentDialogue.isName ? (
+                  /* Dramatic Name Reveal: “சரண்யா…” */
+                  <div className="space-y-1.5 py-1">
+                    <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.3em] font-mono text-rose-300 font-semibold drop-shadow">
+                      Dedicated To My One & Only
+                    </span>
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-white tracking-wider drop-shadow-[0_0_35px_rgba(244,114,182,0.95)]">
+                      {currentDialogue.text}
+                    </h1>
+                  </div>
+                ) : (
+                  /* Emotional Tamil Dialogue Line */
+                  <div className="space-y-2 py-0.5">
+                    <p className="text-base sm:text-xl md:text-2xl font-serif font-medium text-white leading-relaxed drop-shadow-[0_2px_18px_rgba(244,63,94,0.65)]">
+                      “{currentDialogue.text}”
+                    </p>
+
+                    {currentDialogue.isFinal && (
+                      <motion.p
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5, duration: 0.7 }}
+                        className="text-xs sm:text-sm font-serif italic text-amber-200/90 tracking-wide drop-shadow"
+                      >
+                        ஒரு அழகான கதை… உன்னால்தான் ஆரம்பிக்குது. ✨
+                      </motion.p>
+                    )}
+                  </div>
+                )}
+
+                {/* Manual tap to continue button */}
+                {!currentDialogue.isFinal && (
+                  <button
+                    onClick={handleNextDialogue}
+                    className="mt-1 px-4 py-1 rounded-full bg-white/[0.08] hover:bg-white/[0.16] border border-white/20 text-rose-200 hover:text-white text-xs font-mono flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow"
+                  >
+                    <span>தொடர தட்டவும்</span>
+                    <ArrowRight size={11} />
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* ================================================================ */}
+          {/* MOMENT 4 FINAL CTA: “என் மனசுக்குள்ள வா ❤️”                     */}
+          {/* ================================================================ */}
+          {isFinalSceneReady && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 18 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full max-w-sm mt-4 sm:mt-5"
+            >
+              <motion.button
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={handleFinalUnlock}
+                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-bold text-base sm:text-lg shadow-[0_0_50px_rgba(244,63,94,0.7),0_0_25px_rgba(168,85,247,0.5)] border border-rose-400/50 flex items-center justify-center gap-3 transition cursor-pointer group"
+              >
+                <Heart className="w-5 h-5 fill-white group-hover:scale-125 transition-transform duration-300" />
+                <span>என் மனசுக்குள்ள வா ❤️</span>
+              </motion.button>
+            </motion.div>
+          )}
+        </div>
+      </main>
+
+      {/* 6. BOTTOM CARDIAC INDICATOR & DIALOGUE TIMELINE DOTS */}
+      <footer className="relative z-40 w-full px-4 sm:px-6 py-3 sm:py-4 flex flex-col items-center gap-2 pointer-events-none">
+        {/* Dialogue beat dots */}
         <div className="flex items-center gap-1.5 pointer-events-auto">
           {DIALOGUES.map((d, idx) => (
             <button
@@ -715,9 +1139,9 @@ export default function HeartbeatIntro({ onUnlock }) {
               }}
               className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                 idx === currentIndex
-                  ? 'w-6 bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.9)]'
+                  ? 'w-6 bg-gradient-to-r from-rose-500 to-pink-500 shadow-[0_0_10px_rgba(244,63,94,0.9)]'
                   : idx < currentIndex
-                  ? 'w-2 bg-rose-400/45'
+                  ? 'w-2 bg-rose-400/50'
                   : 'w-1.5 bg-white/20'
               }`}
               title={`Dialogue ${idx + 1}`}
@@ -725,12 +1149,18 @@ export default function HeartbeatIntro({ onUnlock }) {
           ))}
         </div>
 
-        {/* Heartbeat connection badge */}
-        <div className="flex items-center gap-2 text-rose-300/60 text-[11px] font-mono">
-          <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
+        {/* Synchronized Heartbeat ECG Pulse Badge */}
+        <div className="flex items-center gap-2 text-rose-300/70 text-[11px] font-mono">
+          <span
+            className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e]"
+            style={{
+              transform: `scale(${pulseScale > 1.02 ? 1.5 : 1})`,
+              transition: 'transform 0.12s ease-out',
+            }}
+          />
           <span>Synchronized Heartbeat · The Eternal Romantic Garden</span>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }

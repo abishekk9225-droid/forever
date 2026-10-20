@@ -822,7 +822,7 @@ export default function PhoneCallScene({ onComplete }) {
                 <button
                   onClick={() => {
                     handleCloseCallModal();
-                    handleButtonAAccept();
+                    handleOpenUmbrella();
                   }}
                   className="text-xs text-rose-300 hover:text-rose-100 underline transition cursor-pointer"
                 >

@@ -4,6 +4,7 @@ import { Phone, PhoneOff, Heart, Sparkles, Volume2, VolumeX } from 'lucide-react
 import confetti from 'canvas-confetti';
 import { useSound } from '../context/SoundContext';
 import CinematicRainbowBorder from './CinematicRainbowBorder';
+import UmbrellaScene from './UmbrellaScene';
 
 const ADMIN_PHONE = '6380404055';
 
@@ -77,7 +78,7 @@ PARAGRAPHS_TAMIL.forEach((pText, pIndex) => {
 });
 
 export default function PhoneCallScene({ onComplete }) {
-  const { startPhoneCallTrack, stopPhoneCallTrack } = useSound();
+  const { startPhoneCallTrack, stopPhoneCallTrack, duckPhoneCallTrack } = useSound();
 
   // Controls the 6-second initial delay before the message box appears
   const [isMessageBoxVisible, setIsMessageBoxVisible] = useState(false);
@@ -85,9 +86,11 @@ export default function PhoneCallScene({ onComplete }) {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [showIncomingCallModal, setShowIncomingCallModal] = useState(false);
+  const [showUmbrella, setShowUmbrella] = useState(false);
   const [lightningFlash, setLightningFlash] = useState(false);
   const [isRainMuted, setIsRainMuted] = useState(false);
 
+  const isOpeningUmbrellaRef = useRef(false);
   const rainCanvasRef = useRef(null);
   const letterContainerRef = useRef(null);
   const audioContextRef = useRef(null);
@@ -441,6 +444,28 @@ export default function PhoneCallScene({ onComplete }) {
   // --------------------------------------------------------------------------
   // 4. BUTTON ACTIONS
   // --------------------------------------------------------------------------
+  const handleOpenUmbrella = () => {
+    if (isOpeningUmbrellaRef.current) return;
+    isOpeningUmbrellaRef.current = true;
+
+    // Duck mk.mp3 cleanly to soft background level (0.05) over 1.2s without pausing it
+    if (typeof duckPhoneCallTrack === 'function') {
+      duckPhoneCallTrack(0.05, 1.2);
+    }
+
+    // Duck local rain synthesizer in PhoneCallScene so it doesn't clash with UmbrellaScene
+    if (rainGainNodeRef.current && audioContextRef.current) {
+      try {
+        const now = audioContextRef.current.currentTime;
+        rainGainNodeRef.current.gain.cancelScheduledValues(now);
+        rainGainNodeRef.current.gain.setValueAtTime(rainGainNodeRef.current.gain.value, now);
+        rainGainNodeRef.current.gain.linearRampToValueAtTime(0.0001, now + 0.8);
+      } catch {}
+    }
+
+    setShowUmbrella(true);
+  };
+
   const handleButtonAAccept = () => {
     confetti({
       particleCount: 75,
@@ -699,7 +724,7 @@ export default function PhoneCallScene({ onComplete }) {
                 <div className="flex flex-col sm:flex-row gap-3 justify-center w-full pt-1 pb-3">
                   {/* BUTTON A: “நான் ஒப்புக்கொள்கிறேன் ❤️” */}
                   <button
-                    onClick={handleButtonAAccept}
+                    onClick={handleOpenUmbrella}
                     className="flex-1 py-3 px-5 rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-semibold text-xs sm:text-sm shadow-[0_0_25px_rgba(244,63,94,0.4)] flex items-center justify-center gap-2 hover:scale-102 active:scale-98 transition cursor-pointer"
                   >
                     <Heart size={15} className="fill-white" />
@@ -797,7 +822,7 @@ export default function PhoneCallScene({ onComplete }) {
                 <button
                   onClick={() => {
                     handleCloseCallModal();
-                    handleButtonAAccept();
+                    handleOpenUmbrella();
                   }}
                   className="text-xs text-rose-300 hover:text-rose-100 underline transition cursor-pointer"
                 >
@@ -806,6 +831,15 @@ export default function PhoneCallScene({ onComplete }) {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 8. CINEMATIC UMBRELLA SCENE OVERLAY */}
+      <AnimatePresence>
+        {showUmbrella && (
+          <UmbrellaScene
+            onComplete={handleButtonAAccept}
+          />
         )}
       </AnimatePresence>
     </div>

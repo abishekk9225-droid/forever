@@ -664,6 +664,20 @@ class UnifiedAudioEngine {
     this.setTargetBPM(58, 0.22);
   }
 
+  // Smoothly ducks the phone-call track (mk.mp3) to a very soft background level without pausing it
+  duckPhoneCallTrack(targetGain = 0.05, durationSec = 1.0) {
+    const mk = this.tracks['mk'];
+    if (!mk) return;
+    const now = this.audioCtx ? this.audioCtx.currentTime : 0;
+    if (mk.trackGain && this.audioCtx) {
+      mk.trackGain.gain.cancelScheduledValues(now);
+      mk.trackGain.gain.setValueAtTime(mk.trackGain.gain.value || 1.0, now);
+      mk.trackGain.gain.linearRampToValueAtTime(targetGain, now + durationSec);
+    } else if (mk.element) {
+      mk.element.volume = targetGain;
+    }
+  }
+
   stopPhoneCallTrack(fadeDuration = 1.5) {
     const mk = this.tracks['mk'];
     const now = this.audioCtx ? this.audioCtx.currentTime : 0;

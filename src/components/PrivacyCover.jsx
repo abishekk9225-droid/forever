@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, Shield, Sparkles, Smartphone, EyeOff, AlertTriangle } from 'lucide-react';
+import { Lock, Shield, EyeOff, AlertTriangle, Activity } from 'lucide-react';
 import { useCamera } from '../context/CameraContext';
 
 /**
@@ -10,8 +10,8 @@ import { useCamera } from '../context/CameraContext';
  *   passcode entries, and games from appearing in mobile app-switcher previews.
  * - When an external mobile phone is detected in the laptop webcam view, immediately
  *   renders an emergency pitch-black overlay hiding all content until the phone is absent.
- * - Smoothly lifts the cover when the user returns or the device is removed (after 5s clear period).
- * - Prevents accidental context menu and image dragging on sensitive visuals.
+ * - Highest-priority z-[99999999] overlay covers every scene, dialogue, photo, and game.
+ * - Smoothly lifts the cover when the phone has been absent for 5 continuous seconds.
  */
 export default function PrivacyCover() {
   const [isCoverVisible, setIsCoverVisible] = useState(false);
@@ -20,7 +20,15 @@ export default function PrivacyCover() {
   const isPhoneOverlayActive = cameraContext?.isPhoneOverlayActive || false;
   const phoneOverlayCountdown = cameraContext?.phoneOverlayCountdown || 0;
   const phoneConfidence = cameraContext?.phoneConfidence || 0;
+  const lastDetectedClass = cameraContext?.lastDetectedClass || 'cell phone';
   const dismissPhoneOverlay = cameraContext?.dismissPhoneOverlay;
+  const diagnosticMode = cameraContext?.diagnosticMode || {
+    camera: 'ON',
+    model: 'READY',
+    detection: 'PHONE DETECTED',
+    blackout: 'ACTIVE',
+    email: 'IDLE',
+  };
 
   useEffect(() => {
     // 1. Page Visibility API Detection
@@ -90,21 +98,21 @@ export default function PrivacyCover() {
     };
   }, []);
 
-  // 1. Emergency Phone Detection Pitch-Black Overlay
+  // 1. Highest-Priority Emergency Pitch-Black Overlay
   if (isPhoneOverlayActive) {
     return (
       <div
-        className="fixed inset-0 z-[9999999] bg-black flex flex-col items-center justify-center p-6 text-center select-none overflow-hidden animate-in fade-in duration-150"
+        className="fixed inset-0 z-[99999999] bg-black flex flex-col items-center justify-center p-4 sm:p-6 text-center select-none overflow-hidden animate-in fade-in duration-100"
         aria-label="Mobile Phone Detected - Privacy Blackout Active"
       >
-        <div className="relative z-10 max-w-md w-full p-8 rounded-3xl bg-neutral-950/95 border border-red-500/50 shadow-[0_0_80px_rgba(239,68,68,0.35)] backdrop-blur-3xl flex flex-col items-center space-y-4 text-white">
+        <div className="relative z-10 max-w-md w-full p-6 sm:p-8 rounded-3xl bg-neutral-950/98 border border-red-500/60 shadow-[0_0_90px_rgba(239,68,68,0.4)] backdrop-blur-3xl flex flex-col items-center space-y-4 text-white">
           {/* Animated Warning Icon */}
-          <div className="w-16 h-16 rounded-2xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 shadow-[0_0_35px_rgba(239,68,68,0.5)]">
+          <div className="w-16 h-16 rounded-2xl bg-red-500/20 border border-red-500/50 flex items-center justify-center text-red-400 shadow-[0_0_35px_rgba(239,68,68,0.5)]">
             <EyeOff className="w-8 h-8 animate-pulse text-red-400" />
           </div>
 
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-950/80 border border-red-500/40 text-red-300 font-mono text-[11px]">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-950/90 border border-red-500/50 text-red-300 font-mono text-[11px]">
               <AlertTriangle className="w-3.5 h-3.5" />
               <span>External Device Detected ({phoneConfidence ? `${phoneConfidence}%` : 'Confirmed'})</span>
             </div>
@@ -112,11 +120,11 @@ export default function PrivacyCover() {
               Privacy Blackout Active 🛡️
             </h2>
             <p className="text-xs text-neutral-300 leading-relaxed font-sans">
-              An external mobile phone or camera was detected in your laptop webcam view. All photos, romantic messages, and game scenes are concealed.
+              A mobile device was detected in your laptop webcam view. All photos, messages, dialogues, and games are immediately concealed.
             </p>
           </div>
 
-          {/* Countdown & Status */}
+          {/* Restoration Countdown */}
           <div className="w-full p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-neutral-300 space-y-1.5">
             <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400">
               <span>Restoration Timer:</span>
@@ -125,21 +133,47 @@ export default function PrivacyCover() {
               </span>
             </div>
             <p className="text-[10px] text-neutral-400 text-left leading-normal">
-              Screen automatically restores once the mobile device is removed from camera view for 5 seconds.
+              Screen automatically restores once the mobile device has been absent from camera view for 5 continuous seconds.
             </p>
+          </div>
+
+          {/* Live Diagnostic Status Badges */}
+          <div className="w-full p-2.5 rounded-2xl bg-black/60 border border-red-500/30 text-[10px] font-mono grid grid-cols-2 gap-1.5">
+            <div className="flex justify-between px-2 py-1 rounded bg-white/[0.03]">
+              <span className="text-neutral-500">Camera:</span>
+              <span className="text-emerald-400 font-bold">{diagnosticMode.camera}</span>
+            </div>
+            <div className="flex justify-between px-2 py-1 rounded bg-white/[0.03]">
+              <span className="text-neutral-500">Model:</span>
+              <span className="text-emerald-400 font-bold">{diagnosticMode.model}</span>
+            </div>
+            <div className="flex justify-between px-2 py-1 rounded bg-white/[0.03]">
+              <span className="text-neutral-500">Detection:</span>
+              <span className="text-red-400 font-bold animate-pulse">{diagnosticMode.detection}</span>
+            </div>
+            <div className="flex justify-between px-2 py-1 rounded bg-white/[0.03]">
+              <span className="text-neutral-500">Blackout:</span>
+              <span className="text-red-400 font-bold">{diagnosticMode.blackout}</span>
+            </div>
+            <div className="flex justify-between px-2 py-1 rounded bg-white/[0.03] col-span-2">
+              <span className="text-neutral-500">Alert Email:</span>
+              <span className={diagnosticMode.email === 'SUCCESS' ? 'text-emerald-400 font-bold' : diagnosticMode.email === 'SENDING' ? 'text-amber-400 animate-pulse font-bold' : 'text-neutral-300'}>
+                {diagnosticMode.email === 'SUCCESS' ? 'Sent (Webcam Snapshot Attached)' : diagnosticMode.email}
+              </span>
+            </div>
           </div>
 
           {/* Technical Disclosure Notice */}
           <p className="text-[10px] text-neutral-500 leading-normal max-w-xs">
-            * Snapshot alert sent to admin was captured by your laptop webcam. Websites cannot take photos using external mobile phones.
+            * Snapshot alert sent to admin was captured from your authorized laptop webcam. Websites cannot take photos using external mobile phones, nor prevent external photography or operating-system screenshots.
           </p>
 
-          {/* Manual dismiss button in case of false positive */}
+          {/* Manual dismiss button for emergency override */}
           {dismissPhoneOverlay && (
             <button
               type="button"
               onClick={dismissPhoneOverlay}
-              className="py-2 px-4 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 text-neutral-300 hover:text-white text-xs font-medium transition cursor-pointer"
+              className="py-2 px-5 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 text-neutral-300 hover:text-white text-xs font-medium transition cursor-pointer"
             >
               Dismiss Blackout Overlay
             </button>

@@ -354,7 +354,6 @@ export default function HeartbeatIntro({ onUnlock }) {
     }, 1400);
     return () => clearTimeout(timer);
   }, []);
-
   // --------------------------------------------------------------------------
   // 1. SYNCHRONIZE WITH HEARTBEAT & INTRO AUDIO
   // --------------------------------------------------------------------------
@@ -889,6 +888,7 @@ export default function HeartbeatIntro({ onUnlock }) {
           >
             {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
           </button>
+
         </div>
       </header>
 
@@ -1116,6 +1116,28 @@ export default function HeartbeatIntro({ onUnlock }) {
                 </div>
               </motion.div>
             </AnimatePresence>
+
+            {/* ================================================================ */}
+            {/* MOMENT 4 FINAL CTA: “என் மனசுக்குள்ள வா ❤️”                     */}
+            {/* ================================================================ */}
+            {isFinalSceneReady && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 18 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full max-w-sm mt-4 sm:mt-5"
+              >
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={handleFinalUnlock}
+                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-bold text-base sm:text-lg shadow-[0_0_50px_rgba(244,63,94,0.7),0_0_25px_rgba(168,85,247,0.5)] border border-rose-400/50 flex items-center justify-center gap-3 transition cursor-pointer group"
+                >
+                  <Heart className="w-5 h-5 fill-white group-hover:scale-125 transition-transform duration-300" />
+                  <span>என் மனசுக்குள்ள வா ❤️</span>
+                </motion.button>
+              </motion.div>
+            )}
           </div>
         </div>
       </main>

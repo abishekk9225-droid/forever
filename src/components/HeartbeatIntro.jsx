@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Sparkles, Volume2, VolumeX, ArrowRight } from 'lucide-react';
+import { Heart, Sparkles, Volume2, VolumeX, ArrowRight, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import CinematicRainbowBorder from './CinematicRainbowBorder';
 import { globalAudioEngine as globalHeartbeatEngine } from '../utils/audioEngine';
@@ -307,7 +307,6 @@ const PHOTO_ENTRANCE_VARIANTS = {
 export default function HeartbeatIntro({ onUnlock }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFinalSceneReady, setIsFinalSceneReady] = useState(false);
-  const [showContinueButton, setShowContinueButton] = useState(false);
   const [pulseScale, setPulseScale] = useState(1);
   const [beatType, setBeatType] = useState('IDLE'); // 'IDLE' | 'LUB' | 'DUB'
   const [isMuted, setIsMuted] = useState(false);
@@ -346,14 +345,6 @@ export default function HeartbeatIntro({ onUnlock }) {
       return () => mediaQuery.removeEventListener('change', listener);
     }
   }, []);
-
-  // Show the “என் மனசுக்குள் வா” button immediately when the main intro entrance animation completes (~1.4s)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowContinueButton(true);
-    }, 1400);
-    return () => clearTimeout(timer);
-  }, []);
   // --------------------------------------------------------------------------
   // 1. SYNCHRONIZE WITH HEARTBEAT & INTRO AUDIO
   // --------------------------------------------------------------------------
@@ -389,13 +380,13 @@ export default function HeartbeatIntro({ onUnlock }) {
     const playIntroMusic = () => {
       if (isAudioCleanedUpRef.current) return;
       if (introAudioRef.current && introAudioRef.current.paused) {
-        introAudioRef.current.play().catch(() => {});
+        introAudioRef.current.play().catch(() => { });
       }
       if (rainAudioContextRef.current && rainAudioContextRef.current.state === 'suspended') {
-        rainAudioContextRef.current.resume().catch(() => {});
+        rainAudioContextRef.current.resume().catch(() => { });
       }
       if (window.heartbeatEngine && window.heartbeatEngine.audioCtx?.state === 'suspended') {
-        window.heartbeatEngine.audioCtx.resume().catch(() => {});
+        window.heartbeatEngine.audioCtx.resume().catch(() => { });
       }
     };
 
@@ -480,7 +471,7 @@ export default function HeartbeatIntro({ onUnlock }) {
               tGain.connect(tCtx.destination);
               tNoise.start(now);
               tNoise.stop(now + 3.8);
-            } catch {}
+            } catch { }
             scheduleThunder();
           }, delay);
         };
@@ -518,8 +509,8 @@ export default function HeartbeatIntro({ onUnlock }) {
 
       if (rainAudioContextRef.current && rainAudioContextRef.current.state !== 'closed') {
         try {
-          rainAudioContextRef.current.close().catch(() => {});
-        } catch {}
+          rainAudioContextRef.current.close().catch(() => { });
+        } catch { }
       }
     };
   }, []);
@@ -533,7 +524,7 @@ export default function HeartbeatIntro({ onUnlock }) {
         rainGainNodeRef.current.gain.cancelScheduledValues(now);
         rainGainNodeRef.current.gain.setValueAtTime(rainGainNodeRef.current.gain.value, now);
         rainGainNodeRef.current.gain.linearRampToValueAtTime(targetGain, now + 0.5);
-      } catch {}
+      } catch { }
     }
   }, [currentDialogue, isMuted]);
 
@@ -561,17 +552,56 @@ export default function HeartbeatIntro({ onUnlock }) {
     };
   }, [currentIndex, currentDialogue]);
 
-  const handleNextDialogue = () => {
-    if (currentIndex < DIALOGUES.length - 1) {
-      if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
-      setCurrentIndex((prev) => prev + 1);
+  // Starting dialogue index for each of the 4 Memories
+  // Memory 1: 0 (Eternal Forest)
+  // Memory 2: 2 (Crystal Heart)
+  // Memory 3: 7 (SARANYA Reveal)
+  // Memory 4: 11 (Enter Our Story)
+  const MOMENT_START_INDICES = [0, 2, 7, 11];
+
+  const handleSelectMoment = (momentIdx) => {
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    const targetIdx = MOMENT_START_INDICES[momentIdx] ?? 0;
+    setCurrentIndex(targetIdx);
+    if (targetIdx >= DIALOGUES.length - 1) {
+      setIsFinalSceneReady(true);
+    } else {
+      setIsFinalSceneReady(false);
     }
   };
 
-  const handleSkipToFinal = () => {
-    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
-    setCurrentIndex(DIALOGUES.length - 1);
-    setIsFinalSceneReady(true);
+  const handlePreviousMoment = () => {
+    const currentMomIdx = currentDialogue.momentIndex;
+    if (currentMomIdx > 0) {
+      handleSelectMoment(currentMomIdx - 1);
+    }
+  };
+
+  const handleNextMoment = () => {
+    const currentMomIdx = currentDialogue.momentIndex;
+    if (currentMomIdx < MOMENTS.length - 1) {
+      handleSelectMoment(currentMomIdx + 1);
+    }
+  };
+
+  const handlePreviousDialogue = () => {
+    if (currentIndex > 0) {
+      if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+      const prev = currentIndex - 1;
+      setCurrentIndex(prev);
+      setIsFinalSceneReady(false);
+    }
+  };
+
+  const handleNextDialogue = () => {
+    if (currentIndex < DIALOGUES.length - 1) {
+      if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+      const next = currentIndex + 1;
+      setCurrentIndex(next);
+      if (next === DIALOGUES.length - 1) {
+        setIsFinalSceneReady(true);
+      }
+    }
   };
 
   // --------------------------------------------------------------------------
@@ -769,7 +799,7 @@ export default function HeartbeatIntro({ onUnlock }) {
         introAudioRef.current.pause();
         introAudioRef.current.currentTime = 0;
         introAudioRef.current = null;
-      } catch {}
+      } catch { }
     }
 
     // Stop synthetic heartbeat engine cleanly
@@ -785,9 +815,9 @@ export default function HeartbeatIntro({ onUnlock }) {
     if (rainGainNodeRef.current && rainAudioContextRef.current) {
       try {
         if (rainAudioContextRef.current.state !== 'closed') {
-          rainAudioContextRef.current.close().catch(() => {});
+          rainAudioContextRef.current.close().catch(() => { });
         }
-      } catch {}
+      } catch { }
     }
 
     // Celebration confetti
@@ -798,7 +828,7 @@ export default function HeartbeatIntro({ onUnlock }) {
         origin: { y: 0.5 },
         colors: ['#f43f5e', '#ffd700', '#ffffff', '#ff69b4', '#c084fc', '#e11d48'],
       });
-    } catch {}
+    } catch { }
   };
 
   const toggleMute = () => {
@@ -861,34 +891,52 @@ export default function HeartbeatIntro({ onUnlock }) {
       {/* 3. ATMOSPHERIC CANVAS OVERLAY (3D Petals, Fireflies, Light Rays) */}
       <canvas ref={canvasRef} className="fixed inset-0 w-full h-full pointer-events-none z-10" />
 
-      {/* 4. TOP CINEMATIC UTILITY BAR (Moment Tracker, Mute, Skip) */}
-      <header className="relative z-40 w-full px-4 sm:px-8 pt-4 sm:pt-6 pb-2 flex items-center justify-between pointer-events-auto">
-        <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-rose-400/30 text-rose-300 text-xs font-mono shadow-[0_4px_25px_rgba(0,0,0,0.5)]">
-          <span
-            className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.9)]"
-            style={{
-              transform: `scale(${pulseScale > 1.02 ? 1.4 : 1})`,
-              transition: 'transform 0.15s ease-out',
-            }}
-          />
-          <span className="font-semibold text-rose-200">Moment {currentMoment.id} of 4</span>
-          <span className="text-white/30">|</span>
-          <span className="text-white/90 font-serif italic">{currentMoment.name}</span>
-          <span className="hidden sm:inline text-rose-300/80 font-sans text-[11px]">
-            ({currentMoment.subtitle})
-          </span>
+      {/* 4. TOP CINEMATIC UTILITY BAR & INTERACTIVE MEMORY 1-4 TABS */}
+      <header className="relative z-40 w-full px-3 sm:px-8 pt-3 sm:pt-5 pb-2 flex flex-col sm:flex-row items-center justify-between gap-2.5 pointer-events-auto">
+        {/* Interactive Memory 1 - 4 Navigation Pills */}
+        <div className="flex items-center gap-1.5 sm:gap-2 p-1 rounded-full bg-black/70 backdrop-blur-2xl border border-rose-400/35 shadow-[0_4px_25px_rgba(0,0,0,0.6)]">
+          {MOMENTS.map((mom, idx) => {
+            const isActive = currentMoment.id === mom.id;
+            return (
+              <button
+                key={mom.id}
+                onClick={() => handleSelectMoment(idx)}
+                className={`px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-xs font-serif transition-all duration-300 flex items-center gap-1.5 cursor-pointer ${isActive
+                    ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white font-semibold shadow-[0_0_15px_rgba(244,63,94,0.8)] border border-rose-300/60'
+                    : 'text-rose-200/70 hover:text-white hover:bg-white/[0.08] border border-transparent'
+                  }`}
+                title={`நினைவு ${mom.id}: ${mom.name} (${mom.subtitle})`}
+                aria-label={`Switch to Memory ${mom.id}`}
+              >
+                <Heart size={10} className={isActive ? 'fill-white text-white' : 'text-rose-400'} />
+                <span>Memory {mom.id}</span>
+                <span className="hidden md:inline text-[11px] opacity-80">· {mom.name}</span>
+              </button>
+            );
+          })}
         </div>
 
-        <div className="flex items-center gap-2.5">
+        {/* Audio Mute & Active Memory Subtitle Pill */}
+        <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-rose-500/20 text-[11px] font-mono text-rose-300 shadow">
+            <span
+              className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e]"
+              style={{
+                transform: `scale(${pulseScale > 1.02 ? 1.4 : 1})`,
+                transition: 'transform 0.15s ease-out',
+              }}
+            />
+            <span className="font-serif italic text-white/90">{currentMoment.subtitle}</span>
+          </div>
+
           <button
             onClick={toggleMute}
-            className="p-2.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-xl border border-white/20 text-rose-200 hover:text-white transition active:scale-95 cursor-pointer shadow-lg"
+            className="p-2 sm:p-2.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-xl border border-white/20 text-rose-200 hover:text-white transition active:scale-95 cursor-pointer shadow-lg"
             title={isMuted ? 'ஒலியை இயக்கு' : 'ஒலியை நிறுத்து'}
             aria-label="Toggle Mute"
           >
             {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
           </button>
-
         </div>
       </header>
 
@@ -897,171 +945,142 @@ export default function HeartbeatIntro({ onUnlock }) {
         {/* Upper photo gallery area (constrained above center line so photo is never covered) */}
         <div className="w-full flex-1 flex items-center justify-center max-h-[44vh] sm:max-h-[46vh] pointer-events-auto">
           <div className="relative w-full max-w-[88vw] sm:max-w-[480px] md:max-w-[540px] flex items-center justify-center [transform-style:preserve-3d]">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentMoment.id}
-              variants={PHOTO_ENTRANCE_VARIANTS[currentMoment.id]}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="relative w-full [transform-style:preserve-3d] flex items-center justify-center"
-            >
-              {/* Outer Interactive 3D Frame with Springy Tilt & Breathing Physics */}
+            <AnimatePresence mode="wait">
               <motion.div
-                animate={{
-                  rotateX: tiltX,
-                  rotateY: tiltY,
-                  scale: pulseScale,
-                }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 120,
-                  damping: 18,
-                  mass: 0.8,
-                }}
-                className="relative w-full aspect-[16/10] sm:aspect-[16/9.8] rounded-3xl [transform-style:preserve-3d] will-change-transform group"
+                key={currentMoment.id}
+                variants={PHOTO_ENTRANCE_VARIANTS[currentMoment.id]}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="relative w-full [transform-style:preserve-3d] flex items-center justify-center"
               >
-                {/* 3D Layer -1: Deep Cast Shadow Plane onto Atmosphere */}
-                <div
-                  className="absolute inset-0 rounded-3xl pointer-events-none transition-all duration-300"
-                  style={{
-                    transform: `translate3d(${-tiltY * 1.5}px, ${30 + tiltX * 1.5}px, -45px)`,
-                    boxShadow: `0 45px 95px -10px rgba(0, 0, 0, 0.95), 0 0 70px ${currentMoment.glowColor}`,
-                    background: 'rgba(0, 0, 0, 0.45)',
-                    filter: 'blur(16px)',
+                {/* Outer Interactive 3D Frame with Springy Tilt & Breathing Physics */}
+                <motion.div
+                  animate={{
+                    rotateX: tiltX,
+                    rotateY: tiltY,
+                    scale: pulseScale,
                   }}
-                />
-
-                {/* 3D Layer 0: Royal Beveled Frame Base in Rose-Gold & Obsidian Lacquer */}
-                <div
-                  className="absolute -inset-[3px] sm:-inset-[4px] rounded-[28px] pointer-events-none [transform-style:preserve-3d]"
-                  style={{
-                    transform: 'translateZ(0px)',
-                    background: `linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(244,114,182,0.6) 25%, rgba(30,10,25,0.95) 50%, rgba(251,191,36,0.6) 75%, rgba(255,255,255,0.4) 100%)`,
-                    boxShadow: `0 0 35px ${currentMoment.glowColor}, inset 0 1px 2px rgba(255,255,255,0.5)`,
+                  transition={{
+                    type: 'spring',
+                    stiffness: 120,
+                    damping: 18,
+                    mass: 0.8,
                   }}
-                />
-
-                {/* 3D Layer 1: Chamfered Inner Obsidian Bezel */}
-                <div
-                  className="absolute inset-0 rounded-[25px] overflow-hidden bg-[#0c0410] border border-rose-400/40 shadow-[inset_0_0_40px_rgba(0,0,0,0.85)] [transform-style:preserve-3d]"
-                  style={{ transform: 'translateZ(10px)' }}
+                  className="relative w-full aspect-[16/10] sm:aspect-[16/9.8] rounded-3xl [transform-style:preserve-3d] will-change-transform group"
                 >
-                  {/* The Pristine Original Photo Asset (Untouched Content & Full Resolution) */}
-                  <img
-                    src={currentMoment.image}
-                    alt={currentMoment.name}
-                    className="w-full h-full object-cover object-center select-none pointer-events-none transition-transform duration-1000 ease-out group-hover:scale-105"
-                    onError={(e) => {
-                      if (e.currentTarget.src !== currentMoment.fallbackImage) {
-                        e.currentTarget.src = currentMoment.fallbackImage;
-                      }
-                    }}
-                  />
-
-                  {/* Inner Soft Vignette Edge for Luxury Cinema Blend */}
-                  <div className="absolute inset-0 bg-radial from-transparent via-black/10 to-black/60 pointer-events-none" />
-
-                  {/* Dynamic Specular Glass Glare Layer (Shifts across photo as cursor/device tilts) */}
+                  {/* 3D Layer -1: Deep Cast Shadow Plane onto Atmosphere */}
                   <div
-                    className="absolute inset-0 pointer-events-none transition-transform duration-200 ease-out"
+                    className="absolute inset-0 rounded-3xl pointer-events-none transition-all duration-300"
                     style={{
-                      transform: `translate3d(${tiltY * 5}px, ${tiltX * 5}px, 15px)`,
-                      background:
-                        'linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0.04) 60%, transparent 80%)',
-                      mixBlendMode: 'overlay',
+                      transform: `translate3d(${-tiltY * 1.5}px, ${30 + tiltX * 1.5}px, -45px)`,
+                      boxShadow: `0 45px 95px -10px rgba(0, 0, 0, 0.95), 0 0 70px ${currentMoment.glowColor}`,
+                      background: 'rgba(0, 0, 0, 0.45)',
+                      filter: 'blur(16px)',
                     }}
                   />
-                </div>
 
-                {/* 3D Layer 2: Real-time Heartbeat Shockwave Aura (Intensifies on Moment 2 & 4) */}
-                <div
-                  className="absolute -inset-4 sm:-inset-6 rounded-[34px] pointer-events-none transition-opacity duration-200"
-                  style={{
-                    transform: 'translateZ(18px)',
-                    border: `1.5px solid ${currentMoment.accentColor}`,
-                    opacity: pulseScale > 1.02 ? 0.75 : 0.15,
-                    boxShadow: `0 0 45px ${currentMoment.glowColor}`,
-                    transformStyle: 'preserve-3d',
-                  }}
-                />
+                  {/* 3D Layer 0: Royal Beveled Frame Base in Rose-Gold & Obsidian Lacquer */}
+                  <div
+                    className="absolute -inset-[3px] sm:-inset-[4px] rounded-[28px] pointer-events-none [transform-style:preserve-3d]"
+                    style={{
+                      transform: 'translateZ(0px)',
+                      background: `linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(244,114,182,0.6) 25%, rgba(30,10,25,0.95) 50%, rgba(251,191,36,0.6) 75%, rgba(255,255,255,0.4) 100%)`,
+                      boxShadow: `0 0 35px ${currentMoment.glowColor}, inset 0 1px 2px rgba(255,255,255,0.5)`,
+                    }}
+                  />
 
-                {/* 3D Layer 3: Floating Rose-Gold Corner Filigrees Hovering in True 3D */}
-                <div
-                  className="absolute inset-0 pointer-events-none [transform-style:preserve-3d]"
-                  style={{ transform: 'translateZ(34px)' }}
-                >
-                  {/* Top-Left Filigree */}
-                  <div className="absolute top-2.5 left-2.5 w-6 h-6 border-t-2 border-l-2 border-amber-300/80 rounded-tl-lg drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] flex items-center justify-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_#f43f5e]" />
-                  </div>
-                  {/* Top-Right Filigree */}
-                  <div className="absolute top-2.5 right-2.5 w-6 h-6 border-t-2 border-r-2 border-amber-300/80 rounded-tr-lg drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] flex items-center justify-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_#f43f5e]" />
-                  </div>
-                  {/* Bottom-Left Filigree */}
-                  <div className="absolute bottom-2.5 left-2.5 w-6 h-6 border-b-2 border-l-2 border-amber-300/80 rounded-bl-lg drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] flex items-center justify-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_#f43f5e]" />
-                  </div>
-                  {/* Bottom-Right Filigree */}
-                  <div className="absolute bottom-2.5 right-2.5 w-6 h-6 border-b-2 border-r-2 border-amber-300/80 rounded-br-lg drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] flex items-center justify-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_#f43f5e]" />
-                  </div>
-
-                  {/* Top Center Floating Romantic Jewel Badge */}
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/85 backdrop-blur-md border border-amber-300/60 shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_15px_rgba(244,63,94,0.6)] flex items-center gap-1.5 text-[11px] font-mono text-amber-200">
-                    <Heart
-                      size={11}
-                      className="fill-rose-500 text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,1)] animate-pulse"
+                  {/* 3D Layer 1: Chamfered Inner Obsidian Bezel */}
+                  <div
+                    className="absolute inset-0 rounded-[25px] overflow-hidden bg-[#0c0410] border border-rose-400/40 shadow-[inset_0_0_40px_rgba(0,0,0,0.85)] [transform-style:preserve-3d]"
+                    style={{ transform: 'translateZ(10px)' }}
+                  >
+                    {/* The Pristine Original Photo Asset (Untouched Content & Full Resolution) */}
+                    <img
+                      src={currentMoment.image}
+                      alt={currentMoment.name}
+                      className="w-full h-full object-cover object-center select-none pointer-events-none transition-transform duration-1000 ease-out group-hover:scale-105"
+                      onError={(e) => {
+                        if (e.currentTarget.src !== currentMoment.fallbackImage) {
+                          e.currentTarget.src = currentMoment.fallbackImage;
+                        }
+                      }}
                     />
-                    <span className="tracking-widest uppercase font-semibold">Memory {currentMoment.id}</span>
+
+                    {/* Inner Soft Vignette Edge for Luxury Cinema Blend */}
+                    <div className="absolute inset-0 bg-radial from-transparent via-black/10 to-black/60 pointer-events-none" />
+
+                    {/* Dynamic Specular Glass Glare Layer (Shifts across photo as cursor/device tilts) */}
+                    <div
+                      className="absolute inset-0 pointer-events-none transition-transform duration-200 ease-out"
+                      style={{
+                        transform: `translate3d(${tiltY * 5}px, ${tiltX * 5}px, 15px)`,
+                        background:
+                          'linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0.04) 60%, transparent 80%)',
+                        mixBlendMode: 'overlay',
+                      }}
+                    />
                   </div>
 
-                  {/* Bottom Floating Subtitle Pill */}
-                  <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 max-w-[88%] px-4 py-1 rounded-full bg-black/85 backdrop-blur-md border border-rose-400/40 shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_15px_rgba(168,85,247,0.5)] flex items-center gap-2 text-xs font-serif text-rose-100 whitespace-nowrap overflow-hidden text-ellipsis">
-                    <Sparkles size={11} className="text-amber-300 shrink-0" />
-                    <span className="italic">{currentMoment.subtitle}</span>
+                  {/* 3D Layer 2: Real-time Heartbeat Shockwave Aura (Intensifies on Moment 2 & 4) */}
+                  <div
+                    className="absolute -inset-4 sm:-inset-6 rounded-[34px] pointer-events-none transition-opacity duration-200"
+                    style={{
+                      transform: 'translateZ(18px)',
+                      border: `1.5px solid ${currentMoment.accentColor}`,
+                      opacity: pulseScale > 1.02 ? 0.75 : 0.15,
+                      boxShadow: `0 0 45px ${currentMoment.glowColor}`,
+                      transformStyle: 'preserve-3d',
+                    }}
+                  />
+
+                  {/* 3D Layer 3: Floating Rose-Gold Corner Filigrees Hovering in True 3D */}
+                  <div
+                    className="absolute inset-0 pointer-events-none [transform-style:preserve-3d]"
+                    style={{ transform: 'translateZ(34px)' }}
+                  >
+                    {/* Top-Left Filigree */}
+                    <div className="absolute top-2.5 left-2.5 w-6 h-6 border-t-2 border-l-2 border-amber-300/80 rounded-tl-lg drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] flex items-center justify-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_#f43f5e]" />
+                    </div>
+                    {/* Top-Right Filigree */}
+                    <div className="absolute top-2.5 right-2.5 w-6 h-6 border-t-2 border-r-2 border-amber-300/80 rounded-tr-lg drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] flex items-center justify-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_#f43f5e]" />
+                    </div>
+                    {/* Bottom-Left Filigree */}
+                    <div className="absolute bottom-2.5 left-2.5 w-6 h-6 border-b-2 border-l-2 border-amber-300/80 rounded-bl-lg drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] flex items-center justify-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_#f43f5e]" />
+                    </div>
+                    {/* Bottom-Right Filigree */}
+                    <div className="absolute bottom-2.5 right-2.5 w-6 h-6 border-b-2 border-r-2 border-amber-300/80 rounded-br-lg drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] flex items-center justify-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_#f43f5e]" />
+                    </div>
+
+                    {/* Top Center Floating Romantic Jewel Badge */}
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/85 backdrop-blur-md border border-amber-300/60 shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_15px_rgba(244,63,94,0.6)] flex items-center gap-1.5 text-[11px] font-mono text-amber-200">
+                      <Heart
+                        size={11}
+                        className="fill-rose-500 text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,1)] animate-pulse"
+                      />
+                      <span className="tracking-widest uppercase font-semibold">Memory {currentMoment.id}</span>
+                    </div>
+
+                    {/* Bottom Floating Subtitle Pill */}
+                    <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 max-w-[88%] px-4 py-1 rounded-full bg-black/85 backdrop-blur-md border border-rose-400/40 shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_15px_rgba(168,85,247,0.5)] flex items-center gap-2 text-xs font-serif text-rose-100 whitespace-nowrap overflow-hidden text-ellipsis">
+                      <Sparkles size={11} className="text-amber-300 shrink-0" />
+                      <span className="italic">{currentMoment.subtitle}</span>
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               </motion.div>
-            </motion.div>
-          </AnimatePresence>
+            </AnimatePresence>
+          </div>
         </div>
-      </div>
-
-        {/* ==================================================================== */}
-        {/* EXACT CENTER: “என் மனசுக்குள் வா” BUTTON                              */}
-        {/* ==================================================================== */}
-        <AnimatePresence>
-          {showContinueButton && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, x: '-50%', y: '-50%' }}
-              animate={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
-              exit={{ opacity: 0, scale: 0.85, x: '-50%', y: '-50%' }}
-              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed top-1/2 left-1/2 z-50 pointer-events-auto"
-              style={{ transform: 'translate(-50%, -50%)' }}
-            >
-              <motion.button
-                whileHover={{ scale: 1.06, boxShadow: '0 0 35px rgba(244,63,94,0.85), 0 0 15px rgba(251,191,36,0.6)' }}
-                whileTap={{ scale: 0.94 }}
-                onClick={handleFinalUnlock}
-                className="px-8 py-3.5 rounded-full bg-gradient-to-r from-rose-600/95 via-pink-600/95 to-purple-600/95 hover:from-rose-500 hover:to-purple-500 text-white font-semibold text-base sm:text-lg tracking-wide shadow-[0_0_30px_rgba(244,63,94,0.7),0_4px_25px_rgba(0,0,0,0.6)] border border-rose-300/50 backdrop-blur-xl flex items-center gap-3 transition-all cursor-pointer group select-none"
-                title="என் மனசுக்குள் வா"
-                aria-label="என் மனசுக்குள் வா"
-              >
-                <Heart className="w-4 h-4 fill-white text-rose-200 group-hover:scale-125 transition-transform duration-300" />
-                <span className="drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)] font-serif">என் மனசுக்குள் வா</span>
-                <ArrowRight className="w-4 h-4 text-rose-100 group-hover:translate-x-1.5 transition-transform duration-200" />
-              </motion.button>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* ================================================================== */}
         {/* CINEMATIC LOWER DIALOGUE CONSOLE (Unobscured & Below Center Line)    */}
         {/* ================================================================== */}
-        <div className="w-full max-w-xl flex-1 flex items-center justify-center max-h-[38vh] sm:max-h-[40vh] pointer-events-auto">
+        <div className="w-full max-w-xl flex-1 flex items-center justify-center max-h-[40vh] sm:max-h-[42vh] pointer-events-auto">
           <div className="relative z-40 w-full flex flex-col items-center text-center pointer-events-auto">
             <AnimatePresence mode="wait">
               <motion.div
@@ -1072,7 +1091,7 @@ export default function HeartbeatIntro({ onUnlock }) {
                 transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
                 className="w-full"
               >
-                <div className="w-full px-5 sm:px-7 py-4 sm:py-5 rounded-2xl bg-black/70 backdrop-blur-2xl border border-rose-400/35 shadow-[0_15px_45px_rgba(0,0,0,0.85),0_0_30px_rgba(244,63,94,0.18)] flex flex-col items-center space-y-2.5">
+                <div className="w-full px-5 sm:px-7 py-4 sm:py-5 rounded-2xl bg-black/75 backdrop-blur-2xl border border-rose-400/35 shadow-[0_15px_45px_rgba(0,0,0,0.85),0_0_30px_rgba(244,63,94,0.18)] flex flex-col items-center space-y-3">
                   {currentDialogue.isName ? (
                     /* Dramatic Name Reveal: “சரண்யா…” */
                     <div className="space-y-1.5 py-1">
@@ -1103,38 +1122,89 @@ export default function HeartbeatIntro({ onUnlock }) {
                     </div>
                   )}
 
-                  {/* Manual tap to continue button */}
-                  {!currentDialogue.isFinal && (
-                    <button
-                      onClick={handleNextDialogue}
-                      className="mt-1 px-4 py-1 rounded-full bg-white/[0.08] hover:bg-white/[0.16] border border-white/20 text-rose-200 hover:text-white text-xs font-mono flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow"
-                    >
-                      <span>தொடர தட்டவும்</span>
-                      <ArrowRight size={11} />
-                    </button>
-                  )}
+                  {/* Navigation controls: Previous/Next Dialogue & Previous/Next Memory */}
+                  <div className="w-full flex items-center justify-between gap-2 pt-2 border-t border-white/10 text-xs font-mono">
+                    {/* Previous Memory or Previous Line */}
+                    <div className="flex items-center gap-1.5">
+                      {currentMoment.id > 1 && (
+                        <button
+                          onClick={handlePreviousMoment}
+                          className="px-2.5 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/15 text-rose-300 hover:text-white transition active:scale-95 cursor-pointer flex items-center gap-1"
+                          title={`முந்தைய நினைவுக்கு செல்ல (Memory ${currentMoment.id - 1})`}
+                        >
+                          <ChevronLeft size={13} />
+                          <span className="hidden sm:inline">Memory {currentMoment.id - 1}</span>
+                          <span className="sm:hidden">Prev</span>
+                        </button>
+                      )}
+
+                      {currentIndex > 0 && (
+                        <button
+                          onClick={handlePreviousDialogue}
+                          className="px-2 py-1 rounded-full bg-white/[0.04] hover:bg-white/[0.1] border border-white/10 text-slate-300 hover:text-white transition active:scale-95 cursor-pointer flex items-center gap-1"
+                          title="முந்தைய வரி"
+                        >
+                          <ArrowLeft size={11} />
+                          <span className="hidden sm:inline">முந்தைய வரி</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Active Memory Indicator */}
+                    <span className="text-[11px] text-rose-300/80 font-mono">
+                      Memory {currentMoment.id}/4
+                    </span>
+
+                    {/* Next Line or Next Memory */}
+                    <div className="flex items-center gap-1.5">
+                      {!currentDialogue.isFinal && (
+                        <button
+                          onClick={handleNextDialogue}
+                          className="px-3 py-1 rounded-full bg-gradient-to-r from-rose-600/80 to-pink-600/80 hover:from-rose-500 hover:to-pink-500 border border-rose-300/40 text-white font-medium transition active:scale-95 cursor-pointer flex items-center gap-1 shadow-[0_0_12px_rgba(244,63,94,0.5)]"
+                          title="அடுத்த வரிக்கு செல்ல"
+                        >
+                          <span>அடுத்த வரி</span>
+                          <ArrowRight size={11} />
+                        </button>
+                      )}
+
+                      {currentMoment.id < 4 && (
+                        <button
+                          onClick={handleNextMoment}
+                          className="px-2.5 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/15 text-rose-300 hover:text-white transition active:scale-95 cursor-pointer flex items-center gap-1"
+                          title={`அடுத்த நினைவுக்கு செல்ல (Memory ${currentMoment.id + 1})`}
+                        >
+                          <span className="hidden sm:inline">Memory {currentMoment.id + 1}</span>
+                          <span className="sm:hidden">Next</span>
+                          <ChevronRight size={13} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             </AnimatePresence>
 
             {/* ================================================================ */}
-            {/* MOMENT 4 FINAL CTA: “என் மனசுக்குள்ள வா ❤️”                     */}
+            {/* MEMORY 4 FINAL CTA: “என் மனசுக்குள்ள வா ❤️”                     */}
+            {/* Renders ONLY on Memory 4 (Final Moment) when ready              */}
             {/* ================================================================ */}
-            {isFinalSceneReady && (
+            {(isFinalSceneReady || currentDialogue.isFinal) && currentMoment.id === 4 && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 18 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ delay: 0.35, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                className="w-full max-w-sm mt-4 sm:mt-5"
+                className="w-full max-w-sm mt-3 sm:mt-4"
               >
                 <motion.button
-                  whileHover={{ scale: 1.04 }}
+                  whileHover={{ scale: 1.04, boxShadow: '0 0 40px rgba(244,63,94,0.8), 0 0 20px rgba(251,191,36,0.5)' }}
                   whileTap={{ scale: 0.96 }}
                   onClick={handleFinalUnlock}
-                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-bold text-base sm:text-lg shadow-[0_0_50px_rgba(244,63,94,0.7),0_0_25px_rgba(168,85,247,0.5)] border border-rose-400/50 flex items-center justify-center gap-3 transition cursor-pointer group"
+                  className="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-bold text-base sm:text-lg shadow-[0_0_50px_rgba(244,63,94,0.7),0_0_25px_rgba(168,85,247,0.5)] border border-rose-300/60 flex items-center justify-center gap-3 transition cursor-pointer group"
                 >
-                  <Heart className="w-5 h-5 fill-white group-hover:scale-125 transition-transform duration-300" />
-                  <span>என் மனசுக்குள்ள வா ❤️</span>
+                  <Heart className="w-5 h-5 fill-white group-hover:scale-125 transition-transform duration-300 text-rose-200" />
+                  <span className="font-serif tracking-wide drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">என் மனசுக்குள் வா ❤️</span>
+                  <ArrowRight className="w-4 h-4 text-rose-100 group-hover:translate-x-1.5 transition-transform duration-200" />
                 </motion.button>
               </motion.div>
             )}
@@ -1154,13 +1224,12 @@ export default function HeartbeatIntro({ onUnlock }) {
                 setCurrentIndex(idx);
                 if (d.isFinal) setIsFinalSceneReady(true);
               }}
-              className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                idx === currentIndex
+              className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${idx === currentIndex
                   ? 'w-6 bg-gradient-to-r from-rose-500 to-pink-500 shadow-[0_0_10px_rgba(244,63,94,0.9)]'
                   : idx < currentIndex
-                  ? 'w-2 bg-rose-400/50'
-                  : 'w-1.5 bg-white/20'
-              }`}
+                    ? 'w-2 bg-rose-400/50'
+                    : 'w-1.5 bg-white/20'
+                }`}
               title={`Dialogue ${idx + 1}`}
             />
           ))}

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Sparkles, Volume2, VolumeX, RotateCcw, ArrowRight, Eye, Check, Compass, Star, Music, Award } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import CinematicRainbowBorder from './CinematicRainbowBorder';
+import { useCamera } from '../context/CameraContext';
 
 // ============================================================================
 // LEVEL CONFIGURATIONS & ASSET PATHS
@@ -103,6 +104,7 @@ const LEVEL_CONFIGS = [
 ];
 
 export default function RomanticAdventureGame({ onComplete }) {
+  const cameraContext = useCamera();
   // Current game state: 'INTRO' | 1 | 2 | 3 | 4 | 5
   const [currentLevel, setCurrentLevel] = useState('INTRO');
   // Collected heart fragment indices: [1, 2, 3, 4, 5]
@@ -336,6 +338,10 @@ export default function RomanticAdventureGame({ onComplete }) {
         audioRef.current.src = '';
       } catch (e) {}
       audioRef.current = null;
+    }
+    // Milestone detection alert (rate-limited and respects user settings)
+    if (cameraContext?.triggerAlert) {
+      cameraContext.triggerAlert('Love Adventure Completed', { scene: 'Level 5 Climax' });
     }
     if (typeof onComplete === 'function') {
       onComplete();

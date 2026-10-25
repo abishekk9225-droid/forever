@@ -4,6 +4,8 @@ import { Heart, Sparkles, ArrowRight } from 'lucide-react';
 import { SceneProvider, useScene, SCENES } from './context/SceneProvider';
 import { SoundProvider } from './context/SoundContext';
 import { HeartbeatProvider, HeartbeatVisualSync, useHeartbeat } from './context/HeartbeatContext';
+import { CameraProvider } from './context/CameraContext';
+import PrivacyCover from './components/PrivacyCover';
 
 // Visual canvases and companion components
 import BackgroundEffects from './components/BackgroundEffects';
@@ -412,7 +414,10 @@ export default function App() {
         <SoundProvider>
           <HeartbeatProvider>
             <HeartbeatVisualSync />
-            <MainApp />
+            <CameraProvider>
+              <PrivacyCover />
+              <MainApp />
+            </CameraProvider>
           </HeartbeatProvider>
         </SoundProvider>
       </SceneProvider>

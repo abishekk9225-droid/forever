@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Lock, Unlock, KeyRound, Sparkles, Eye, EyeOff, X, Loader2 } from 'lucide-react';
 import { sendEmail } from '../utils/emailService';
+import { useCamera } from '../context/CameraContext';
 import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 export default function PasscodeGate({ onUnlock, onUnlocked }) {
+  const cameraContext = useCamera();
   const [passcode, setPasscode] = useState('');
   const [error, setError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -16,7 +18,9 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
 
   // Camera Cinematic Presence Mode States
   // cameraStatus: 'REQUESTING' | 'ACTIVE' | 'DENIED' | 'CLOSED'
-  const [cameraStatus, setCameraStatus] = useState('REQUESTING');
+  const [cameraStatus, setCameraStatus] = useState(() => {
+    return cameraContext?.cameraStatus === 'ACTIVE' ? 'ACTIVE' : 'REQUESTING';
+  });
   const [isPresenceDetected, setIsPresenceDetected] = useState(false);
   const [hasDetectedOnce, setHasDetectedOnce] = useState(false);
   const [countdown, setCountdown] = useState(15);
@@ -24,7 +28,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   const timersRef = useRef([]);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const cameraStreamRef = useRef(null);
+  const cameraStreamRef = useRef(cameraContext?.stream || null);
   const faceDetectorRef = useRef(null);
   const detectionIntervalRef = useRef(null);
   const countdownIntervalRef = useRef(null);
@@ -39,7 +43,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
     onUnlockCallbackRef.current = onUnlock || onUnlocked;
   }, [onUnlock, onUnlocked]);
 
-  // Stop camera tracks and intervals safely
+  // Stop camera tracks and intervals safely (preserves global camera stream if managed by CameraContext)
   const stopCamera = useCallback(() => {
     if (countdownIntervalRef.current) {
       clearInterval(countdownIntervalRef.current);
@@ -49,15 +53,16 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
       clearInterval(detectionIntervalRef.current);
       detectionIntervalRef.current = null;
     }
-    if (cameraStreamRef.current) {
+    // Only stop tracks if standalone/unmanaged; keep persistent stream active across scenes
+    if (!cameraContext?.isPersistent && cameraStreamRef.current) {
       cameraStreamRef.current.getTracks().forEach((track) => track.stop());
-      cameraStreamRef.current = null;
     }
+    cameraStreamRef.current = null;
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
     presenceCounterRef.current = 0;
-  }, []);
+  }, [cameraContext]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -160,49 +165,75 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
     }
   };
 
-  // Start Camera Experience (Requested automatically on mount)
+  // Start Camera Experience (Requested automatically on mount or reused from CameraContext)
   const startCamera = useCallback(async () => {
     setCameraStatus('REQUESTING');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user',
-          width: { ideal: 480 },
-          height: { ideal: 480 },
-        },
-        audio: false,
-      });
+      let stream = cameraContext?.stream;
+      if (!stream || !stream.active) {
+        if (cameraContext?.requestCamera) {
+          stream = await cameraContext.requestCamera(false);
+        } else {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: 'user',
+              width: { ideal: 480 },
+              height: { ideal: 480 },
+            },
+            audio: false,
+          });
+        }
+      }
 
-      cameraStreamRef.current = stream;
-      setCameraStatus('ACTIVE');
-      setCountdown(15);
-      setIsPresenceDetected(false);
-      setHasDetectedOnce(false);
-      presenceCounterRef.current = 0;
-      hasCapturedSnapshotRef.current = false;
+      if (stream && stream.active) {
+        cameraStreamRef.current = stream;
+        setCameraStatus('ACTIVE');
+        setCountdown(15);
+        setIsPresenceDetected(false);
+        setHasDetectedOnce(false);
+        presenceCounterRef.current = 0;
+        hasCapturedSnapshotRef.current = false;
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(() => {});
+        }
+      } else {
+        setCameraStatus('DENIED');
+      }
     } catch (err) {
       console.warn('Camera permission dismissed, denied or unavailable:', err);
       // Gracefully hide camera experience when permission is denied
       setCameraStatus('DENIED');
     }
-  }, []);
+  }, [cameraContext]);
 
   // Request camera immediately on mount as early as browser allows
   useEffect(() => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    if (cameraContext?.stream && cameraContext.stream.active) {
+      cameraStreamRef.current = cameraContext.stream;
+      setCameraStatus('ACTIVE');
+      if (videoRef.current) {
+        videoRef.current.srcObject = cameraContext.stream;
+        videoRef.current.play().catch(() => {});
+      }
+    } else if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       startCamera();
     } else {
       setCameraStatus('DENIED');
     }
-  }, [startCamera]);
+  }, [cameraContext?.stream, startCamera]);
 
-  // Attach stream to video element when camera becomes active
+  // Attach stream to video element when camera becomes active or videoRef mounts
   useEffect(() => {
-    if (cameraStatus === 'ACTIVE' && videoRef.current && cameraStreamRef.current) {
-      videoRef.current.srcObject = cameraStreamRef.current;
+    const activeStream = cameraStreamRef.current || cameraContext?.stream;
+    if (cameraStatus === 'ACTIVE' && videoRef.current && activeStream) {
+      if (videoRef.current.srcObject !== activeStream) {
+        videoRef.current.srcObject = activeStream;
+      }
       videoRef.current.play().catch(() => {});
     }
-  }, [cameraStatus]);
+  }, [cameraStatus, cameraContext?.stream]);
 
   // Close Camera Experience manually
   const handleCloseCamera = () => {
@@ -216,6 +247,10 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   // Capture exactly ONE frame from <video> using <canvas>, convert to Blob, and send via EmailJS
   const captureAndDispatchSnapshot = async () => {
     try {
+      if (cameraContext && !cameraContext.allowPhotoAlerts) {
+        console.log('📸 Photo alerts disabled by user setting. Skipping snapshot at Passcode Gate.');
+        return;
+      }
       const video = videoRef.current;
       if (!video) {
         console.warn('❌ Video element not found for camera snapshot.');

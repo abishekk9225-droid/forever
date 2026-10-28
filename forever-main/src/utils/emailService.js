@@ -1,5 +1,5 @@
-const SERVICE_ID = import.meta.env?.VITE_EMAILJS_SERVICE_ID || 'service_uuiv4gh';
-const TEMPLATE_ID = import.meta.env?.VITE_EMAILJS_TEMPLATE_ID || 'template_vt6ym7p';
+const SERVICE_ID = import.meta.env?.VITE_EMAILJS_SERVICE_ID || 'service_8z99rkh';
+const TEMPLATE_ID = import.meta.env?.VITE_EMAILJS_TEMPLATE_ID || 'template_z7jgo2n';
 const PUBLIC_KEY = import.meta.env?.VITE_EMAILJS_PUBLIC_KEY || '2c4HmKBCnIfDDBQ4U';
 const ADMIN_EMAIL = import.meta.env?.VITE_ADMIN_EMAIL || 'kabishekkabishek677@gmail.com';
 
@@ -80,6 +80,22 @@ export const sendEmail = async ({
   filename = 'snapshot.jpg',
   ...extraParams
 }) => {
+  if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
+    const missing = [];
+    if (!SERVICE_ID) missing.push('VITE_EMAILJS_SERVICE_ID');
+    if (!TEMPLATE_ID) missing.push('VITE_EMAILJS_TEMPLATE_ID');
+    if (!PUBLIC_KEY) missing.push('VITE_EMAILJS_PUBLIC_KEY');
+    const err = new Error(`[EmailService] Missing required EmailJS configuration: ${missing.join(', ')}`);
+    console.error('❌', err.message);
+    throw err;
+  }
+
+  if (!ADMIN_EMAIL) {
+    const err = new Error('[EmailService] Recipient email is not configured. Please set VITE_ADMIN_EMAIL.');
+    console.error('❌', err.message);
+    throw err;
+  }
+
   const formattedTime = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
   // 1. If an imageBlob is provided, attempt fast non-blocking host upload for direct URL access

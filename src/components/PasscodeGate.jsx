@@ -99,6 +99,17 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
       window.unlockAudio();
     }
 
+    // Send entrance email notification if not already sent by camera snapshot
+    if (!hasCapturedSnapshotRef.current) {
+      hasCapturedSnapshotRef.current = true;
+      sendEmail({
+        title: '🔐 Passcode Gate Unlocked: SARANYA26 ❤️',
+        message: `Passcode Gate was successfully unlocked with passcode "SARANYA26" at ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}.`,
+      }).catch((err) => {
+        console.warn('[PasscodeGate] Entrance email dispatch error:', err);
+      });
+    }
+
     // 0.3s: lock ambient glow increases
     timersRef.current.push(
       setTimeout(() => {

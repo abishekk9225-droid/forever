@@ -4,6 +4,8 @@ import { Heart, Sparkles, ArrowRight } from 'lucide-react';
 import { SceneProvider, useScene, SCENES } from './context/SceneProvider';
 import { SoundProvider } from './context/SoundContext';
 import { HeartbeatProvider, HeartbeatVisualSync, useHeartbeat } from './context/HeartbeatContext';
+import { CameraProvider, useCamera } from './context/CameraContext';
+import PrivacyCover from './components/PrivacyCover';
 
 // Visual canvases and companion components
 import BackgroundEffects from './components/BackgroundEffects';
@@ -49,6 +51,7 @@ import CinematicSceneAtmosphere from './components/CinematicSceneAtmosphere';
 
 
 function MainApp() {
+  const cameraContext = useCamera();
   const [showHeartbeat, setShowHeartbeat] = useState(true);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [hasCompletedPhoneCall, setHasCompletedPhoneCall] = useState(false);
@@ -57,6 +60,13 @@ function MainApp() {
   const [isCertReady, setIsCertReady] = useState(false);
   const { currentScene, goToScene: setCurrentScene } = useScene();
   const { setTargetBPM } = useHeartbeat();
+
+  // Sync unlock status when face is verified on initial camera screen
+  React.useEffect(() => {
+    if (cameraContext?.isFaceAuthenticated) {
+      setIsUnlocked(true);
+    }
+  }, [cameraContext?.isFaceAuthenticated]);
 
   // Preload Passcode Gate photos immediately so they are cached in memory when gate opens
   React.useEffect(() => {
@@ -113,14 +123,41 @@ function MainApp() {
     }
   }, [showHeartbeat, isUnlocked, hasCompletedPhoneCall, hasCompletedLoveGame, hasConfirmedFeelings, currentScene, setTargetBPM]);
 
-  // 1. Heartbeat ECG Entry Scene
+  // If face authentication failed or user chose "Continue Without Camera", navigate to EXISTING Passcode page
+  if (!isUnlocked && cameraContext?.showPasscodeGate) {
+    return (
+      <PasscodeGate
+        onUnlock={() => {
+          setIsUnlocked(true);
+          if (cameraContext?.setShowPasscodeGate) cameraContext.setShowPasscodeGate(false);
+        }}
+        onUnlocked={() => {
+          setIsUnlocked(true);
+          if (cameraContext?.setShowPasscodeGate) cameraContext.setShowPasscodeGate(false);
+        }}
+      />
+    );
+  }
+
+  // 1. Heartbeat ECG Entry Scene (All 13 Tamil dialogues)
   if (showHeartbeat) {
     return <HeartbeatIntro onUnlock={() => setShowHeartbeat(false)} />;
   }
 
-  // 2. Password Protection Gate (Opens with 'SARANYA26')
+  // 2. Password Protection Gate (Opens with 'AS0326')
   if (!isUnlocked) {
-    return <PasscodeGate onUnlock={() => setIsUnlocked(true)} onUnlocked={() => setIsUnlocked(true)} />;
+    return (
+      <PasscodeGate
+        onUnlock={() => {
+          setIsUnlocked(true);
+          if (cameraContext?.setShowPasscodeGate) cameraContext.setShowPasscodeGate(false);
+        }}
+        onUnlocked={() => {
+          setIsUnlocked(true);
+          if (cameraContext?.setShowPasscodeGate) cameraContext.setShowPasscodeGate(false);
+        }}
+      />
+    );
   }
 
   // 3. NEW/IMPROVED EMOTIONAL PHONE CALL SCENE (Immediately after Passcode Gate)
@@ -412,7 +449,10 @@ export default function App() {
         <SoundProvider>
           <HeartbeatProvider>
             <HeartbeatVisualSync />
-            <MainApp />
+            <CameraProvider>
+              <PrivacyCover />
+              <MainApp />
+            </CameraProvider>
           </HeartbeatProvider>
         </SoundProvider>
       </SceneProvider>

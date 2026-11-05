@@ -7,12 +7,14 @@ import {
   Shield,
   Loader2,
   Smartphone,
+  Eye,
   EyeOff,
   Activity,
   Mail,
 } from 'lucide-react';
 import { sendEmail } from '../utils/emailService';
 import { initPhoneDetector, detectPhoneInVideo } from '../utils/phoneDetector';
+import { initFaceModels, loadReferenceDescriptors, recognizeFaceInVideo, resetLivenessBuffer } from '../utils/faceAuthService';
 
 const CameraContext = createContext(null);
 
@@ -48,7 +50,23 @@ export function CameraProvider({ children }) {
   const [phoneConfidence, setPhoneConfidence] = useState(0);
   const [lastDetectedClass, setLastDetectedClass] = useState(null);
 
-  const [showConsentModal, setShowConsentModal] = useState(false);
+  // Initial Mandatory Camera Permission & Face Authentication Flow
+  // authStep: 'PERMISSION' | 'FACE_SCAN' | 'COMPLETED'
+  const [authStep, setAuthStep] = useState('PERMISSION');
+  const [isInitialAuthComplete, setIsInitialAuthComplete] = useState(false);
+  const [cameraDeniedError, setCameraDeniedError] = useState(null);
+  const [showConsentModal, setShowConsentModal] = useState(true);
+
+  // Face Authentication on Initial Screen
+  const [faceScanStage, setFaceScanStage] = useState('IDLE'); // 'IDLE' | 'SCANNING' | 'MATCH' | 'UNKNOWN' | 'ERROR'
+  const [matchedFaceIdentity, setMatchedFaceIdentity] = useState(null);
+  const [isFaceAuthenticated, setIsFaceAuthenticated] = useState(false);
+  const [facePasscode, setFacePasscode] = useState('');
+  const [facePasscodeError, setFacePasscodeError] = useState(null);
+  const [showFacePassword, setShowFacePassword] = useState(false);
+  const authAlertSentRef = useRef(false);
+  const authVideoRef = useRef(null);
+  const faceScanIntervalRef = useRef(null);
   const [showSettingsPopover, setShowSettingsPopover] = useState(false);
   const [showDiagnosticHud, setShowDiagnosticHud] = useState(false);
 
@@ -80,6 +98,12 @@ export function CameraProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('camera_phone_detection', phoneDetectionEnabled ? 'true' : 'false');
   }, [phoneDetectionEnabled]);
+
+  // Preload face models and reference descriptors immediately on mount
+  useEffect(() => {
+    initFaceModels().catch((e) => console.warn('[FaceAuth] Model preload notice:', e));
+    loadReferenceDescriptors().catch((e) => console.warn('[FaceAuth] Descriptors preload notice:', e));
+  }, []);
 
   // Ensure rootVideoRef always connects to active stream
   useEffect(() => {
@@ -193,15 +217,12 @@ export function CameraProvider({ children }) {
     }
   }, []);
 
-  // Show consent modal on initial entry if consent was never granted or denied
+  // Ensure consent modal is shown on initial entry if not yet authenticated
   useEffect(() => {
-    if (!hasConsent && cameraStatus === 'INITIAL') {
-      const timer = setTimeout(() => {
-        setShowConsentModal(true);
-      }, 1200);
-      return () => clearTimeout(timer);
+    if (!isInitialAuthComplete) {
+      setShowConsentModal(true);
     }
-  }, [hasConsent, cameraStatus]);
+  }, [isInitialAuthComplete]);
 
   // Clean capture helper that captures exactly ONE frame onto off-screen canvas and sends email
   const triggerAlert = useCallback(async (eventName = 'Milestone Reached', extraDetails = {}) => {
@@ -425,17 +446,160 @@ export function CameraProvider({ children }) {
     hasAlertFiredForCurrentEpisodeRef.current = false;
   }, []);
 
-  const handleConsentAccept = async () => {
-    setShowConsentModal(false);
+  // Dispatches an email photo alert for initial authentication attempt
+  const sendAuthPhotoAlert = useCallback(async (attemptType, details = {}) => {
+    if (authAlertSentRef.current) return;
+    authAlertSentRef.current = true;
+
+    try {
+      const video = authVideoRef.current || rootVideoRef.current;
+      let blob = null;
+      if (video && video.videoWidth > 0 && video.videoHeight > 0) {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.85));
+        }
+      }
+
+      const formattedTime = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+      const filename = `saranya_auth_${attemptType}_${Date.now()}.jpg`;
+
+      // Non-blocking fire-and-forget email dispatch
+      sendEmail({
+        title: `🔐 Forever Saranya: Initial Authentication Alert (${attemptType})`,
+        message: [
+          `Event: Initial Journey Authentication`,
+          `Status: ${attemptType}`,
+          `Timestamp: ${formattedTime} (IST)`,
+          details.identity ? `Recognized Identity: ${details.identity}` : '',
+          details.note ? `Note: ${details.note}` : '',
+          `Admin Email: abishekk9225@gmail.com`,
+        ].filter(Boolean).join('\n'),
+        imageBlob: blob,
+        filename,
+      }).catch((e) => console.warn('[FaceAuthAlert] Email delivery note:', e));
+    } catch (e) {
+      console.warn('[FaceAuthAlert] Snapshot capture note:', e);
+    }
+  }, []);
+
+  const handleAllowAndEnter = async () => {
+    setCameraDeniedError(null);
+    let activeStream = streamRef.current;
+    if (!activeStream || !activeStream.active) {
+      activeStream = await requestCamera(false);
+    }
+
+    if (!activeStream) {
+      console.warn('[CameraPermission] Camera access denied or not available.');
+      setCameraDeniedError('Camera access was denied. Please allow camera permissions in your browser address bar and click Retry to enter the journey.');
+      return;
+    }
+
     setHasConsent(true);
-    await requestCamera(false);
+    setCameraDeniedError(null);
+    setAuthStep('FACE_SCAN');
+    setFaceScanStage('SCANNING');
+    resetLivenessBuffer();
   };
 
-  const handleConsentDecline = () => {
-    setShowConsentModal(false);
-    setHasConsent(false);
-    setCameraStatus('DENIED');
+  const handleFacePasscodeSubmit = (e) => {
+    if (e) e.preventDefault();
+    if (facePasscode.trim().toUpperCase() === 'AS0326') {
+      setFacePasscodeError(null);
+      if (faceScanIntervalRef.current) {
+        clearInterval(faceScanIntervalRef.current);
+        faceScanIntervalRef.current = null;
+      }
+      sendAuthPhotoAlert('password_fallback', { note: 'Authenticated via secret passcode AS0326 on face scan screen' });
+      setIsFaceAuthenticated(true);
+      setIsInitialAuthComplete(true);
+      setAuthStep('COMPLETED');
+      setShowConsentModal(false);
+      localStorage.setItem('forever_face_auth_complete', 'true');
+    } else {
+      setFacePasscodeError('Incorrect passcode. Please check hint & try again.');
+    }
   };
+
+  // Continuous face recognition loop while on FACE_SCAN screen
+  useEffect(() => {
+    if (authStep !== 'FACE_SCAN') {
+      if (faceScanIntervalRef.current) {
+        clearInterval(faceScanIntervalRef.current);
+        faceScanIntervalRef.current = null;
+      }
+      return;
+    }
+
+    const video = authVideoRef.current;
+    const s = streamRef.current || stream;
+    if (video && s && video.srcObject !== s) {
+      video.srcObject = s;
+      video.muted = true;
+      video.play().catch(() => {});
+    }
+
+    let matchStreak = 0;
+    let unknownStreak = 0;
+
+    faceScanIntervalRef.current = setInterval(async () => {
+      const vid = authVideoRef.current || rootVideoRef.current;
+      if (!vid || vid.readyState < 2 || vid.videoWidth === 0) return;
+
+      try {
+        const result = await recognizeFaceInVideo(vid, { matchThreshold: 0.60 });
+
+        if (result.status === 'MATCH') {
+          matchStreak += 1;
+          unknownStreak = 0;
+          setMatchedFaceIdentity(result.identity);
+
+          // 2 consecutive matching frames confirm identity
+          if (matchStreak >= 2) {
+            clearInterval(faceScanIntervalRef.current);
+            faceScanIntervalRef.current = null;
+            setFaceScanStage('MATCH');
+
+            sendAuthPhotoAlert('authorized_face', { identity: result.identity });
+
+            setTimeout(() => {
+              setIsFaceAuthenticated(true);
+              setIsInitialAuthComplete(true);
+              setAuthStep('COMPLETED');
+              setShowConsentModal(false);
+              setFaceScanStage('IDLE');
+              localStorage.setItem('forever_face_auth_complete', 'true');
+            }, 800);
+          }
+        } else if (result.status === 'UNKNOWN') {
+          matchStreak = 0;
+          unknownStreak += 1;
+          if (unknownStreak >= 3) {
+            setFaceScanStage('UNKNOWN');
+            sendAuthPhotoAlert('unknown_face', { note: 'Face not matched with registered identities' });
+          }
+        } else if (result.status === 'SPOOF_SUSPECTED') {
+          matchStreak = 0;
+        } else {
+          matchStreak = 0;
+        }
+      } catch (err) {
+        console.warn('[FaceAuth] Frame processing note:', err);
+      }
+    }, 280);
+
+    return () => {
+      if (faceScanIntervalRef.current) {
+        clearInterval(faceScanIntervalRef.current);
+        faceScanIntervalRef.current = null;
+      }
+    };
+  }, [authStep, stream, sendAuthPhotoAlert]);
 
   // Diagnostic mode summary values
   const diagnosticMode = {
@@ -502,6 +666,20 @@ export function CameraProvider({ children }) {
         showDiagnosticHud,
         setShowDiagnosticHud,
         isPersistent: true,
+        isFaceAuthenticated,
+        setIsFaceAuthenticated,
+        isInitialAuthComplete,
+        setIsInitialAuthComplete,
+        authStep,
+        setAuthStep,
+        cameraDeniedError,
+        facePasscode,
+        setFacePasscode,
+        facePasscodeError,
+        handleAllowAndEnter,
+        handleFacePasscodeSubmit,
+        showConsentModal,
+        setShowConsentModal,
       }}
     >
       {/* 1. In-viewport background video element that keeps camera tracks and WebGL frames active across scenes */}
@@ -528,74 +706,213 @@ export function CameraProvider({ children }) {
       {/* 2. Clear Camera Presence & Photo Alert Notice (Transparency & Consent) */}
       {showConsentModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-300">
+          <style>{`
+            @keyframes scanSweep {
+              0% { top: 6%; opacity: 0; }
+              50% { opacity: 0.9; }
+              100% { top: 92%; opacity: 0; }
+            }
+          `}</style>
           <div className="relative w-full max-w-md p-6 sm:p-7 rounded-3xl bg-slate-950/95 border border-rose-500/40 shadow-[0_0_50px_rgba(244,63,94,0.3)] text-white text-center space-y-4">
-            <div className="mx-auto w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-rose-300 shadow-[0_0_25px_rgba(244,63,94,0.5)]">
-              <Camera className="w-7 h-7 animate-pulse" />
-            </div>
+            {authStep === 'FACE_SCAN' ? (
+              <div className="space-y-4 animate-in fade-in duration-300">
+                {/* Circular Camera Preview with Face Scan Sweep */}
+                <div className="relative w-36 h-36 mx-auto rounded-full flex items-center justify-center">
+                  <div
+                    className={`absolute inset-0 rounded-full transition-all duration-500 pointer-events-none ${
+                      faceScanStage === 'MATCH'
+                        ? 'bg-emerald-500/35 blur-xl animate-pulse'
+                        : faceScanStage === 'UNKNOWN'
+                        ? 'bg-red-500/30 blur-lg'
+                        : 'bg-rose-500/25 blur-lg'
+                    }`}
+                  />
+                  <div className="w-[124px] h-[124px] rounded-full overflow-hidden relative z-10 bg-slate-950 border border-rose-400/60 shadow-inner">
+                    <video
+                      ref={(el) => {
+                        authVideoRef.current = el;
+                        const s = streamRef.current || stream;
+                        if (el && s && el.srcObject !== s) {
+                          el.srcObject = s;
+                          el.muted = true;
+                          el.play().catch(() => {});
+                        }
+                      }}
+                      playsInline
+                      muted
+                      autoPlay
+                      className="w-full h-full object-cover scale-x-[-1]"
+                    />
+                    {faceScanStage !== 'MATCH' && (
+                      <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent pointer-events-none opacity-80 animate-[scanSweep_2s_ease-in-out_infinite]" />
+                    )}
+                    {faceScanStage === 'MATCH' && (
+                      <div className="absolute inset-0 bg-emerald-500/30 pointer-events-none animate-pulse" />
+                    )}
+                  </div>
+                </div>
 
-            <div className="space-y-1.5">
-              <h3 className="text-xl font-serif font-bold text-white tracking-wide">
-                Camera Presence & Privacy Protection ❤️
-              </h3>
-              <p className="text-xs text-rose-200/80 leading-relaxed font-sans">
-                Our romantic journey uses your front camera for real-time presence detection across each scene.
-              </p>
-            </div>
+                <div className="space-y-1.5">
+                  <h3 className="text-xl font-serif font-bold text-white tracking-wide">
+                    Face Authentication ❤️
+                  </h3>
+                  <p className="text-xs text-rose-200/80 leading-relaxed font-sans">
+                    Comparing live face against registered identities (Abishek or Saranya)
+                  </p>
+                </div>
 
-            <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-rose-400/20 text-left space-y-2.5 text-xs text-slate-300">
-              <div className="flex items-start gap-2.5">
-                <Shield className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>
-                  <strong>100% On-Device Privacy:</strong> Live video processing runs locally inside your browser; no video frames are continuously uploaded.
-                </span>
+                {/* Photo alert disclosure notice */}
+                <div className="p-2.5 rounded-xl bg-white/[0.03] border border-rose-500/20 text-left flex items-start gap-2 text-[11px] text-rose-200/90 leading-tight">
+                  <Mail className="w-3.5 h-3.5 text-rose-400 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Photo Alert:</strong> An authentication attempt snapshot is securely emailed to the administrator.
+                  </span>
+                </div>
+
+                {/* Status Badges */}
+                <div className="flex justify-center min-h-[30px] items-center">
+                  {faceScanStage === 'SCANNING' && (
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950/80 border border-rose-500/40 text-rose-300 text-xs font-medium">
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                      <span>Scanning face... Look gently into camera</span>
+                    </div>
+                  )}
+
+                  {faceScanStage === 'MATCH' && (
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-950/90 border border-emerald-500/60 text-emerald-200 text-xs font-bold animate-in zoom-in-95">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Identity Confirmed: {matchedFaceIdentity} ❤️</span>
+                    </div>
+                  )}
+
+                  {faceScanStage === 'UNKNOWN' && (
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-950/90 border border-red-500/60 text-red-200 text-xs font-bold animate-in zoom-in-95">
+                      <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+                      <span>Face not recognized 🔐 Enter password below</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Password Fallback Form right on Face Authentication screen */}
+                <form onSubmit={handleFacePasscodeSubmit} className="pt-2 text-left space-y-2 border-t border-white/10">
+                  <label className="block text-[11px] font-medium text-slate-300">
+                    Or unlock with Password:
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type={showFacePassword ? 'text' : 'password'}
+                        value={facePasscode}
+                        onChange={(e) => {
+                          setFacePasscode(e.target.value);
+                          if (facePasscodeError) setFacePasscodeError(null);
+                        }}
+                        placeholder="Enter secret passcode..."
+                        className="w-full px-3 py-2 pr-9 rounded-xl bg-slate-900/90 border border-rose-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowFacePassword((p) => !p)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 cursor-pointer"
+                        title={showFacePassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showFacePassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                    <button
+                      type="submit"
+                      className="py-2 px-4 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-medium text-xs shadow-[0_0_15px_rgba(244,63,94,0.4)] transition active:scale-95 cursor-pointer shrink-0"
+                    >
+                      Unlock 🔑
+                    </button>
+                  </div>
+
+                  {facePasscodeError && (
+                    <p className="text-red-400 text-[11px] flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3 shrink-0" />
+                      <span>{facePasscodeError}</span>
+                    </p>
+                  )}
+
+                  {/* Hint as explicitly requested by user */}
+                  <p className="text-[11px] text-amber-300/90 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2 leading-relaxed">
+                    💡 <strong>Hint:</strong> AS + birthdate of both persons (days only, not month or year)
+                  </p>
+                </form>
               </div>
-              <div className="flex items-start gap-2.5">
-                <Smartphone className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                <span>
-                  <strong>Mobile Privacy Monitoring:</strong> When an external mobile phone is held in front of the camera, the screen immediately blacks out to protect your private journey.
-                </span>
-              </div>
-            </div>
+            ) : (
+              /* SCREEN 1: Camera Presence & Privacy Protection */
+              <>
+                <div className="mx-auto w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-rose-300 shadow-[0_0_25px_rgba(244,63,94,0.5)]">
+                  <Camera className="w-7 h-7 animate-pulse" />
+                </div>
 
-            {/* Checkbox settings */}
-            <div className="flex flex-col gap-2 px-2 pt-1 text-xs text-slate-300 text-left">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={allowPhotoAlerts}
-                  onChange={(e) => setAllowPhotoAlerts(e.target.checked)}
-                  className="rounded border-rose-400/40 text-rose-500 focus:ring-rose-500 w-4 h-4 bg-slate-900"
-                />
-                <span>Allow milestone & privacy email photo alerts</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={phoneDetectionEnabled}
-                  onChange={(e) => setPhoneDetectionEnabled(e.target.checked)}
-                  className="rounded border-rose-400/40 text-rose-500 focus:ring-rose-500 w-4 h-4 bg-slate-900"
-                />
-                <span>Enable mobile phone privacy monitoring</span>
-              </label>
-            </div>
+                <div className="space-y-1.5">
+                  <h3 className="text-xl font-serif font-bold text-white tracking-wide">
+                    Camera Presence & Privacy Protection ❤️
+                  </h3>
+                  <p className="text-xs text-rose-200/80 leading-relaxed font-sans">
+                    Our romantic journey uses your front camera for real-time presence detection across each scene.
+                  </p>
+                </div>
 
-            {/* Actions */}
-            <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
-              <button
-                type="button"
-                onClick={handleConsentAccept}
-                className="flex-1 py-3 px-5 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-medium text-xs sm:text-sm tracking-wide shadow-[0_0_25px_rgba(244,63,94,0.5)] transition active:scale-95 cursor-pointer"
-              >
-                Allow & Enter Journey ❤️
-              </button>
-              <button
-                type="button"
-                onClick={handleConsentDecline}
-                className="py-3 px-4 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] border border-white/20 text-slate-300 hover:text-white font-medium text-xs transition cursor-pointer"
-              >
-                Continue Without Camera
-              </button>
-            </div>
+                <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-rose-400/20 text-left space-y-2.5 text-xs text-slate-300">
+                  <div className="flex items-start gap-2.5">
+                    <Shield className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>
+                      <strong>100% On-Device Privacy:</strong> Live video processing runs locally inside your browser; no video frames are continuously uploaded.
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <Smartphone className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    <span>
+                      <strong>Mobile Privacy Monitoring:</strong> When an external mobile phone is held in front of the camera, the screen immediately blacks out to protect your private journey.
+                    </span>
+                  </div>
+                </div>
+
+                {/* Checkbox settings */}
+                <div className="flex flex-col gap-2 px-2 pt-1 text-xs text-slate-300 text-left">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={allowPhotoAlerts}
+                      onChange={(e) => setAllowPhotoAlerts(e.target.checked)}
+                      className="rounded border-rose-400/40 text-rose-500 focus:ring-rose-500 w-4 h-4 bg-slate-900"
+                    />
+                    <span>Allow milestone & privacy email photo alerts</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={phoneDetectionEnabled}
+                      onChange={(e) => setPhoneDetectionEnabled(e.target.checked)}
+                      className="rounded border-rose-400/40 text-rose-500 focus:ring-rose-500 w-4 h-4 bg-slate-900"
+                    />
+                    <span>Enable mobile phone privacy monitoring</span>
+                  </label>
+                </div>
+
+                {/* Camera Denied Warning Banner if user rejected or permission blocked */}
+                {cameraDeniedError && (
+                  <div className="p-3 rounded-xl bg-red-950/80 border border-red-500/50 text-red-200 text-xs text-left flex items-start gap-2 animate-in fade-in">
+                    <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                    <span>{cameraDeniedError}</span>
+                  </div>
+                )}
+
+                {/* Single Mandatory Action Button (Continue Without Camera completely removed!) */}
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={handleAllowAndEnter}
+                    className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-medium text-xs sm:text-sm tracking-wide shadow-[0_0_25px_rgba(244,63,94,0.5)] transition active:scale-95 cursor-pointer"
+                  >
+                    {cameraDeniedError ? 'Retry Camera Permission ❤️' : 'Allow & Enter Journey ❤️'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

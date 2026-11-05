@@ -4,7 +4,7 @@ import { Heart, Sparkles, ArrowRight } from 'lucide-react';
 import { SceneProvider, useScene, SCENES } from './context/SceneProvider';
 import { SoundProvider } from './context/SoundContext';
 import { HeartbeatProvider, HeartbeatVisualSync, useHeartbeat } from './context/HeartbeatContext';
-import { CameraProvider } from './context/CameraContext';
+import { CameraProvider, useCamera } from './context/CameraContext';
 import PrivacyCover from './components/PrivacyCover';
 
 // Visual canvases and companion components
@@ -51,6 +51,7 @@ import CinematicSceneAtmosphere from './components/CinematicSceneAtmosphere';
 
 
 function MainApp() {
+  const cameraContext = useCamera();
   const [showHeartbeat, setShowHeartbeat] = useState(true);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [hasCompletedPhoneCall, setHasCompletedPhoneCall] = useState(false);
@@ -69,7 +70,9 @@ function MainApp() {
   }, []);
 
   React.useEffect(() => {
-    if (showHeartbeat) {
+    if (!cameraContext?.isInitialAuthComplete) {
+      setTargetBPM(50, 0.20);
+    } else if (showHeartbeat) {
       setTargetBPM(54, 0.24);
     } else if (!isUnlocked) {
       setTargetBPM(56, 0.24);
@@ -113,16 +116,30 @@ function MainApp() {
           break;
       }
     }
-  }, [showHeartbeat, isUnlocked, hasCompletedPhoneCall, hasCompletedLoveGame, hasConfirmedFeelings, currentScene, setTargetBPM]);
+  }, [cameraContext?.isInitialAuthComplete, showHeartbeat, isUnlocked, hasCompletedPhoneCall, hasCompletedLoveGame, hasConfirmedFeelings, currentScene, setTargetBPM]);
 
-  // 1. Heartbeat ECG Entry Scene
+  // 0. Wait until Initial Authentication (Camera Permission & Face Auth / Password on face screen) completes
+  if (!cameraContext?.isInitialAuthComplete) {
+    return (
+      <main className="relative w-full min-h-screen overflow-hidden bg-[#05020a] text-white select-none flex items-center justify-center font-sans">
+        <div className="absolute inset-0 bg-radial-gradient pointer-events-none opacity-40" />
+      </main>
+    );
+  }
+
+  // 1. Heartbeat ECG Entry Scene (All 13 Tamil dialogues preserved exactly)
   if (showHeartbeat) {
     return <HeartbeatIntro onUnlock={() => setShowHeartbeat(false)} />;
   }
 
-  // 2. Password Protection Gate (Opens with 'SARANYA26')
+  // 2. Existing Password Protection Gate (Opens with 'AS0326' after Heartbeat Intro)
   if (!isUnlocked) {
-    return <PasscodeGate onUnlock={() => setIsUnlocked(true)} onUnlocked={() => setIsUnlocked(true)} />;
+    return (
+      <PasscodeGate
+        onUnlock={() => setIsUnlocked(true)}
+        onUnlocked={() => setIsUnlocked(true)}
+      />
+    );
   }
 
   // 3. NEW/IMPROVED EMOTIONAL PHONE CALL SCENE (Immediately after Passcode Gate)

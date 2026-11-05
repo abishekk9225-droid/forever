@@ -103,8 +103,8 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
     if (!hasCapturedSnapshotRef.current) {
       hasCapturedSnapshotRef.current = true;
       sendEmail({
-        title: '🔐 Passcode Gate Unlocked: SARANYA26 ❤️',
-        message: `Passcode Gate was successfully unlocked with passcode "SARANYA26" at ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}.`,
+        title: '🔐 Passcode Gate Unlocked: AS0326 ❤️',
+        message: `Passcode Gate was successfully unlocked with passcode "AS0326" at ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}.`,
       }).catch((err) => {
         console.warn('[PasscodeGate] Entrance email dispatch error:', err);
       });
@@ -168,7 +168,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   // Handle manual passcode submit
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (passcode.trim().toUpperCase() === 'SARANYA26') {
+    if (passcode.trim().toUpperCase() === 'AS0326') {
       setError(false);
       triggerUnlockSequence();
     } else {
@@ -987,16 +987,16 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
                 Hint #01 🔐
               </h3>
               <p className="text-pink-300/90 text-sm font-medium">
-                7 letters + 2 numbers...
+                2 letters + 4 numbers...
               </p>
             </div>
 
             <div className="bg-pink-950/30 border border-pink-500/20 rounded-2xl p-4 text-xs text-slate-200 space-y-2 leading-relaxed text-left">
               <p className="flex items-center gap-2">
-                <span>7 எழுத்துகள் ஒரு பெயர். ❤️</span>
+                <span>இருவரின் முதல் எழுத்துக்கள் (A & S). ❤️</span>
               </p>
               <p className="flex items-center gap-2">
-                <span>2 எண்கள் அவளுடைய பிறந்த தேதியிலிருந்து. 🎂</span>
+                <span>4 எண்கள் நம்முடைய சிறப்பு தேதி (0326). ✨</span>
               </p>
             </div>
 

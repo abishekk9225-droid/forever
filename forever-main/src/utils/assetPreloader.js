@@ -61,3 +61,4 @@ export function startBackgroundAssetPreload() {
     setTimeout(runPreload, 1000);
   }
 }
+

@@ -1,9 +1,21 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { handleChatRequest } from './server/server.js'
+
+function abishekAiDevPlugin() {
+  return {
+    name: 'abishek-ai-dev-api',
+    configureServer(server) {
+      server.middlewares.use('/api/chat', (req, res) => {
+        handleChatRequest(req, res);
+      });
+    },
+  };
+}
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), abishekAiDevPlugin()],
   build: {
     chunkSizeWarningLimit: 600,
     rollupOptions: {

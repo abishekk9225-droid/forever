@@ -6,6 +6,7 @@ import { SoundProvider } from './context/SoundContext';
 import { HeartbeatProvider, HeartbeatVisualSync, useHeartbeat } from './context/HeartbeatContext';
 import { CameraProvider, useCamera } from './context/CameraContext';
 import PrivacyCover from './components/PrivacyCover';
+import AbishekAI from './components/AbishekAI/AbishekAI';
 
 // Visual canvases and companion components
 import BackgroundEffects from './components/BackgroundEffects';
@@ -432,6 +433,7 @@ export default function App() {
             <CameraProvider>
               <PrivacyCover />
               <MainApp />
+              <AbishekAI />
             </CameraProvider>
           </HeartbeatProvider>
         </SoundProvider>

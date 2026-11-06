@@ -276,3 +276,4 @@ const ChatWindow = React.memo(function ChatWindow({ isOpen, onClose, currentScen
 });
 
 export default ChatWindow;
+

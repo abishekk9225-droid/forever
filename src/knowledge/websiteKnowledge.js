@@ -185,3 +185,4 @@ ${contextSnippet}
    - Bottom-right corner houses interactive easter eggs.
 `.trim();
 }
+

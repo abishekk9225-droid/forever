@@ -1,13 +1,20 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { handleChatRequest } from './server/server.js'
 
 function abishekAiDevPlugin() {
   return {
     name: 'abishek-ai-dev-api',
     configureServer(server) {
-      server.middlewares.use('/api/chat', (req, res) => {
-        handleChatRequest(req, res);
+      server.middlewares.use('/api/chat', async (req, res) => {
+        try {
+          const { handleChatRequest } = await import('./server/server.js');
+          await handleChatRequest(req, res);
+        } catch (err) {
+          console.error('[ABISHEK AI Dev API] Error:', err);
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Dev server chat error', reply: 'Internal server error' }));
+        }
       });
     },
   };

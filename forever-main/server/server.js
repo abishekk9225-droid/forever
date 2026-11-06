@@ -7,10 +7,10 @@
  * - Gemini / OpenAI / Groq LLM integration
  * - Server-side API key protection (keys never exposed to browser)
  * - Seamless fallback to verified knowledge engine when offline
+ * - Unref'd timers and serverless compatibility (Vercel / Node)
  */
 
 import http from 'http';
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { getGroundedProfilePrompt } from '../src/knowledge/abishekKnowledge.js';
@@ -41,7 +41,8 @@ function isRateLimited(ip) {
 }
 
 // Clean up stale rate limiter entries every 5 minutes
-setInterval(() => {
+// CRITICAL: .unref() ensures this timer will NEVER prevent Node.js processes (like vite build) from exiting!
+const cleanupTimer = setInterval(() => {
   const now = Date.now();
   for (const [ip, timestamps] of ipRequestHistory.entries()) {
     const valid = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
@@ -53,8 +54,13 @@ setInterval(() => {
   }
 }, 5 * 60 * 1000);
 
+if (cleanupTimer && typeof cleanupTimer.unref === 'function') {
+  cleanupTimer.unref();
+}
+
 /**
- * Handles incoming chat API requests.
+ * Handles incoming chat API requests. Compatible with standard Node http,
+ * Vite connect middleware, and Vercel serverless functions.
  */
 export async function handleChatRequest(req, res) {
   // Enforce CORS & JSON headers
@@ -74,7 +80,7 @@ export async function handleChatRequest(req, res) {
   }
 
   // Rate Limiting
-  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
   if (isRateLimited(clientIp)) {
     res.statusCode = 429;
     res.setHeader('Content-Type', 'application/json');
@@ -84,19 +90,9 @@ export async function handleChatRequest(req, res) {
     }));
   }
 
-  // Read request body
-  let body = '';
-  req.on('data', (chunk) => {
-    body += chunk;
-    if (body.length > 50000) {
-      // 50KB payload guard
-      req.socket.destroy();
-    }
-  });
-
-  req.on('end', async () => {
+  // Internal processing helper
+  async function processPayload(parsed) {
     try {
-      const parsed = JSON.parse(body || '{}');
       const message = (parsed.message || '').trim();
       const conversationHistory = Array.isArray(parsed.conversationHistory)
         ? parsed.conversationHistory.slice(-8) // Keep last 8 turns for context
@@ -161,7 +157,6 @@ STRICT RULES:
             },
           ];
 
-          // Add previous turns
           conversationHistory.forEach((turn) => {
             if (turn.role === 'user' && turn.content) {
               contents.push({ role: 'user', parts: [{ text: turn.content }] });
@@ -170,7 +165,6 @@ STRICT RULES:
             }
           });
 
-          // Add current turn
           contents.push({ role: 'user', parts: [{ text: message }] });
 
           const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
@@ -246,7 +240,6 @@ STRICT RULES:
       }
 
       // 3. Fallback to Grounded Intelligence Engine
-      // Delivers accurate verified answers immediately without crashing or leaking keys
       const groundedReply = generateLocalGroundedResponse(message, detectedLang, currentScene);
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
@@ -263,6 +256,31 @@ STRICT RULES:
         error: 'Internal server error',
         reply: 'I encountered an unexpected temporary error. Please try asking again!',
       }));
+    }
+  }
+
+  // Handle pre-parsed bodies (e.g. Vercel Serverless Function)
+  if (req.body && typeof req.body === 'object') {
+    return processPayload(req.body);
+  }
+
+  // Read request stream chunks
+  let body = '';
+  req.on('data', (chunk) => {
+    body += chunk;
+    if (body.length > 50000) {
+      req.socket?.destroy();
+    }
+  });
+
+  req.on('end', async () => {
+    try {
+      const parsed = JSON.parse(body || '{}');
+      await processPayload(parsed);
+    } catch (parseErr) {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Invalid JSON payload.' }));
     }
   });
 }
@@ -287,7 +305,6 @@ const server = http.createServer((req, res) => {
   res.end(JSON.stringify({ error: 'Endpoint not found' }));
 });
 
-// Only start listening when run directly via `node server/server.js`
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   server.listen(PORT, () => {
     console.log(`[ABISHEK AI Server] Running on http://localhost:${PORT}`);

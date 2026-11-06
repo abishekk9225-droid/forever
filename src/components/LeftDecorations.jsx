@@ -4,7 +4,7 @@ import { useScene, SCENES } from '../context/SceneProvider';
 
 const isAccepted = (s) => s === SCENES.QUIZ || s === SCENES.PROMISE_VAULT || s === SCENES.CERTIFICATE || s === SCENES.FINALE;
 
-export default function LeftDecorations() {
+function LeftDecorations() {
   const { currentScene } = useScene();
   const birdControls = useAnimation();
   const wingControls = useAnimation();
@@ -165,3 +165,5 @@ export default function LeftDecorations() {
     </div>
   );
 }
+
+export default React.memo(LeftDecorations);

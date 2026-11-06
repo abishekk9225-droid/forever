@@ -47,6 +47,7 @@ import CinematicRainbowBorder from './components/CinematicRainbowBorder';
 import AIPencilDrawingScene from './components/AIPencilDrawingScene';
 import UnsentMessageScene from './components/UnsentMessageScene';
 import CinematicSceneAtmosphere from './components/CinematicSceneAtmosphere';
+import { startBackgroundAssetPreload } from './utils/assetPreloader';
 
 
 
@@ -61,23 +62,15 @@ function MainApp() {
   const { currentScene, goToScene: setCurrentScene } = useScene();
   const { setTargetBPM } = useHeartbeat();
 
-  // Sync unlock status when face is verified on initial camera screen
+  // Preload critical scene photos & background assets asynchronously in idle time
   React.useEffect(() => {
-    if (cameraContext?.isFaceAuthenticated) {
-      setIsUnlocked(true);
-    }
-  }, [cameraContext?.isFaceAuthenticated]);
-
-  // Preload Passcode Gate photos immediately so they are cached in memory when gate opens
-  React.useEffect(() => {
-    const img1 = new Image();
-    img1.src = '/sa.jpg';
-    const img2 = new Image();
-    img2.src = '/sk.jpg';
+    startBackgroundAssetPreload();
   }, []);
 
   React.useEffect(() => {
-    if (showHeartbeat) {
+    if (!cameraContext?.isInitialAuthComplete) {
+      setTargetBPM(50, 0.20);
+    } else if (showHeartbeat) {
       setTargetBPM(54, 0.24);
     } else if (!isUnlocked) {
       setTargetBPM(56, 0.24);
@@ -121,41 +114,28 @@ function MainApp() {
           break;
       }
     }
-  }, [showHeartbeat, isUnlocked, hasCompletedPhoneCall, hasCompletedLoveGame, hasConfirmedFeelings, currentScene, setTargetBPM]);
+  }, [cameraContext?.isInitialAuthComplete, showHeartbeat, isUnlocked, hasCompletedPhoneCall, hasCompletedLoveGame, hasConfirmedFeelings, currentScene, setTargetBPM]);
 
-  // If face authentication failed or user chose "Continue Without Camera", navigate to EXISTING Passcode page
-  if (!isUnlocked && cameraContext?.showPasscodeGate) {
+  // 0. Wait until Initial Authentication (Camera Permission & Face Auth / Password on face screen) completes
+  if (!cameraContext?.isInitialAuthComplete) {
     return (
-      <PasscodeGate
-        onUnlock={() => {
-          setIsUnlocked(true);
-          if (cameraContext?.setShowPasscodeGate) cameraContext.setShowPasscodeGate(false);
-        }}
-        onUnlocked={() => {
-          setIsUnlocked(true);
-          if (cameraContext?.setShowPasscodeGate) cameraContext.setShowPasscodeGate(false);
-        }}
-      />
+      <main className="relative w-full min-h-screen overflow-hidden bg-[#05020a] text-white select-none flex items-center justify-center font-sans">
+        <div className="absolute inset-0 bg-radial-gradient pointer-events-none opacity-40" />
+      </main>
     );
   }
 
-  // 1. Heartbeat ECG Entry Scene (All 13 Tamil dialogues)
+  // 1. Heartbeat ECG Entry Scene (All 13 Tamil dialogues preserved exactly)
   if (showHeartbeat) {
     return <HeartbeatIntro onUnlock={() => setShowHeartbeat(false)} />;
   }
 
-  // 2. Password Protection Gate (Opens with 'AS0326')
+  // 2. Existing Password Protection Gate (Opens with 'AS0326' after Heartbeat Intro)
   if (!isUnlocked) {
     return (
       <PasscodeGate
-        onUnlock={() => {
-          setIsUnlocked(true);
-          if (cameraContext?.setShowPasscodeGate) cameraContext.setShowPasscodeGate(false);
-        }}
-        onUnlocked={() => {
-          setIsUnlocked(true);
-          if (cameraContext?.setShowPasscodeGate) cameraContext.setShowPasscodeGate(false);
-        }}
+        onUnlock={() => setIsUnlocked(true)}
+        onUnlocked={() => setIsUnlocked(true)}
       />
     );
   }

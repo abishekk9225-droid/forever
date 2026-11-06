@@ -2,7 +2,7 @@ import React from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { useSound } from '../context/SoundContext';
 
-export default function AudioPlayer() {
+function AudioPlayer() {
   const { isPlaying, toggleSound } = useSound();
 
   const handleToggle = (e) => {
@@ -43,3 +43,5 @@ export default function AudioPlayer() {
     </div>
   );
 }
+
+export default React.memo(AudioPlayer);

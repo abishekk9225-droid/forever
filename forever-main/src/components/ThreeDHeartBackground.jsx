@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-export default function ThreeDHeartBackground() {
+const ThreeDHeartBackground = React.memo(function ThreeDHeartBackground() {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -40,6 +40,10 @@ export default function ThreeDHeartBackground() {
 
       container.appendChild(word);
     }
+
+    return () => {
+      if (container) container.innerHTML = '';
+    };
   }, []);
 
   return (
@@ -57,4 +61,6 @@ export default function ThreeDHeartBackground() {
       <div ref={containerRef} className="relative w-0 h-0 animate-heart-rotate" />
     </div>
   );
-}
+});
+
+export default ThreeDHeartBackground;

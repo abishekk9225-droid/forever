@@ -3,11 +3,10 @@ import { useScene, SCENES } from '../context/SceneProvider';
 
 const isAccepted = (s) => s === SCENES.QUIZ || s === SCENES.PROMISE_VAULT || s === SCENES.CERTIFICATE || s === SCENES.FINALE;
 
-export default function BackgroundEffects() {
+function BackgroundEffects() {
   const { currentScene, storyIntensity, isLowEnd, isMobile } = useScene();
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const mousePosRef = useRef({ x: 0, y: 0 });
   const [flowerClicks, setFlowerClicks] = useState([1.0, 1.0, 1.0, 1.0]);
 
@@ -17,15 +16,31 @@ export default function BackgroundEffects() {
     settingsRef.current = { storyIntensity, isLowEnd, currentScene };
   }, [storyIntensity, isLowEnd, currentScene]);
 
-  // Track mouse coordinates for firefly attraction and parallax
+  // Track mouse coordinates for firefly attraction and parallax without React re-renders
   useEffect(() => {
     const handleMouseMove = (e) => {
-      const pos = { x: e.clientX, y: e.clientY };
-      mousePosRef.current = pos;
-      setMousePos(pos);
+      mousePosRef.current.x = e.clientX;
+      mousePosRef.current.y = e.clientY;
     };
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Smooth RAF-driven mouse parallax on floating items container without React re-renders
+  useEffect(() => {
+    let rafId;
+    const updateParallax = () => {
+      if (containerRef.current) {
+        const mouseOffsetW = window.innerWidth / 2 || 500;
+        const mouseOffsetH = window.innerHeight / 2 || 400;
+        const dx = (mousePosRef.current.x - mouseOffsetW) * 0.02;
+        const dy = (mousePosRef.current.y - mouseOffsetH) * 0.02;
+        containerRef.current.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+      }
+      rafId = requestAnimationFrame(updateParallax);
+    };
+    rafId = requestAnimationFrame(updateParallax);
+    return () => cancelAnimationFrame(rafId);
   }, []);
 
   const handleFlowerClick = (idx) => {
@@ -43,11 +58,14 @@ export default function BackgroundEffects() {
     if (window.playRomanticChime) window.playRomanticChime();
   };
 
-  // Shrink clicked flowers back over time
+  // Shrink clicked flowers back over time (only updates when a flower is actively grown)
   useEffect(() => {
     const interval = setInterval(() => {
-      setFlowerClicks(prev => prev.map(val => Math.max(1.0, val - 0.02)));
-    }, 30);
+      setFlowerClicks(prev => {
+        if (prev.every(val => val <= 1.0)) return prev;
+        return prev.map(val => Math.max(1.0, val - 0.02));
+      });
+    }, 40);
     return () => clearInterval(interval);
   }, []);
 
@@ -492,7 +510,7 @@ export default function BackgroundEffects() {
       window.removeEventListener('resize', resizeCanvas);
       if (animId) cancelAnimationFrame(animId);
     };
-  }, [mousePos]);
+  }, []);
 
   // Adjust moon glow/drift based on intensity
   const moonX = 50 + storyIntensity * 12; // slowly drifts right
@@ -544,7 +562,6 @@ export default function BackgroundEffects() {
 
   return (
     <div
-      ref={containerRef}
       className="fixed inset-0 w-full h-full -z-10 overflow-hidden pointer-events-none transition-colors duration-1000"
       style={{
         background: `radial-gradient(circle at 50% 25%, 
@@ -580,14 +597,8 @@ export default function BackgroundEffects() {
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
 
       {/* Ambient Floating Elements (Drifting Butterflies, Florals, and 3D toys) */}
-      {floatingItems.map((item) => {
-        // Calculate mouse parallax translate offsets
-        const mouseOffsetW = typeof window !== 'undefined' ? window.innerWidth / 2 : 500;
-        const mouseOffsetH = typeof window !== 'undefined' ? window.innerHeight / 2 : 400;
-        const dx = (mousePos.x - mouseOffsetW) * item.parallaxFactor;
-        const dy = (mousePos.y - mouseOffsetH) * item.parallaxFactor;
-
-        return (
+      <div ref={containerRef} className="absolute inset-0 pointer-events-none will-change-transform">
+        {floatingItems.map((item) => (
           <div
             key={item.id}
             className="absolute pointer-events-none select-none float-drift-element font-sans"
@@ -604,15 +615,13 @@ export default function BackgroundEffects() {
                 drop-shadow(0 8px 12px rgba(0, 0, 0, 0.45))
                 drop-shadow(0 0 10px rgba(224, 168, 153, 0.15))
               `,
-              transform: `translate3d(${dx}px, ${dy}px, 0)`,
-              transition: 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
               zIndex: 3
             }}
           >
             {item.val}
           </div>
-        );
-      })}
+        ))}
+      </div>
 
       {/* Persistent Moon Overlay */}
       <div
@@ -681,3 +690,5 @@ export default function BackgroundEffects() {
     </div>
   );
 }
+
+export default React.memo(BackgroundEffects);

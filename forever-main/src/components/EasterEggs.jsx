@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, X } from 'lucide-react';
 
-export default function EasterEggs() {
+function EasterEggs() {
   const [clickCount, setClickCount] = useState(0);
   const [showSecret, setShowSecret] = useState(false);
 
@@ -89,3 +89,5 @@ export default function EasterEggs() {
     </>
   );
 }
+
+export default React.memo(EasterEggs);

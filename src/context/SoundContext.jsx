@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { globalAudioEngine } from '../utils/audioEngine';
 
 const defaultSoundState = {
@@ -70,74 +70,89 @@ export const SoundProvider = ({ children }) => {
     };
   }, []);
 
-  const playIntroTrack = () => {
+  const playIntroTrack = useCallback(() => {
     globalAudioEngine.playIntroTrack();
-  };
+  }, []);
 
-  const playAbi1Track = () => {
+  const playAbi1Track = useCallback(() => {
     globalAudioEngine.playAbi1Track();
-  };
+  }, []);
 
-  const playCelebrationTrack = (startTime = 0) => {
+  const playCelebrationTrack = useCallback((startTime = 0) => {
     globalAudioEngine.playCelebrationTrack(startTime);
-  };
+  }, []);
 
-  const playKaTrack = () => {
+  const playKaTrack = useCallback(() => {
     return globalAudioEngine.playKaTrack();
-  };
+  }, []);
 
-  const stopKaTrack = (fadeDuration = 1.2) => {
+  const stopKaTrack = useCallback((fadeDuration = 1.2) => {
     globalAudioEngine.stopKaTrack(fadeDuration);
-  };
+  }, []);
 
-  const playKkTrack = () => {
+  const playKkTrack = useCallback(() => {
     return globalAudioEngine.playKkTrack();
-  };
+  }, []);
 
-  const stopKkTrack = (fadeDuration = 1.0) => {
+  const stopKkTrack = useCallback((fadeDuration = 1.0) => {
     globalAudioEngine.stopKkTrack(fadeDuration);
-  };
+  }, []);
 
-  const startPhoneCallTrack = () => {
+  const startPhoneCallTrack = useCallback(() => {
     globalAudioEngine.startPhoneCallTrack();
-  };
+  }, []);
 
-  const stopPhoneCallTrack = (fadeDuration = 1.5) => {
+  const stopPhoneCallTrack = useCallback((fadeDuration = 1.5) => {
     globalAudioEngine.stopPhoneCallTrack(fadeDuration);
-  };
+  }, []);
 
-  const duckPhoneCallTrack = (targetGain = 0.05, durationSec = 1.0) => {
+  const duckPhoneCallTrack = useCallback((targetGain = 0.05, durationSec = 1.0) => {
     globalAudioEngine.duckPhoneCallTrack(targetGain, durationSec);
-  };
+  }, []);
 
-  const toggleSound = () => {
+  const toggleSound = useCallback(() => {
     globalAudioEngine.toggleSound();
-  };
+  }, []);
 
-  const fadeToSoftAmbience = (targetGain = 0.045, durationSec = 3.5) => {
+  const fadeToSoftAmbience = useCallback((targetGain = 0.045, durationSec = 3.5) => {
     globalAudioEngine.fadeToSoftAmbience(targetGain, durationSec);
-  };
+  }, []);
+
+  const contextValue = useMemo(() => ({
+    currentTrack,
+    isPlaying,
+    playCelebrationTrack,
+    playIntroTrack,
+    playAbi1Track,
+    playKaTrack,
+    stopKaTrack,
+    playKkTrack,
+    stopKkTrack,
+    startPhoneCallTrack,
+    stopPhoneCallTrack,
+    duckPhoneCallTrack,
+    toggleSound,
+    toggleAudio: toggleSound,
+    fadeToSoftAmbience,
+  }), [
+    currentTrack,
+    isPlaying,
+    playCelebrationTrack,
+    playIntroTrack,
+    playAbi1Track,
+    playKaTrack,
+    stopKaTrack,
+    playKkTrack,
+    stopKkTrack,
+    startPhoneCallTrack,
+    stopPhoneCallTrack,
+    duckPhoneCallTrack,
+    toggleSound,
+    fadeToSoftAmbience,
+  ]);
 
   return (
-    <SoundContext.Provider
-      value={{
-        currentTrack,
-        isPlaying,
-        playCelebrationTrack,
-        playIntroTrack,
-        playAbi1Track,
-        playKaTrack,
-        stopKaTrack,
-        playKkTrack,
-        stopKkTrack,
-        startPhoneCallTrack,
-        stopPhoneCallTrack,
-        duckPhoneCallTrack,
-        toggleSound,
-        toggleAudio: toggleSound,
-        fadeToSoftAmbience,
-      }}
-    >
+    <SoundContext.Provider value={contextValue}>
       {children}
     </SoundContext.Provider>
   );

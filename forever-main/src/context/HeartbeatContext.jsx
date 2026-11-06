@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { globalAudioEngine } from '../utils/audioEngine';
 
 // Single active heartbeat engine across the entire app
@@ -10,32 +10,15 @@ if (typeof window !== 'undefined') {
 
 // ============================================================================
 // REACT CONTEXT & PROVIDER
+// Provides stable action methods to scenes without causing re-render storms on every pulse
 // ============================================================================
 
 const HeartbeatContext = createContext(null);
 
 export function HeartbeatProvider({ children }) {
-  const [currentBPM, setCurrentBPM] = useState(54);
-  const [pulseState, setPulseState] = useState('IDLE'); // 'IDLE' | 'LUB' | 'DUB'
-  const [intensity, setIntensity] = useState(0.24);
-
   useEffect(() => {
-    // Auto-init on first mount
+    // Auto-init audio engine on first mount
     globalHeartbeatEngine.init();
-
-    // Listen to pulse beats for visual synchronization
-    const unsubscribe = globalHeartbeatEngine.subscribeBeat((type, bpm, vol) => {
-      setCurrentBPM(Math.round(bpm));
-      setIntensity(vol);
-      setPulseState(type);
-      setTimeout(() => {
-        setPulseState('IDLE');
-      }, 140);
-    });
-
-    return () => {
-      unsubscribe();
-    };
   }, []);
 
   const setTargetBPM = useCallback((bpm, volume) => {
@@ -58,20 +41,27 @@ export function HeartbeatProvider({ children }) {
     globalHeartbeatEngine.resume();
   }, []);
 
+  // Stable memoized context value - prevents tree-wide re-renders on heartbeats
+  const contextValue = useMemo(() => ({
+    get currentBPM() {
+      return Math.round(globalHeartbeatEngine.currentBPM || 54);
+    },
+    get pulseState() {
+      return 'IDLE';
+    },
+    get intensity() {
+      return globalHeartbeatEngine.currentVolume || 0.24;
+    },
+    setTargetBPM,
+    silence,
+    start,
+    pause,
+    resume,
+    engine: globalHeartbeatEngine,
+  }), [setTargetBPM, silence, start, pause, resume]);
+
   return (
-    <HeartbeatContext.Provider
-      value={{
-        currentBPM,
-        pulseState,
-        intensity,
-        setTargetBPM,
-        silence,
-        start,
-        pause,
-        resume,
-        engine: globalHeartbeatEngine,
-      }}
-    >
+    <HeartbeatContext.Provider value={contextValue}>
       {children}
     </HeartbeatContext.Provider>
   );
@@ -97,14 +87,32 @@ export function useHeartbeat() {
 
 // ============================================================================
 // VISUAL AUDIO SYNCHRONIZATION OVERLAY
-// - Every LUB: background glow slightly expands, vignette gently pulses
-// - Every DUB: subtle particles slightly brighten
-// - As BPM increases: glow becomes stronger, visual tension increases
-// - Elegant, subtle, non-intrusive (pointer-events-none)
+// - Subscribes locally to beat pulses so ONLY this lightweight overlay updates
+// - Completely insulates the rest of the React component tree from re-renders
 // ============================================================================
 
-export function HeartbeatVisualSync() {
-  const { pulseState, currentBPM } = useHeartbeat();
+export const HeartbeatVisualSync = React.memo(function HeartbeatVisualSync() {
+  const [currentBPM, setCurrentBPM] = useState(54);
+  const [pulseState, setPulseState] = useState('IDLE'); // 'IDLE' | 'LUB' | 'DUB'
+
+  useEffect(() => {
+    let idleTimer = null;
+
+    const unsubscribe = globalHeartbeatEngine.subscribeBeat((type, bpm) => {
+      setCurrentBPM(Math.round(bpm));
+      setPulseState(type);
+
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        setPulseState('IDLE');
+      }, 140);
+    });
+
+    return () => {
+      unsubscribe();
+      if (idleTimer) clearTimeout(idleTimer);
+    };
+  }, []);
 
   // Normalized intensity from 0.05 to 1.0 based on currentBPM (52 to 145)
   const normalizedScale = Math.min(1.0, Math.max(0.1, (currentBPM - 50) / 95));
@@ -112,10 +120,10 @@ export function HeartbeatVisualSync() {
   const isDub = pulseState === 'DUB';
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[12] overflow-hidden select-none">
+    <div className="fixed inset-0 pointer-events-none z-[12] overflow-hidden select-none will-change-transform">
       {/* Subtle Screen-Edge Vignette Breathing on LUB */}
       <div
-        className="absolute inset-0 transition-all duration-200 ease-out"
+        className="absolute inset-0 transition-all duration-200 ease-out will-change-transform"
         style={{
           boxShadow: isLub
             ? `inset 0 0 ${80 + normalizedScale * 120}px rgba(244, 63, 94, ${0.12 + normalizedScale * 0.28})`
@@ -126,7 +134,7 @@ export function HeartbeatVisualSync() {
 
       {/* Gentle Center Heart Ambient Aura */}
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-200 ease-out pointer-events-none"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-200 ease-out pointer-events-none will-change-transform"
         style={{
           width: isLub ? `${350 + normalizedScale * 250}px` : `${280 + normalizedScale * 180}px`,
           height: isLub ? `${350 + normalizedScale * 250}px` : `${280 + normalizedScale * 180}px`,
@@ -151,4 +159,4 @@ export function HeartbeatVisualSync() {
       </div>
     </div>
   );
-}
+});

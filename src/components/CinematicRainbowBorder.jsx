@@ -10,7 +10,7 @@ import React, { useId } from 'react';
  * - className: additional Tailwind classes
  * - borderRadius: custom radius number in px or string e.g. 24, 32, 40
  */
-export default function CinematicRainbowBorder({
+function CinematicRainbowBorder({
   mode = 'screen',
   className = '',
   borderRadius = 32,
@@ -254,3 +254,5 @@ export default function CinematicRainbowBorder({
     </>
   );
 }
+
+export default React.memo(CinematicRainbowBorder);

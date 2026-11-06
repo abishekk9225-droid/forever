@@ -6,7 +6,7 @@ import CinematicRainbowBorder from './CinematicRainbowBorder';
  * Provides continuous dark ambient environment, floating dust, gentle petals,
  * soft vignette, and traveling rainbow border with optimal 60 FPS performance.
  */
-export default function CinematicSceneAtmosphere({
+const CinematicSceneAtmosphere = React.memo(function CinematicSceneAtmosphere({
   showBorder = false,
   showPetals = true,
   showDust = true,
@@ -167,4 +167,6 @@ export default function CinematicSceneAtmosphere({
       {children}
     </>
   );
-}
+});
+
+export default CinematicSceneAtmosphere;

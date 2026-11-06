@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useScene } from '../context/SceneProvider';
 
-export default function HeartBurst() {
+function HeartBurst() {
   const canvasRef = useRef(null);
   const { isLowEnd } = useScene();
   const activeParticlesRef = useRef([]);
@@ -32,7 +32,8 @@ export default function HeartBurst() {
     window.addEventListener('resize', resizeCanvas);
 
     // Populate initial particle pool to avoid allocations at runtime
-    const poolSize = 350;
+    const poolSize = isLowEnd ? 180 : 350;
+    particlePoolRef.current = [];
     for (let i = 0; i < poolSize; i++) {
       particlePoolRef.current.push({
         x: 0,
@@ -148,13 +149,17 @@ export default function HeartBurst() {
       window.removeEventListener('resize', resizeCanvas);
       window.triggerHeartBurst = null;
       if (animId) cancelAnimationFrame(animId);
+      activeParticlesRef.current = [];
+      particlePoolRef.current = [];
     };
   }, [isLowEnd]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none z-40"
+      className="fixed inset-0 w-full h-full pointer-events-none z-40 will-change-transform"
     />
   );
 }
+
+export default React.memo(HeartBurst);

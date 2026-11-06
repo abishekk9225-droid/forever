@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 const SceneContext = createContext(null);
 
@@ -65,7 +65,7 @@ export function SceneProvider({ children }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const goToScene = (sceneId) => {
+  const goToScene = useCallback((sceneId) => {
     if (!Object.values(SCENES).includes(sceneId)) {
       console.warn(`[SceneProvider] Invalid scene requested: ${sceneId}`);
       return;
@@ -73,16 +73,16 @@ export function SceneProvider({ children }) {
     console.log(`[SceneRouter] ${currentScene} ➔ ${sceneId}`);
     setHistoryStack((prev) => [...prev, currentScene]);
     setCurrentScene(sceneId);
-  };
+  }, [currentScene]);
 
-  const goBack = () => {
+  const goBack = useCallback(() => {
     if (historyStack.length === 0) return;
     const prev = historyStack[historyStack.length - 1];
     setHistoryStack((prevStack) => prevStack.slice(0, -1));
     setCurrentScene(prev);
-  };
+  }, [historyStack]);
 
-  const toggleMute = () => {
+  const toggleMute = useCallback(() => {
     setMuted((prev) => {
       const nextMuted = !prev;
       console.log(`[AudioEngine] Muted state: ${nextMuted}`);
@@ -91,27 +91,38 @@ export function SceneProvider({ children }) {
       }
       return nextMuted;
     });
-  };
+  }, []);
 
   const storyIntensity = INTENSITY_MAP[currentScene] || 0.0;
 
+  const contextValue = useMemo(() => ({
+    currentScene,
+    historyStack,
+    storyIntensity,
+    muted,
+    isMobile,
+    isLowEnd,
+    isGardenAwakened,
+    setIsGardenAwakened,
+    goToScene,
+    goBack,
+    toggleMute,
+    setMuted
+  }), [
+    currentScene,
+    historyStack,
+    storyIntensity,
+    muted,
+    isMobile,
+    isLowEnd,
+    isGardenAwakened,
+    goToScene,
+    goBack,
+    toggleMute
+  ]);
+
   return (
-    <SceneContext.Provider
-      value={{
-        currentScene,
-        historyStack,
-        storyIntensity,
-        muted,
-        isMobile,
-        isLowEnd,
-        isGardenAwakened,
-        setIsGardenAwakened,
-        goToScene,
-        goBack,
-        toggleMute,
-        setMuted
-      }}
-    >
+    <SceneContext.Provider value={contextValue}>
       {children}
     </SceneContext.Provider>
   );

@@ -4,7 +4,7 @@ import Mascot from './Mascot';
 
 const isAccepted = (s) => s === SCENES.QUIZ || s === SCENES.PROMISE_VAULT || s === SCENES.CERTIFICATE || s === SCENES.FINALE;
 
-export default function RightDecorations() {
+function RightDecorations() {
   const { currentScene, storyIntensity } = useScene();
 
   // Determine vine and lantern opacity/scale based on scene progression
@@ -107,3 +107,5 @@ export default function RightDecorations() {
     </div>
   );
 }
+
+export default React.memo(RightDecorations);

@@ -47,6 +47,7 @@ import CinematicRainbowBorder from './components/CinematicRainbowBorder';
 import AIPencilDrawingScene from './components/AIPencilDrawingScene';
 import UnsentMessageScene from './components/UnsentMessageScene';
 import CinematicSceneAtmosphere from './components/CinematicSceneAtmosphere';
+import { startBackgroundAssetPreload } from './utils/assetPreloader';
 
 
 
@@ -61,12 +62,9 @@ function MainApp() {
   const { currentScene, goToScene: setCurrentScene } = useScene();
   const { setTargetBPM } = useHeartbeat();
 
-  // Preload Passcode Gate photos immediately so they are cached in memory when gate opens
+  // Preload critical scene photos & background assets asynchronously in idle time
   React.useEffect(() => {
-    const img1 = new Image();
-    img1.src = '/sa.jpg';
-    const img2 = new Image();
-    img2.src = '/sk.jpg';
+    startBackgroundAssetPreload();
   }, []);
 
   React.useEffect(() => {

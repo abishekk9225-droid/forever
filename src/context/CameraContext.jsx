@@ -369,19 +369,19 @@ export function CameraProvider({ children }) {
           if (!isMounted) return;
 
           if (result.topClass) {
-            setLastDetectedClass(result.topClass);
+            setLastDetectedClass((prev) => (prev === result.topClass ? prev : result.topClass));
           }
 
           if (result.detected) {
             consecutivePhoneFramesRef.current += 1;
             lastPhoneSeenTimestampRef.current = Date.now();
-            setPhoneConfidence(result.confidence);
+            setPhoneConfidence((prev) => (prev === result.confidence ? prev : result.confidence));
 
             // Require 2 consecutive frames to prevent single-frame false positives
             if (consecutivePhoneFramesRef.current >= 2) {
               // 1. Immediately activate pitch-black privacy blackout overlay
-              setIsPhoneDetected(true);
-              setIsPhoneOverlayActive(true);
+              setIsPhoneDetected((prev) => (prev ? prev : true));
+              setIsPhoneOverlayActive((prev) => (prev ? prev : true));
 
               // 2. Schedule email snapshot delivery in background without delaying blackout
               if (!hasAlertFiredForCurrentEpisodeRef.current) {
@@ -396,7 +396,7 @@ export function CameraProvider({ children }) {
             }
           } else {
             consecutivePhoneFramesRef.current = 0;
-            setIsPhoneDetected(false);
+            setIsPhoneDetected((prev) => (!prev ? prev : false));
 
             // If blackout overlay is active, enforce 5-second absence before lifting
             if (lastPhoneSeenTimestampRef.current > 0) {
@@ -409,7 +409,7 @@ export function CameraProvider({ children }) {
                 hasAlertFiredForCurrentEpisodeRef.current = false;
               } else {
                 const remaining = Math.max(1, Math.ceil((CLEAR_DELAY_MS - elapsed) / 1000));
-                setPhoneOverlayCountdown(remaining);
+                setPhoneOverlayCountdown((prev) => (prev === remaining ? prev : remaining));
               }
             }
           }
@@ -487,7 +487,7 @@ export function CameraProvider({ children }) {
     }
   }, []);
 
-  const handleAllowAndEnter = async () => {
+  const handleAllowAndEnter = useCallback(async () => {
     setCameraDeniedError(null);
     let activeStream = streamRef.current;
     if (!activeStream || !activeStream.active) {
@@ -505,9 +505,9 @@ export function CameraProvider({ children }) {
     setAuthStep('FACE_SCAN');
     setFaceScanStage('SCANNING');
     resetLivenessBuffer();
-  };
+  }, [requestCamera]);
 
-  const handleFacePasscodeSubmit = (e) => {
+  const handleFacePasscodeSubmit = useCallback((e) => {
     if (e) e.preventDefault();
     if (facePasscode.trim().toUpperCase() === 'AS0326') {
       setFacePasscodeError(null);
@@ -524,7 +524,7 @@ export function CameraProvider({ children }) {
     } else {
       setFacePasscodeError('Incorrect passcode. Please check hint & try again.');
     }
-  };
+  }, [facePasscode, sendAuthPhotoAlert]);
 
   // Continuous face recognition loop while on FACE_SCAN screen
   useEffect(() => {
@@ -601,8 +601,8 @@ export function CameraProvider({ children }) {
     };
   }, [authStep, stream, sendAuthPhotoAlert]);
 
-  // Diagnostic mode summary values
-  const diagnosticMode = {
+  // Diagnostic mode summary values (memoized to prevent reference thrashing)
+  const diagnosticMode = useMemo(() => ({
     camera: cameraStatus === 'ACTIVE' ? 'ON' : 'OFF',
     model:
       phoneDetectorStatus === 'READY'
@@ -630,58 +630,93 @@ export function CameraProvider({ children }) {
     countdown: phoneOverlayCountdown,
     lastDetectedClass,
     lastAlertTime,
-  };
+  }), [cameraStatus, phoneDetectorStatus, isPhoneDetected, phoneDetectionEnabled, isPhoneOverlayActive, alertStatus, phoneConfidence, phoneOverlayCountdown, lastDetectedClass, lastAlertTime]);
+
+  // Memoize CameraContext value to prevent mass cascading re-renders across consumers
+  const contextValue = useMemo(() => ({
+    stream,
+    streamRef,
+    cameraStatus,
+    setCameraStatus,
+    errorMessage,
+    isCameraActive: cameraStatus === 'ACTIVE',
+    hasConsent,
+    allowPhotoAlerts,
+    setAllowPhotoAlerts,
+    phoneDetectionEnabled,
+    setPhoneDetectionEnabled,
+    phoneDetectorStatus,
+    phoneDetectorError,
+    isPhoneDetected,
+    isPhoneOverlayActive,
+    phoneOverlayCountdown,
+    phoneConfidence,
+    lastDetectedClass,
+    dismissPhoneOverlay,
+    testEmailDeliveryAlert,
+    alertStatus,
+    lastAlertEvent,
+    lastAlertTime,
+    requestCamera,
+    stopCamera,
+    triggerAlert,
+    attachVideo,
+    diagnosticMode,
+    showDiagnosticHud,
+    setShowDiagnosticHud,
+    isPersistent: true,
+    isFaceAuthenticated,
+    setIsFaceAuthenticated,
+    isInitialAuthComplete,
+    setIsInitialAuthComplete,
+    authStep,
+    setAuthStep,
+    cameraDeniedError,
+    facePasscode,
+    setFacePasscode,
+    facePasscodeError,
+    handleAllowAndEnter,
+    handleFacePasscodeSubmit,
+    showConsentModal,
+    setShowConsentModal,
+  }), [
+    stream,
+    cameraStatus,
+    errorMessage,
+    hasConsent,
+    allowPhotoAlerts,
+    phoneDetectionEnabled,
+    phoneDetectorStatus,
+    phoneDetectorError,
+    isPhoneDetected,
+    isPhoneOverlayActive,
+    phoneOverlayCountdown,
+    phoneConfidence,
+    lastDetectedClass,
+    dismissPhoneOverlay,
+    testEmailDeliveryAlert,
+    alertStatus,
+    lastAlertEvent,
+    lastAlertTime,
+    requestCamera,
+    stopCamera,
+    triggerAlert,
+    attachVideo,
+    diagnosticMode,
+    showDiagnosticHud,
+    isFaceAuthenticated,
+    isInitialAuthComplete,
+    authStep,
+    cameraDeniedError,
+    facePasscode,
+    facePasscodeError,
+    handleAllowAndEnter,
+    handleFacePasscodeSubmit,
+    showConsentModal,
+  ]);
 
   return (
-    <CameraContext.Provider
-      value={{
-        stream,
-        streamRef,
-        cameraStatus,
-        setCameraStatus,
-        errorMessage,
-        isCameraActive: cameraStatus === 'ACTIVE',
-        hasConsent,
-        allowPhotoAlerts,
-        setAllowPhotoAlerts,
-        phoneDetectionEnabled,
-        setPhoneDetectionEnabled,
-        phoneDetectorStatus,
-        phoneDetectorError,
-        isPhoneDetected,
-        isPhoneOverlayActive,
-        phoneOverlayCountdown,
-        phoneConfidence,
-        lastDetectedClass,
-        dismissPhoneOverlay,
-        testEmailDeliveryAlert,
-        alertStatus,
-        lastAlertEvent,
-        lastAlertTime,
-        requestCamera,
-        stopCamera,
-        triggerAlert,
-        attachVideo,
-        diagnosticMode,
-        showDiagnosticHud,
-        setShowDiagnosticHud,
-        isPersistent: true,
-        isFaceAuthenticated,
-        setIsFaceAuthenticated,
-        isInitialAuthComplete,
-        setIsInitialAuthComplete,
-        authStep,
-        setAuthStep,
-        cameraDeniedError,
-        facePasscode,
-        setFacePasscode,
-        facePasscodeError,
-        handleAllowAndEnter,
-        handleFacePasscodeSubmit,
-        showConsentModal,
-        setShowConsentModal,
-      }}
-    >
+    <CameraContext.Provider value={contextValue}>
       {/* 1. In-viewport background video element that keeps camera tracks and WebGL frames active across scenes */}
       <video
         ref={rootVideoRef}

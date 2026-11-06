@@ -21,6 +21,30 @@
               inset 0 1px 2px rgba(255, 255, 255, 0.3);
 }
 
+.abishek-ai-button-glow-upgraded {
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.5),
+              0 0 45px rgba(244, 63, 94, 0.3),
+              inset 0 1px 2px rgba(255, 255, 255, 0.25);
+}
+
+.abishek-ai-button-glow-upgraded:hover {
+  box-shadow: 0 0 35px rgba(168, 85, 247, 0.75),
+              0 0 60px rgba(244, 63, 94, 0.45),
+              inset 0 1px 3px rgba(255, 255, 255, 0.4);
+}
+
+@keyframes aiHeartbeat {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.08); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.08); }
+  70% { transform: scale(1); }
+}
+
+.animate-ai-heartbeat {
+  animation: aiHeartbeat 2.4s ease-in-out infinite;
+}
+
 /* Custom scrollbar for chat messages */
 .abishek-ai-scrollbar::-webkit-scrollbar {
   width: 5px;
@@ -62,4 +86,3 @@
 .typing-dot-3 {
   animation: typingBounce 1.2s infinite ease-in-out 0.4s;
 }
-

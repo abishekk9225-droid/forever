@@ -15,6 +15,7 @@ import {
 import { sendEmail } from '../utils/emailService';
 import { initPhoneDetector, detectPhoneInVideo } from '../utils/phoneDetector';
 import { initFaceModels, loadReferenceDescriptors, recognizeFaceInVideo, resetLivenessBuffer } from '../utils/faceAuthService';
+import AbishekAIIntroScene from '../components/AbishekAI/AbishekAIIntroScene';
 
 const CameraContext = createContext(null);
 
@@ -52,6 +53,7 @@ export function CameraProvider({ children }) {
 
   // Initial Mandatory Camera Permission & Face Authentication Flow
   // authStep: 'PERMISSION' | 'FACE_SCAN' | 'COMPLETED'
+  const [showAiIntro, setShowAiIntro] = useState(true);
   const [authStep, setAuthStep] = useState('PERMISSION');
   const [isInitialAuthComplete, setIsInitialAuthComplete] = useState(false);
   const [cameraDeniedError, setCameraDeniedError] = useState(null);
@@ -679,6 +681,8 @@ export function CameraProvider({ children }) {
     handleFacePasscodeSubmit,
     showConsentModal,
     setShowConsentModal,
+    showAiIntro,
+    setShowAiIntro,
   }), [
     stream,
     cameraStatus,
@@ -713,6 +717,7 @@ export function CameraProvider({ children }) {
     handleAllowAndEnter,
     handleFacePasscodeSubmit,
     showConsentModal,
+    showAiIntro,
   ]);
 
   return (
@@ -738,9 +743,13 @@ export function CameraProvider({ children }) {
         }}
       />
 
-      {/* 2. Clear Camera Presence & Photo Alert Notice (Transparency & Consent) */}
-      {showConsentModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-300">
+      {/* 1.5. Step 1: ABISHEK AI Cinematic Introduction Scene */}
+      {showAiIntro ? (
+        <AbishekAIIntroScene onContinue={() => setShowAiIntro(false)} />
+      ) : (
+        /* Step 2: Existing Camera Presence & Privacy Protection & Face Scan */
+        showConsentModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-300">
           <style>{`
             @keyframes scanSweep {
               0% { top: 6%; opacity: 0; }
@@ -950,7 +959,7 @@ export function CameraProvider({ children }) {
             )}
           </div>
         </div>
-      )}
+      ))}
 
       {/* 3. Floating Camera Active Indicator & Settings Pill */}
       {cameraStatus === 'ACTIVE' && (

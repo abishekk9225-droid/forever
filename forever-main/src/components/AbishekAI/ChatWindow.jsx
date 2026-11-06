@@ -22,7 +22,13 @@ const INITIAL_WELCOME_MESSAGE = {
   timestamp: 'Just now',
 };
 
-const ChatWindow = React.memo(function ChatWindow({ isOpen, onClose, currentScene }) {
+const ChatWindow = React.memo(function ChatWindow({
+  isOpen,
+  onClose,
+  currentScene,
+  pendingAutoSendQuery,
+  onClearPendingAutoSend,
+}) {
   const [messages, setMessages] = useState(() => {
     try {
       const saved = localStorage.getItem('abishek_ai_chat_history');
@@ -135,6 +141,14 @@ const ChatWindow = React.memo(function ChatWindow({ isOpen, onClose, currentScen
     },
     [input, isLoading, messages, currentScene]
   );
+
+  // Auto-send suggestion if launched via floating question chip
+  useEffect(() => {
+    if (isOpen && pendingAutoSendQuery) {
+      handleSendMessage(pendingAutoSendQuery);
+      onClearPendingAutoSend?.();
+    }
+  }, [isOpen, pendingAutoSendQuery, handleSendMessage, onClearPendingAutoSend]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -276,3 +290,4 @@ const ChatWindow = React.memo(function ChatWindow({ isOpen, onClose, currentScen
 });
 
 export default ChatWindow;
+

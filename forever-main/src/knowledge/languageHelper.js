@@ -3,6 +3,8 @@
  * Supports: English, Tamil (தமிழ்), Tanglish (Tamil in Latin script)
  */
 
+import { ABISHEK_PROFILE } from './abishekKnowledge.js';
+
 // Common phonetic Tanglish markers and keywords
 const TANGLISH_MARKERS = [
   'sollu', 'solunga', 'enna', 'edhuku', 'eppadi', 'epdi', 'enga', 'yaaru', 'yaar',
@@ -10,6 +12,7 @@ const TANGLISH_MARKERS = [
   'pathi', 'bro', 'thalaiva', 'vanakkam', 'romba', 'nalla', 'solla', 'theriyum',
   'oru', 'ithu', 'adhu', 'yenna', 'epudi', 'machan', 'nanba', 'avaru', 'enga',
   'kadhal', 'kalyanam', 'website', 'scene', 'passcode', 'camera', 'face', 'anupunga',
+  'nallavana', 'love panrana', 'unmaiya', 'avan', 'avara', 'kooda', 'romba'
 ];
 
 /**
@@ -48,7 +51,10 @@ export function detectLanguage(text) {
     lower.includes('yaar') ||
     lower.includes('theriyum') ||
     lower.includes('iruku') ||
-    lower.includes('irukku')
+    lower.includes('irukku') ||
+    lower.includes('nallavana') ||
+    lower.includes('love panrana') ||
+    lower.includes('unmaiya')
   ) {
     return 'tanglish';
   }
@@ -64,7 +70,65 @@ export function detectLanguage(text) {
 export function generateLocalGroundedResponse(query, lang, currentSceneId = null) {
   const q = (query || '').toLowerCase().trim();
 
-  // 1. Projects (Nirbhaya AI, LeadTrack AI, Forever)
+  // 1. Specific Approved Message: "Is Abishek a good boy?"
+  if (
+    q.includes('good boy') ||
+    q.includes('நல்லவனா') ||
+    q.includes('nallavana') ||
+    q.includes('good person') ||
+    q.includes('எப்படிப்பட்டவன்') ||
+    q.includes('epdi patta') ||
+    q.includes('how is abishek') ||
+    q.includes('is he good')
+  ) {
+    if (lang === 'tamil') {
+      return ABISHEK_PROFILE.approvedMessages.isGoodBoy.ta;
+    }
+    if (lang === 'tanglish') {
+      return ABISHEK_PROFILE.approvedMessages.isGoodBoy.tanglish;
+    }
+    return ABISHEK_PROFILE.approvedMessages.isGoodBoy.en;
+  }
+
+  // 2. Specific Approved Message: "Does Abishek really/truly love me?"
+  if (
+    q.includes('love me') ||
+    q.includes('உண்மையாக நேசிக்கிறானா') ||
+    q.includes('நேசிக்கிறானா') ||
+    q.includes('unmaiya love') ||
+    q.includes('love panrana') ||
+    q.includes('truly love') ||
+    q.includes('really love') ||
+    q.includes('does he love')
+  ) {
+    if (lang === 'tamil') {
+      return ABISHEK_PROFILE.approvedMessages.doesHeLoveMe.ta;
+    }
+    if (lang === 'tanglish') {
+      return ABISHEK_PROFILE.approvedMessages.doesHeLoveMe.tanglish;
+    }
+    return ABISHEK_PROFILE.approvedMessages.doesHeLoveMe.en;
+  }
+
+  // 3. Specific Approved Message: "What are his dreams?"
+  if (
+    q.includes('dream') ||
+    q.includes('கனவு') ||
+    q.includes('கனவுகள்') ||
+    q.includes('dreams') ||
+    q.includes('ambition') ||
+    q.includes('aim')
+  ) {
+    if (lang === 'tamil') {
+      return ABISHEK_PROFILE.approvedMessages.dreams.ta;
+    }
+    if (lang === 'tanglish') {
+      return ABISHEK_PROFILE.approvedMessages.dreams.tanglish;
+    }
+    return ABISHEK_PROFILE.approvedMessages.dreams.en;
+  }
+
+  // 4. Projects (Nirbhaya AI, LeadTrack AI, Forever)
   if (
     q.includes('project') ||
     q.includes('nirbhaya') ||
@@ -84,7 +148,7 @@ export function generateLocalGroundedResponse(query, lang, currentSceneId = null
     return "Abishek's verified projects include:\n1. Nirbhaya AI: An individual and women safety-focused AI prototype.\n2. LeadTrack AI: An intelligent lead management and admission automation system for institutions.\n3. Forever – Saranya by Abishek: This cinematic interactive web experience with on-device dual-face recognition and heartbeat sync.";
   }
 
-  // 2. Technical Skills / Tech Stack
+  // 5. Technical Skills / Tech Stack
   if (
     q.includes('skill') ||
     q.includes('tech') ||
@@ -107,7 +171,7 @@ export function generateLocalGroundedResponse(query, lang, currentSceneId = null
     return "Abishek's verified technical skills:\n• Completed: Python, SQL, Java, Microsoft Excel.\n• Currently Learning: Power BI and advanced AI architectures.\n• Certifications: Infosys Springboard Python and Professional Communication certifications.";
   }
 
-  // 3. College / Education / Degree
+  // 6. College / Education / Degree
   if (
     q.includes('college') ||
     q.includes('degree') ||
@@ -129,7 +193,7 @@ export function generateLocalGroundedResponse(query, lang, currentSceneId = null
     return "Abishek is currently studying B.Tech in Artificial Intelligence and Data Science (AI & DS) at VSB Engineering College, Karur. His expected graduation year is 2028.";
   }
 
-  // 4. Passcode Question (AS0326)
+  // 7. Passcode Question (AS0326)
   if (
     q.includes('passcode') ||
     q.includes('password') ||
@@ -147,7 +211,7 @@ export function generateLocalGroundedResponse(query, lang, currentSceneId = null
     return "The secret passcode is **AS0326**. Hint: 'AS' + the birth dates of both persons (days only, not month or year). You can use it to unlock the journey directly.";
   }
 
-  // 5. Camera / Face Recognition
+  // 8. Camera / Face Recognition
   if (
     q.includes('camera') ||
     q.includes('face') ||
@@ -165,7 +229,7 @@ export function generateLocalGroundedResponse(query, lang, currentSceneId = null
     return "The Face Recognition operates 100% on-device in your browser. It uses Dual-Face Recognition: only ONE authorized person (Abishek or Saranya) needs to be present to unlock. An automatic blackout shield protects privacy if an external camera/phone is detected.";
   }
 
-  // 6. Navigation / How to proceed / Scenes
+  // 9. Navigation / How to proceed / Scenes
   if (
     q.includes('next scene') ||
     q.includes('how to continue') ||
@@ -185,7 +249,7 @@ export function generateLocalGroundedResponse(query, lang, currentSceneId = null
     return "To advance through the journey, simply interact with the on-screen controls for the current scene (e.g. tapping the glowing heart, accepting the incoming call, or clicking 'Next' on dialogues).";
   }
 
-  // 7. Who is Abishek / Personal Details (broad matching)
+  // 10. Who is Abishek / Personal Details (broad matching)
   if (
     q.includes('who is abishek') ||
     q.includes('about abishek') ||
@@ -193,7 +257,9 @@ export function generateLocalGroundedResponse(query, lang, currentSceneId = null
     q.includes('அபிஷேக்') ||
     q.includes('அபி') ||
     q.includes('abishek') ||
-    q.includes('neenga yaaru')
+    q.includes('neenga yaaru') ||
+    q.includes('சொல்லு') ||
+    q.includes('tell me')
   ) {
     if (lang === 'tamil') {
       return "அபிஷேக் கே. கரூர் வி.எஸ்.பி பொறியியல் கல்லூரியில் (VSB Engineering College, Karur) Artificial Intelligence and Data Science (AI & DS) துறையில் B.Tech பயின்று வரும் மாணவர் (2024–2028). செயற்கை நுண்ணறிவு மற்றும் மென்பொருள் உருவாக்கத்தில் மிகுந்த ஆர்வம் கொண்டவர். இந்த அழகிய Forever வலைத்தளத்தை அவரே வடிவமைத்துள்ளார்!";
@@ -204,7 +270,7 @@ export function generateLocalGroundedResponse(query, lang, currentSceneId = null
     return "Abishek K. is an undergraduate student pursuing B.Tech in Artificial Intelligence and Data Science (AI & DS) at VSB Engineering College, Karur (Class of 2028). He is passionate about Artificial Intelligence, Machine Learning, and Software Development, and is the creator of this Forever website.";
   }
 
-  // 8. General / Fallback
+  // 11. General / Fallback
   if (lang === 'tamil') {
     return "நான் அபிஷேக் AI (ABISHEK AI). அபிஷேக்கின் கல்வி, தொழில்நுட்பத் திறன்கள், திட்டங்கள் அல்லது இந்த Forever வலைத்தளத்தை எவ்வாறு பயன்படுத்துவது என்பது பற்றிய கேள்விகளுக்கு நான் பதிலளிக்க முடியும். நீங்கள் என்ன தெரிந்துகொள்ள விரும்புகிறீர்கள்?";
   }

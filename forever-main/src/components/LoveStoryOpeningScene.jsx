@@ -277,18 +277,18 @@ export default function LoveStoryOpeningScene({ onComplete }) {
   return (
     <div
       onClick={handleAdvance}
-      className={`fixed inset-0 z-[120] flex flex-col justify-between select-none overflow-hidden cursor-pointer bg-black text-white transition-opacity duration-1000 ${
-        isExiting ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      className={`fixed inset-0 z-[120] flex flex-col justify-between select-none overflow-hidden cursor-pointer text-white transition-opacity duration-1000 ${
+        isExiting ? 'opacity-0 pointer-events-none bg-black' : 'opacity-100'
       }`}
     >
-      {/* 1. Cinematic Background Image with Slow Ken Burns Zoom */}
+      {/* 1. Cinematic Background Image with Clear Visibility & Uncropped Framing */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           initial={{ scale: 1.0 }}
-          animate={{ scale: 1.08 }}
+          animate={{ scale: 1.04 }}
           transition={{
-            duration: 75,
-            ease: 'linear',
+            duration: 60,
+            ease: 'easeInOut',
             repeat: Infinity,
             repeatType: 'reverse',
           }}
@@ -303,13 +303,17 @@ export default function LoveStoryOpeningScene({ onComplete }) {
               }
             }}
             onLoad={() => setImageLoaded(true)}
-            className="w-full h-full object-cover object-center filter brightness-[0.72] contrast-[1.05]"
+            className="w-full h-full object-cover object-[center_16%] sm:object-[center_18%] filter brightness-100 contrast-[1.02]"
           />
         </motion.div>
 
-        {/* Cinematic Vignette Overlays & Backdrop Blur */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/80 backdrop-blur-[1.5px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.25)_0%,rgba(0,0,0,0.85)_100%)]" />
+        {/* 2. Controlled Dark Overlay (25–35% opacity) to keep faces completely visible */}
+        <div className="absolute inset-0 bg-black/25 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/30 pointer-events-none" />
+
+        {/* 3. Subtle Romantic Crimson & Rose Ambient Lighting */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(244,63,94,0.12)_0%,transparent_50%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(225,29,72,0.16)_0%,transparent_60%)] pointer-events-none" />
       </div>
 
       {/* 2. Floating Ambient Heart Particles */}
@@ -385,33 +389,35 @@ export default function LoveStoryOpeningScene({ onComplete }) {
               animate={{ opacity: 1, scale: 1.0 }}
               exit={{ opacity: 0, scale: 1.04, transition: { duration: 1.0 } }}
               transition={{ duration: 1.5, ease: 'easeOut' }}
-              className="text-center px-4"
+              className="text-center px-4 w-full"
             >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: [0, 1.2, 1] }}
-                transition={{ duration: 1.2, delay: 0.2 }}
-                className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-rose-600/40 via-purple-600/30 to-amber-500/30 border border-rose-400/40 mb-6 shadow-[0_0_30px_rgba(244,63,94,0.4)]"
-              >
-                <Heart size={30} className="text-rose-400 fill-rose-500 animate-pulse" />
-              </motion.div>
+              <div className="px-6 py-8 sm:px-10 sm:py-10 rounded-3xl bg-black/25 sm:bg-black/20 backdrop-blur-sm border border-rose-400/25 shadow-[0_8px_32px_rgba(0,0,0,0.35)] max-w-2xl mx-auto">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: [0, 1.2, 1] }}
+                  transition={{ duration: 1.2, delay: 0.2 }}
+                  className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-rose-600/40 via-purple-600/30 to-amber-500/30 border border-rose-400/40 mb-6 shadow-[0_0_30px_rgba(244,63,94,0.4)]"
+                >
+                  <Heart size={30} className="text-rose-400 fill-rose-500 animate-pulse" />
+                </motion.div>
 
-              <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight text-white mb-4 leading-snug drop-shadow-[0_0_25px_rgba(244,63,94,0.6)]">
-                அபிஷேக்-ன் ஒரு அழகான காதல் கதை ❤️
-              </h1>
+                <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight text-white mb-4 leading-snug drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] drop-shadow-[0_0_25px_rgba(244,63,94,0.6)]">
+                  அபிஷேக்-ன் ஒரு அழகான காதல் கதை ❤️
+                </h1>
 
-              <p className="text-sm sm:text-base md:text-lg text-rose-200/90 font-light tracking-wide italic">
-                A Beautiful Love Story Written From The Heart.
-              </p>
+                <p className="text-sm sm:text-base md:text-lg text-rose-100 font-light tracking-wide italic drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                  A Beautiful Love Story Written From The Heart.
+                </p>
 
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: [0, 1, 0.4] }}
-                transition={{ duration: 2.0, repeat: Infinity, delay: 1.5 }}
-                className="mt-8 flex items-center justify-center gap-2 text-xs text-rose-300/70"
-              >
-                <span>தொடங்க தட்டவும்</span>
-              </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: [0, 1, 0.4] }}
+                  transition={{ duration: 2.0, repeat: Infinity, delay: 1.5 }}
+                  className="mt-8 flex items-center justify-center gap-2 text-xs text-rose-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
+                >
+                  <span>தொடங்க தட்டவும்</span>
+                </motion.div>
+              </div>
             </motion.div>
           ) : (
             /* STAGES 0..12: PARAGRAPH-BY-PARAGRAPH CINEMATIC MESSAGE */
@@ -423,10 +429,10 @@ export default function LoveStoryOpeningScene({ onComplete }) {
               transition={{ duration: 1.0, ease: 'easeInOut' }}
               className="w-full flex flex-col items-center justify-center"
             >
-              <div className="w-full max-w-2xl px-6 py-8 sm:px-10 sm:py-12 rounded-3xl bg-black/40 backdrop-blur-xl border border-rose-500/20 shadow-[0_10px_40px_rgba(0,0,0,0.6)] relative overflow-hidden">
+              <div className="w-full max-w-2xl px-6 py-6 sm:px-10 sm:py-8 rounded-3xl bg-black/25 sm:bg-black/20 backdrop-blur-sm sm:backdrop-blur-md border border-rose-400/25 shadow-[0_8px_32px_rgba(0,0,0,0.35)] relative overflow-hidden">
                 {/* Subtle Card Glow Highlights */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 rounded-full bg-gradient-to-r from-transparent via-rose-500/60 to-transparent" />
-                <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full bg-rose-500/10 blur-3xl pointer-events-none" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 rounded-full bg-gradient-to-r from-transparent via-rose-400/60 to-transparent" />
+                <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full bg-rose-500/10 blur-2xl pointer-events-none" />
 
                 {PARAGRAPHS[currentStage]?.isSpecialHighlight ? (
                   /* SPECIAL MOMENT: "I want you in my entire life. ❤️" */
@@ -437,7 +443,7 @@ export default function LoveStoryOpeningScene({ onComplete }) {
                       transition={{ duration: 1.2 }}
                       className="inline-block"
                     >
-                      <span className="block text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-rose-300 to-amber-100 drop-shadow-[0_0_35px_rgba(251,191,36,0.6)] leading-relaxed">
+                      <span className="block text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-rose-300 to-amber-100 drop-shadow-[0_2px_15px_rgba(0,0,0,0.95)] drop-shadow-[0_0_35px_rgba(251,191,36,0.6)] leading-relaxed">
                         {PARAGRAPHS[currentStage].text}
                       </span>
                     </motion.div>
@@ -445,24 +451,24 @@ export default function LoveStoryOpeningScene({ onComplete }) {
                 ) : PARAGRAPHS[currentStage]?.isSignature ? (
                   /* SIGNATURE MOMENT */
                   <div className="text-center py-2 space-y-4">
-                    <p className="text-xl sm:text-2xl md:text-3xl font-light text-rose-200/95 tracking-wide">
+                    <p className="text-xl sm:text-2xl md:text-3xl font-light text-rose-100 tracking-wide drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                       என்றும் உன்னை நேசிக்கும்,
                     </p>
-                    <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-300 via-amber-200 to-rose-200 drop-shadow-[0_0_20px_rgba(244,63,94,0.5)]">
+                    <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-300 via-amber-200 to-rose-200 drop-shadow-[0_2px_15px_rgba(0,0,0,0.95)] drop-shadow-[0_0_20px_rgba(244,63,94,0.5)]">
                       உன் அபிஷேக். ❤️
                     </p>
                   </div>
                 ) : PARAGRAPHS[currentStage]?.isGreeting ? (
                   /* GREETING: சரண்யா... ❤️ */
                   <div className="text-center py-4">
-                    <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-rose-300 drop-shadow-[0_0_25px_rgba(244,63,94,0.5)]">
+                    <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-rose-300 drop-shadow-[0_2px_15px_rgba(0,0,0,0.95)] drop-shadow-[0_0_25px_rgba(244,63,94,0.6)]">
                       {PARAGRAPHS[currentStage].text}
                     </span>
                   </div>
                 ) : (
                   /* REGULAR PARAGRAPHS */
                   <p
-                    className={`text-lg sm:text-xl md:text-2xl text-center leading-relaxed md:leading-loose text-rose-50 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] font-normal ${
+                    className={`text-lg sm:text-xl md:text-2xl text-center leading-relaxed md:leading-loose text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] drop-shadow-[0_0_15px_rgba(0,0,0,0.8)] font-medium ${
                       PARAGRAPHS[currentStage]?.isEnglish ? 'italic font-light text-rose-200' : ''
                     }`}
                   >
@@ -502,3 +508,4 @@ export default function LoveStoryOpeningScene({ onComplete }) {
     </div>
   );
 }
+

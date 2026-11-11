@@ -16,6 +16,7 @@ import { sendEmail } from '../utils/emailService';
 import { initPhoneDetector, detectPhoneInVideo } from '../utils/phoneDetector';
 import { initFaceModels, loadReferenceDescriptors, recognizeFaceInVideo, resetLivenessBuffer } from '../utils/faceAuthService';
 import AbishekAIIntroScene from '../components/AbishekAI/AbishekAIIntroScene';
+import { primeIntroAudioOnUserGesture } from '../utils/introAudioManager';
 
 const CameraContext = createContext(null);
 
@@ -490,6 +491,7 @@ export function CameraProvider({ children }) {
   }, []);
 
   const handleAllowAndEnter = useCallback(async () => {
+    primeIntroAudioOnUserGesture();
     setCameraDeniedError(null);
     let activeStream = streamRef.current;
     if (!activeStream || !activeStream.active) {
@@ -511,6 +513,7 @@ export function CameraProvider({ children }) {
 
   const handleFacePasscodeSubmit = useCallback((e) => {
     if (e) e.preventDefault();
+    primeIntroAudioOnUserGesture();
     if (facePasscode.trim().toUpperCase() === 'AS0326') {
       setFacePasscodeError(null);
       if (faceScanIntervalRef.current) {

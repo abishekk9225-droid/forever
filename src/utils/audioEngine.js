@@ -5,6 +5,8 @@
 // and single-instance lifetime management.
 // ============================================================================
 
+import { primeIntroAudioOnUserGesture } from './introAudioManager';
+
 class UnifiedAudioEngine {
   // abi.mp3 ducking guard — prevents duplicate instances in StrictMode / rapid clicks
   _abiDuckPlaying = false;
@@ -188,10 +190,10 @@ class UnifiedAudioEngine {
     if (this.audioCtx && this.audioCtx.state === 'suspended') {
       this.audioCtx.resume().catch(() => {});
     }
-    // Auto-start intro on first interaction if requested
-    if (!this.isPlayingMusic && this.currentTrack === 'intro') {
-      this.playIntroTrack();
-    }
+    // Pre-unlock intro.mp3 on user gestures without auto-starting prematurely
+    try {
+      primeIntroAudioOnUserGesture();
+    } catch {}
   }
 
   // ==========================================================================

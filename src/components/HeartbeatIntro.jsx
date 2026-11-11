@@ -4,6 +4,7 @@ import { Heart, Sparkles, Volume2, VolumeX, ArrowRight, ArrowLeft, ChevronLeft, 
 import confetti from 'canvas-confetti';
 import CinematicRainbowBorder from './CinematicRainbowBorder';
 import { globalAudioEngine as globalHeartbeatEngine } from '../utils/audioEngine';
+import { startIntroAudio, stopIntroAudio } from '../utils/introAudioManager';
 
 // ============================================================================
 // THE FOUR CINEMATIC INTRO MOMENTS & ASSET PATHS (PRESERVED EXACTLY)
@@ -371,10 +372,16 @@ export default function HeartbeatIntro({ onUnlock }) {
       }
     });
 
-    // Play public/intro.mp3 at full volume (looping)
-    const introAudio = new Audio('/intro.mp3');
-    introAudio.loop = true;
-    introAudio.volume = 1.0;
+    // 1. Ensure any other engine music (such as bgm-intro) is stopped so NO duplicate audio plays
+    if (window.unifiedAudioEngine && window.unifiedAudioEngine.isPlayingMusic) {
+      if (window.unifiedAudioEngine.tracks?.intro?.element) {
+        window.unifiedAudioEngine.tracks.intro.element.pause();
+      }
+      window.unifiedAudioEngine.isPlayingMusic = false;
+    }
+
+    // 2. Play public/intro.mp3 at full volume (looping) via the pre-unlocked audio controller
+    const introAudio = startIntroAudio();
     introAudioRef.current = introAudio;
 
     const playIntroMusic = () => {
@@ -389,8 +396,6 @@ export default function HeartbeatIntro({ onUnlock }) {
         window.heartbeatEngine.audioCtx.resume().catch(() => { });
       }
     };
-
-    playIntroMusic();
 
     window.addEventListener('click', playIntroMusic, { once: true });
     window.addEventListener('touchstart', playIntroMusic, { once: true });
@@ -496,11 +501,8 @@ export default function HeartbeatIntro({ onUnlock }) {
       }
 
       // Stop intro music
-      if (introAudioRef.current) {
-        introAudioRef.current.pause();
-        introAudioRef.current.currentTime = 0;
-        introAudioRef.current = null;
-      }
+      stopIntroAudio();
+      introAudioRef.current = null;
 
       if (thunderTimeoutRef.current) {
         clearTimeout(thunderTimeoutRef.current);
@@ -793,14 +795,9 @@ export default function HeartbeatIntro({ onUnlock }) {
       onUnlock();
     }
 
-    // Stop intro audio immediately
-    if (introAudioRef.current) {
-      try {
-        introAudioRef.current.pause();
-        introAudioRef.current.currentTime = 0;
-        introAudioRef.current = null;
-      } catch { }
-    }
+    // Stop intro audio smoothly and cleanly
+    stopIntroAudio(600);
+    introAudioRef.current = null;
 
     // Stop synthetic heartbeat engine cleanly
     if (window.heartbeatEngine) {

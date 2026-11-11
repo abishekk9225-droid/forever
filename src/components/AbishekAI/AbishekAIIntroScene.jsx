@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, Sparkles, Heart, Globe, ArrowRight } from 'lucide-react';
+import { primeIntroAudioOnUserGesture } from '../../utils/introAudioManager';
 
 /**
  * ABISHEK AI - Cinematic Introduction Scene
@@ -149,7 +150,12 @@ export default function AbishekAIIntroScene({ onContinue }) {
         {/* Primary Action Button */}
         <motion.button
           type="button"
-          onClick={onContinue}
+          onClick={() => {
+            primeIntroAudioOnUserGesture();
+            if (typeof onContinue === 'function') {
+              onContinue();
+            }
+          }}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-rose-600 to-amber-600 hover:from-purple-500 hover:via-rose-500 hover:to-amber-500 text-white font-serif font-bold text-sm sm:text-base tracking-wider uppercase transition-all duration-200 shadow-[0_0_30px_rgba(244,63,94,0.4)] flex items-center justify-center gap-2 cursor-pointer"

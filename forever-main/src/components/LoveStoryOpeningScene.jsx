@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Volume2, VolumeX, Sparkles, ChevronRight, FastForward } from 'lucide-react';
+import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 /**
  * Abishek's Beautiful Love Story - Cinematic Opening Scene
@@ -281,6 +282,9 @@ export default function LoveStoryOpeningScene({ onComplete }) {
         isExiting ? 'opacity-0 pointer-events-none bg-black' : 'opacity-100'
       }`}
     >
+      {/* Universal Screen-Perimeter Travelling Rainbow Border (Matches existing scenes) */}
+      <CinematicRainbowBorder mode="screen" />
+
       {/* 1. Cinematic Background Image with Clear Visibility & Uncropped Framing */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div

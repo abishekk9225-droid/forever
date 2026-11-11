@@ -198,7 +198,7 @@ class UnifiedAudioEngine {
       this.audioCtx.resume().catch(() => {});
     }
     // Start bgm.intro immediately on first permitted user interaction if not yet started
-    if (!this.hasPlayedBgmIntro) {
+    if (!this.hasPlayedBgmIntro && !(typeof window !== 'undefined' && window.__LOVE_STORY_ACTIVE__)) {
       this.playIntroTrack();
     }
     // Pre-unlock intro.mp3 on user gestures without auto-starting prematurely
@@ -212,6 +212,11 @@ class UnifiedAudioEngine {
   // ==========================================================================
 
   playIntroTrack() {
+    // If the opening love story scene is currently active, defer bgm.intro until it finishes
+    if (typeof window !== 'undefined' && window.__LOVE_STORY_ACTIVE__) {
+      return;
+    }
+
     this.init();
     this.resumeContext();
 

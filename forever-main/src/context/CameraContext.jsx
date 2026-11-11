@@ -15,6 +15,7 @@ import {
 import { sendEmail } from '../utils/emailService';
 import { initPhoneDetector, detectPhoneInVideo } from '../utils/phoneDetector';
 import { initFaceModels, loadReferenceDescriptors, recognizeFaceInVideo, resetLivenessBuffer } from '../utils/faceAuthService';
+import LoveStoryOpeningScene from '../components/LoveStoryOpeningScene';
 import AbishekAIIntroScene from '../components/AbishekAI/AbishekAIIntroScene';
 import { primeIntroAudioOnUserGesture } from '../utils/introAudioManager';
 
@@ -54,6 +55,8 @@ export function CameraProvider({ children }) {
 
   // Initial Mandatory Camera Permission & Face Authentication Flow
   // authStep: 'PERMISSION' | 'FACE_SCAN' | 'COMPLETED'
+  // Initial Flow: 1. Love Story Scene -> 2. ABISHEK AI Intro -> 3. Camera Permission & Face Auth
+  const [showLoveStory, setShowLoveStory] = useState(true);
   const [showAiIntro, setShowAiIntro] = useState(true);
   const [authStep, setAuthStep] = useState('PERMISSION');
   const [isInitialAuthComplete, setIsInitialAuthComplete] = useState(false);
@@ -690,6 +693,8 @@ export function CameraProvider({ children }) {
     handleFacePasscodeSubmit,
     showConsentModal,
     setShowConsentModal,
+    showLoveStory,
+    setShowLoveStory,
     showAiIntro,
     setShowAiIntro,
   }), [
@@ -726,6 +731,7 @@ export function CameraProvider({ children }) {
     handleAllowAndEnter,
     handleFacePasscodeSubmit,
     showConsentModal,
+    showLoveStory,
     showAiIntro,
   ]);
 
@@ -752,11 +758,24 @@ export function CameraProvider({ children }) {
         }}
       />
 
-      {/* 1.5. Step 1: ABISHEK AI Cinematic Introduction Scene */}
-      {showAiIntro ? (
+      {/* Step 1: NEW - Abishek's Beautiful Love Story (for.jpg + mh.mp3 + complete emotional message) */}
+      {showLoveStory ? (
+        <LoveStoryOpeningScene
+          onComplete={() => {
+            setShowLoveStory(false);
+            try {
+              window.__LOVE_STORY_ACTIVE__ = false;
+              if (window.unifiedAudioEngine) {
+                window.unifiedAudioEngine.playIntroTrack();
+              }
+            } catch {}
+          }}
+        />
+      ) : showAiIntro ? (
+        /* Step 2: EXISTING - ABISHEK AI Cinematic Introduction Scene */
         <AbishekAIIntroScene onContinue={() => setShowAiIntro(false)} />
       ) : (
-        /* Step 2: Existing Camera Presence & Privacy Protection & Face Scan */
+        /* Step 3: EXISTING - Camera Presence & Privacy Protection & Face Scan */
         showConsentModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-300">
           <style>{`

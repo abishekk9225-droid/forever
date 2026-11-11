@@ -151,6 +151,9 @@ export default function AbishekAIIntroScene({ onContinue }) {
         <motion.button
           type="button"
           onClick={() => {
+            if (window.unifiedAudioEngine && !window.unifiedAudioEngine.hasPlayedBgmIntro) {
+              window.unifiedAudioEngine.playIntroTrack();
+            }
             primeIntroAudioOnUserGesture();
             if (typeof onContinue === 'function') {
               onContinue();

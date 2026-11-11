@@ -372,12 +372,9 @@ export default function HeartbeatIntro({ onUnlock }) {
       }
     });
 
-    // 1. Ensure any other engine music (such as bgm-intro) is stopped so NO duplicate audio plays
-    if (window.unifiedAudioEngine && window.unifiedAudioEngine.isPlayingMusic) {
-      if (window.unifiedAudioEngine.tracks?.intro?.element) {
-        window.unifiedAudioEngine.tracks.intro.element.pause();
-      }
-      window.unifiedAudioEngine.isPlayingMusic = false;
+    // 1. Gradually reduce bgm.intro volume with a smooth fade-down transition to a low ambient level
+    if (window.unifiedAudioEngine) {
+      window.unifiedAudioEngine.fadeDownIntroForHeartbeat(0.06, 2.0);
     }
 
     // 2. Play public/intro.mp3 at full volume (looping) via the pre-unlocked audio controller
@@ -837,6 +834,9 @@ export default function HeartbeatIntro({ onUnlock }) {
       if (rainGainNodeRef.current && rainAudioContextRef.current) {
         const now = rainAudioContextRef.current.currentTime;
         rainGainNodeRef.current.gain.setValueAtTime(next ? 0.0001 : 0.065, now);
+      }
+      if (window.unifiedAudioEngine?.tracks?.intro?.element) {
+        window.unifiedAudioEngine.tracks.intro.element.muted = next;
       }
       return next;
     });

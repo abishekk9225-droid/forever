@@ -491,6 +491,9 @@ export function CameraProvider({ children }) {
   }, []);
 
   const handleAllowAndEnter = useCallback(async () => {
+    if (window.unifiedAudioEngine && !window.unifiedAudioEngine.hasPlayedBgmIntro) {
+      window.unifiedAudioEngine.playIntroTrack();
+    }
     primeIntroAudioOnUserGesture();
     setCameraDeniedError(null);
     let activeStream = streamRef.current;
@@ -513,6 +516,9 @@ export function CameraProvider({ children }) {
 
   const handleFacePasscodeSubmit = useCallback((e) => {
     if (e) e.preventDefault();
+    if (window.unifiedAudioEngine && !window.unifiedAudioEngine.hasPlayedBgmIntro) {
+      window.unifiedAudioEngine.playIntroTrack();
+    }
     primeIntroAudioOnUserGesture();
     if (facePasscode.trim().toUpperCase() === 'AS0326') {
       setFacePasscodeError(null);

@@ -33,6 +33,8 @@ class UnifiedAudioEngine {
     this.currentTrack = 'intro'; // 'intro' | 'abi1' | 'celebration' | 'ka' | 'kk'
     this.isPlayingMusic = false;
     this.baseMusicVolume = 0.65; // High, clear, consistent BGM level
+    this.hasPlayedBgmIntro = false;
+    this._introFadeTimer = null;
     this.bgmBreathingTimer = null;
     this.tracks = {};
     this.listeners = new Set();
@@ -107,6 +109,11 @@ class UnifiedAudioEngine {
       }
 
       this.isInitialized = true;
+
+      // Start bgm.intro automatically as early as browser autoplay policies allow
+      if (!this.hasPlayedBgmIntro) {
+        this.playIntroTrack();
+      }
     } catch (e) {
       console.warn('UnifiedAudioEngine initialization deferred:', e);
     }
@@ -190,6 +197,10 @@ class UnifiedAudioEngine {
     if (this.audioCtx && this.audioCtx.state === 'suspended') {
       this.audioCtx.resume().catch(() => {});
     }
+    // Start bgm.intro immediately on first permitted user interaction if not yet started
+    if (!this.hasPlayedBgmIntro) {
+      this.playIntroTrack();
+    }
     // Pre-unlock intro.mp3 on user gestures without auto-starting prematurely
     try {
       primeIntroAudioOnUserGesture();
@@ -203,6 +214,11 @@ class UnifiedAudioEngine {
   playIntroTrack() {
     this.init();
     this.resumeContext();
+
+    // PLAY ONLY ONCE per website session: do not restart during scene transitions or revisiting scenes
+    if (this.hasPlayedBgmIntro && (this.isPlayingMusic || this.currentTrack !== 'intro')) {
+      return;
+    }
 
     if (this.currentTrack === 'intro' && this.isPlayingMusic) {
       return;
@@ -249,11 +265,52 @@ class UnifiedAudioEngine {
       intro.element.volume = 0.65;
       intro.element.play().then(() => {
         this.isPlayingMusic = true;
+        this.hasPlayedBgmIntro = true;
         this.notifyState();
       }).catch((e) => {
         console.warn('Intro playback prevented by browser autoplay policy:', e);
       });
     }
+  }
+
+  // Gradually reduce bgm.intro volume using a smooth fade-down transition for Heartbeat Intro scene
+  fadeDownIntroForHeartbeat(targetGain = 0.06, durationSec = 2.0) {
+    const intro = this.tracks['intro'];
+    if (!intro || !intro.element) return;
+
+    if (this.audioCtx && intro.trackGain) {
+      try {
+        const now = this.audioCtx.currentTime;
+        intro.trackGain.gain.cancelScheduledValues(now);
+        intro.trackGain.gain.setValueAtTime(intro.trackGain.gain.value, now);
+        intro.trackGain.gain.linearRampToValueAtTime(targetGain, now + durationSec);
+      } catch (err) {
+        console.warn('Web Audio fade down error:', err);
+      }
+    }
+
+    try {
+      if (this._introFadeTimer) {
+        clearInterval(this._introFadeTimer);
+        this._introFadeTimer = null;
+      }
+      const startVol = intro.element.volume;
+      const steps = 25;
+      const stepDuration = (durationSec * 1000) / steps;
+      const stepDecrement = (startVol - targetGain) / steps;
+      let stepCount = 0;
+
+      this._introFadeTimer = setInterval(() => {
+        stepCount++;
+        const newVol = Math.max(targetGain, startVol - (stepDecrement * stepCount));
+        intro.element.volume = newVol;
+        if (stepCount >= steps) {
+          clearInterval(this._introFadeTimer);
+          this._introFadeTimer = null;
+          intro.element.volume = targetGain;
+        }
+      }, stepDuration);
+    } catch {}
   }
 
   // Requirement 4: abi.1 starts ONLY when Abishek's typing scene is reached
@@ -1091,6 +1148,10 @@ class UnifiedAudioEngine {
   }
 
   destroy() {
+    if (this._introFadeTimer) {
+      clearInterval(this._introFadeTimer);
+      this._introFadeTimer = null;
+    }
     if (this.schedulerTimer) {
       clearInterval(this.schedulerTimer);
       this.schedulerTimer = null;

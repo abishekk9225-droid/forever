@@ -17,6 +17,7 @@ const defaultSoundState = {
   toggleSound: () => globalAudioEngine.toggleSound(),
   toggleAudio: () => globalAudioEngine.toggleSound(),
   fadeToSoftAmbience: () => {},
+  fadeDownIntroForHeartbeat: () => {},
 };
 
 const SoundContext = createContext(defaultSoundState);
@@ -33,6 +34,8 @@ export const SoundProvider = ({ children }) => {
   useEffect(() => {
     // Initialize engine upon mount
     globalAudioEngine.init();
+    // Attempt automatic playback of bgm.intro at website start as early as browser autoplay allows
+    globalAudioEngine.playIntroTrack();
 
     // Subscribe to engine music state changes
     const unsubscribe = globalAudioEngine.subscribe(({ currentTrack: track, isPlaying: playing }) => {
@@ -50,6 +53,7 @@ export const SoundProvider = ({ children }) => {
 
     window.soundController = {
       playIntroTrack: () => globalAudioEngine.playIntroTrack(),
+      fadeDownIntroForHeartbeat: (targetGain, duration) => globalAudioEngine.fadeDownIntroForHeartbeat(targetGain, duration),
       playAbi1Track: () => globalAudioEngine.playAbi1Track(),
       playCelebrationTrack: (startTime) => globalAudioEngine.playCelebrationTrack(startTime),
       playKaTrack: () => globalAudioEngine.playKaTrack(),
@@ -118,6 +122,10 @@ export const SoundProvider = ({ children }) => {
     globalAudioEngine.fadeToSoftAmbience(targetGain, durationSec);
   }, []);
 
+  const fadeDownIntroForHeartbeat = useCallback((targetGain = 0.06, durationSec = 2.0) => {
+    globalAudioEngine.fadeDownIntroForHeartbeat(targetGain, durationSec);
+  }, []);
+
   const contextValue = useMemo(() => ({
     currentTrack,
     isPlaying,
@@ -134,6 +142,7 @@ export const SoundProvider = ({ children }) => {
     toggleSound,
     toggleAudio: toggleSound,
     fadeToSoftAmbience,
+    fadeDownIntroForHeartbeat,
   }), [
     currentTrack,
     isPlaying,
@@ -149,6 +158,7 @@ export const SoundProvider = ({ children }) => {
     duckPhoneCallTrack,
     toggleSound,
     fadeToSoftAmbience,
+    fadeDownIntroForHeartbeat,
   ]);
 
   return (

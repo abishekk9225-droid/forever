@@ -1,18 +1,22 @@
-// Utility to asynchronously pre-decode heavy scene assets without blocking the main UI thread
+// Utility to progressively pre-decode heavy scene assets without blocking the main UI thread
 
-const CRITICAL_SCENE_ASSETS = [
+const STAGED_SCENE_ASSETS = [
+  // Stage 0: Initial scene & gate
+  '/for.jpg',
   '/sa.jpg',
   '/sk.jpg',
-  '/ph.jpg',
-  '/ai_pencil_sketch.jpg',
+  // Stage 1: Game levels
   '/level1_secret_garden.jpg',
-  '/lp.jpg',
   '/level3_choices_bridge.jpg',
   '/level4_unspoken_words.jpg',
   '/level5_final_heart.jpg',
+  // Stage 2: Memory & Climax scenes
   '/mem-01.jpg',
   '/mem-02.jpg',
   '/mem-03.jpg',
+  '/ph.jpg',
+  '/ai_pencil_sketch.jpg',
+  '/lp.jpg',
 ];
 
 const preloadedSet = new Set();
@@ -41,24 +45,25 @@ export function startBackgroundAssetPreload() {
   const runPreload = () => {
     let index = 0;
     const preloadNext = () => {
-      if (index >= CRITICAL_SCENE_ASSETS.length) return;
-      const src = CRITICAL_SCENE_ASSETS[index++];
+      if (index >= STAGED_SCENE_ASSETS.length) return;
+      const src = STAGED_SCENE_ASSETS[index++];
       preloadImage(src).then(() => {
-        // Stagger requests slightly to keep CPU/network bandwidth clear for active scene
+        // Generous stagger interval keeps CPU and main thread completely free for active scenes
         if (typeof requestIdleCallback === 'function') {
-          requestIdleCallback(() => preloadNext(), { timeout: 1000 });
+          requestIdleCallback(() => preloadNext(), { timeout: 2000 });
         } else {
-          setTimeout(preloadNext, 200);
+          setTimeout(preloadNext, 400);
         }
       });
     };
     preloadNext();
   };
 
+  // Wait 4 seconds after initial page load so Love Story scene loads instantaneously with zero network contention
   if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(runPreload, { timeout: 2000 });
+    requestIdleCallback(runPreload, { timeout: 4000 });
   } else {
-    setTimeout(runPreload, 1000);
+    setTimeout(runPreload, 3500);
   }
 }
 

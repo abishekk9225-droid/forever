@@ -37,28 +37,20 @@ function CinematicRainbowBorder({
           100% { stroke-dashoffset: -1000; }
         }
 
-        @keyframes rainbowHaloBreathing {
-          0%, 100% {
-            box-shadow:
-              inset 0 0 25px rgba(244, 63, 94, 0.4),
-              0 0 30px rgba(244, 63, 94, 0.45),
-              0 0 65px rgba(217, 70, 239, 0.3),
-              0 0 95px rgba(168, 85, 247, 0.2);
-          }
-          33% {
-            box-shadow:
-              inset 0 0 25px rgba(168, 85, 247, 0.4),
-              0 0 30px rgba(168, 85, 247, 0.45),
-              0 0 65px rgba(59, 130, 246, 0.3),
-              0 0 95px rgba(6, 182, 212, 0.2);
-          }
-          66% {
-            box-shadow:
-              inset 0 0 25px rgba(6, 182, 212, 0.4),
-              0 0 30px rgba(6, 182, 212, 0.45),
-              0 0 65px rgba(245, 158, 11, 0.3),
-              0 0 95px rgba(244, 63, 94, 0.2);
-          }
+        @keyframes haloLayerA {
+          0%, 100% { opacity: 1; }
+          33%, 66% { opacity: 0; }
+        }
+
+        @keyframes haloLayerB {
+          0%, 100% { opacity: 0; }
+          33% { opacity: 1; }
+          66% { opacity: 0; }
+        }
+
+        @keyframes haloLayerC {
+          0%, 33%, 100% { opacity: 0; }
+          66% { opacity: 1; }
         }
 
         @keyframes cardAuraPulse {
@@ -71,10 +63,27 @@ function CinematicRainbowBorder({
         <div
           className={`fixed inset-0 pointer-events-none z-[88] overflow-hidden select-none ${className}`}
         >
-          {/* Outer Screen Halo & Edge Energy Spillage */}
+          {/* Outer Screen Halo & Edge Energy Spillage - GPU-accelerated opacity crossfades */}
           <div
-            className="absolute inset-0 pointer-events-none"
-            style={{ animation: 'rainbowHaloBreathing 7s ease-in-out infinite' }}
+            className="absolute inset-0 pointer-events-none will-change-[opacity]"
+            style={{
+              boxShadow: 'inset 0 0 25px rgba(244, 63, 94, 0.4), 0 0 30px rgba(244, 63, 94, 0.45), 0 0 65px rgba(217, 70, 239, 0.3), 0 0 95px rgba(168, 85, 247, 0.2)',
+              animation: 'haloLayerA 7s ease-in-out infinite',
+            }}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none will-change-[opacity]"
+            style={{
+              boxShadow: 'inset 0 0 25px rgba(168, 85, 247, 0.4), 0 0 30px rgba(168, 85, 247, 0.45), 0 0 65px rgba(59, 130, 246, 0.3), 0 0 95px rgba(6, 182, 212, 0.2)',
+              animation: 'haloLayerB 7s ease-in-out infinite',
+            }}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none will-change-[opacity]"
+            style={{
+              boxShadow: 'inset 0 0 25px rgba(6, 182, 212, 0.4), 0 0 30px rgba(6, 182, 212, 0.45), 0 0 65px rgba(245, 158, 11, 0.3), 0 0 95px rgba(244, 63, 94, 0.2)',
+              animation: 'haloLayerC 7s ease-in-out infinite',
+            }}
           />
 
           {/* SVG Travelling Laser Rainbow Energy Circuit: TOP -> RIGHT -> BOTTOM -> LEFT -> TOP */}
@@ -105,8 +114,8 @@ function CinematicRainbowBorder({
               </linearGradient>
 
               <filter id="globalRainbowBloom" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="glow1" />
-                <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="glow2" />
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="glow1" />
+                <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="glow2" />
                 <feMerge>
                   <feMergeNode in="glow2" />
                   <feMergeNode in="glow1" />

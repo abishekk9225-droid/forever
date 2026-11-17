@@ -28,6 +28,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   const timersRef = useRef([]);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const offscreenPresenceCanvasRef = useRef(null);
   const cameraStreamRef = useRef(cameraContext?.stream || null);
   const faceDetectorRef = useRef(null);
   const detectionIntervalRef = useRef(null);
@@ -325,7 +326,14 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   const detectPresence = async () => {
     const video = videoRef.current;
     if (!video || video.readyState < 2) return false;
-    const canvas = canvasRef.current || document.createElement('canvas');
+    if (!offscreenPresenceCanvasRef.current && typeof document !== 'undefined') {
+      const c = document.createElement('canvas');
+      c.width = 64;
+      c.height = 48;
+      offscreenPresenceCanvasRef.current = c;
+    }
+    const canvas = offscreenPresenceCanvasRef.current || canvasRef.current;
+    if (!canvas) return false;
 
     // Method 1: Native browser FaceDetector if available
     if (typeof window !== 'undefined' && 'FaceDetector' in window) {
@@ -396,10 +404,21 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   useEffect(() => {
     if (cameraStatus !== 'ACTIVE') return;
 
-    detectionIntervalRef.current = setInterval(async () => {
-      if (isUnlockingRef.current) return;
+    let isMounted = true;
+    let presenceTimeoutId = null;
+
+    const scheduleNextPresenceCheck = (delay = 450) => {
+      if (!isMounted) return;
+      presenceTimeoutId = setTimeout(runPresenceCheck, delay);
+      detectionIntervalRef.current = presenceTimeoutId;
+    };
+
+    const runPresenceCheck = async () => {
+      if (!isMounted || isUnlockingRef.current) return;
 
       const detected = await detectPresence();
+      if (!isMounted) return;
+
       if (detected) {
         presenceCounterRef.current = Math.min(presenceCounterRef.current + 1, 6);
       } else {
@@ -427,13 +446,18 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
           }
         }
       }
-    }, 320);
+
+      scheduleNextPresenceCheck(450);
+    };
+
+    scheduleNextPresenceCheck(300);
 
     return () => {
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current);
-        detectionIntervalRef.current = null;
+      isMounted = false;
+      if (presenceTimeoutId) {
+        clearTimeout(presenceTimeoutId);
       }
+      detectionIntervalRef.current = null;
     };
   }, [cameraStatus]);
 

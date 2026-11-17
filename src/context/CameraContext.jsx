@@ -342,7 +342,88 @@ export function CameraProvider({ children }) {
     }
 
     let isMounted = true;
-    let intervalId = null;
+    let detectionTimeoutId = null;
+
+    const scheduleNextDetection = (delay = 1100) => {
+      if (!isMounted) return;
+      detectionTimeoutId = setTimeout(runDetectionTick, delay);
+    };
+
+    const runDetectionTick = async () => {
+      if (!isMounted || isDetectingPhoneRef.current) return;
+      if (typeof document !== 'undefined' && document.hidden) {
+        // Back off when tab is in background to save CPU and battery
+        scheduleNextDetection(2500);
+        return;
+      }
+
+      const video = rootVideoRef.current;
+      if (!video || video.readyState < 2 || video.videoWidth === 0) {
+        scheduleNextDetection(1000);
+        return;
+      }
+
+      isDetectingPhoneRef.current = true;
+      try {
+        const result = await detectPhoneInVideo(video, 0.48);
+        if (!isMounted) return;
+
+        if (result.topClass) {
+          setLastDetectedClass((prev) => (prev === result.topClass ? prev : result.topClass));
+        }
+
+        if (result.detected) {
+          consecutivePhoneFramesRef.current += 1;
+          lastPhoneSeenTimestampRef.current = Date.now();
+          setPhoneConfidence((prev) => (prev === result.confidence ? prev : result.confidence));
+
+          // Require 2 consecutive frames to prevent single-frame false positives
+          if (consecutivePhoneFramesRef.current >= 2) {
+            // 1. Immediately activate pitch-black privacy blackout overlay
+            setIsPhoneDetected((prev) => (prev ? prev : true));
+            setIsPhoneOverlayActive((prev) => (prev ? prev : true));
+
+            // 2. Schedule email snapshot delivery in background without delaying blackout
+            if (!hasAlertFiredForCurrentEpisodeRef.current) {
+              hasAlertFiredForCurrentEpisodeRef.current = true;
+              triggerAlert('Mobile Phone In View Detected', {
+                note: `Mobile device visible in laptop webcam feed (${result.confidence}% confidence). Screen concealed behind highest-priority blackout overlay.`,
+                scene: 'Protected Content',
+              }).catch((alertErr) => {
+                console.warn('[PhoneDetection] Alert email dispatch caught error:', alertErr);
+              });
+            }
+          }
+        } else {
+          consecutivePhoneFramesRef.current = 0;
+          setIsPhoneDetected((prev) => (!prev ? prev : false));
+
+          // If blackout overlay is active, enforce 5-second absence before lifting
+          if (lastPhoneSeenTimestampRef.current > 0) {
+            const elapsed = Date.now() - lastPhoneSeenTimestampRef.current;
+            if (elapsed >= CLEAR_DELAY_MS) {
+              // Device has been absent for 5 continuous seconds: restore screen cleanly
+              setIsPhoneOverlayActive(false);
+              setPhoneOverlayCountdown(0);
+              lastPhoneSeenTimestampRef.current = 0;
+              hasAlertFiredForCurrentEpisodeRef.current = false;
+            } else {
+              const remaining = Math.max(1, Math.ceil((CLEAR_DELAY_MS - elapsed) / 1000));
+              setPhoneOverlayCountdown((prev) => (prev === remaining ? prev : remaining));
+            }
+          }
+        }
+
+        // Adaptive non-blocking cadence: 700ms when actively handling detection/countdown, 1100ms when idle
+        const nextDelay = (result.detected || isPhoneOverlayActive) ? 700 : 1100;
+        scheduleNextDetection(nextDelay);
+      } catch (inferenceErr) {
+        console.warn('[PhoneDetection] Inference error:', inferenceErr);
+        scheduleNextDetection(2000);
+      } finally {
+        isDetectingPhoneRef.current = false;
+      }
+    };
 
     // Initialize detector model
     const startDetectionLoop = async () => {
@@ -353,6 +434,7 @@ export function CameraProvider({ children }) {
         await initPhoneDetector();
         if (!isMounted) return;
         setPhoneDetectorStatus('READY');
+        scheduleNextDetection(1200);
       } catch (err) {
         if (!isMounted) return;
         console.warn('[PhoneDetection] Initialization failed:', err);
@@ -360,78 +442,14 @@ export function CameraProvider({ children }) {
         setPhoneDetectorError(
           'On-device detector failed to load (network/WebGL limitation). All scenes remain fully accessible!'
         );
-        return;
       }
-
-      // Run inference tick every 350ms for responsive and reliable phone detection
-      intervalId = setInterval(async () => {
-        if (!isMounted || isDetectingPhoneRef.current) return;
-        const video = rootVideoRef.current;
-        if (!video || video.readyState < 2 || video.videoWidth === 0) return;
-
-        isDetectingPhoneRef.current = true;
-        try {
-          const result = await detectPhoneInVideo(video, 0.48);
-          if (!isMounted) return;
-
-          if (result.topClass) {
-            setLastDetectedClass((prev) => (prev === result.topClass ? prev : result.topClass));
-          }
-
-          if (result.detected) {
-            consecutivePhoneFramesRef.current += 1;
-            lastPhoneSeenTimestampRef.current = Date.now();
-            setPhoneConfidence((prev) => (prev === result.confidence ? prev : result.confidence));
-
-            // Require 2 consecutive frames to prevent single-frame false positives
-            if (consecutivePhoneFramesRef.current >= 2) {
-              // 1. Immediately activate pitch-black privacy blackout overlay
-              setIsPhoneDetected((prev) => (prev ? prev : true));
-              setIsPhoneOverlayActive((prev) => (prev ? prev : true));
-
-              // 2. Schedule email snapshot delivery in background without delaying blackout
-              if (!hasAlertFiredForCurrentEpisodeRef.current) {
-                hasAlertFiredForCurrentEpisodeRef.current = true;
-                triggerAlert('Mobile Phone In View Detected', {
-                  note: `Mobile device visible in laptop webcam feed (${result.confidence}% confidence). Screen concealed behind highest-priority blackout overlay.`,
-                  scene: 'Protected Content',
-                }).catch((alertErr) => {
-                  console.warn('[PhoneDetection] Alert email dispatch caught error:', alertErr);
-                });
-              }
-            }
-          } else {
-            consecutivePhoneFramesRef.current = 0;
-            setIsPhoneDetected((prev) => (!prev ? prev : false));
-
-            // If blackout overlay is active, enforce 5-second absence before lifting
-            if (lastPhoneSeenTimestampRef.current > 0) {
-              const elapsed = Date.now() - lastPhoneSeenTimestampRef.current;
-              if (elapsed >= CLEAR_DELAY_MS) {
-                // Device has been absent for 5 continuous seconds: restore screen cleanly
-                setIsPhoneOverlayActive(false);
-                setPhoneOverlayCountdown(0);
-                lastPhoneSeenTimestampRef.current = 0;
-                hasAlertFiredForCurrentEpisodeRef.current = false;
-              } else {
-                const remaining = Math.max(1, Math.ceil((CLEAR_DELAY_MS - elapsed) / 1000));
-                setPhoneOverlayCountdown((prev) => (prev === remaining ? prev : remaining));
-              }
-            }
-          }
-        } catch (inferenceErr) {
-          console.warn('[PhoneDetection] Inference error:', inferenceErr);
-        } finally {
-          isDetectingPhoneRef.current = false;
-        }
-      }, 350);
     };
 
     startDetectionLoop();
 
     return () => {
       isMounted = false;
-      if (intervalId) clearInterval(intervalId);
+      if (detectionTimeoutId) clearTimeout(detectionTimeoutId);
     };
   }, [phoneDetectionEnabled, cameraStatus, triggerAlert]);
 
@@ -560,13 +578,26 @@ export function CameraProvider({ children }) {
 
     let matchStreak = 0;
     let unknownStreak = 0;
+    let isMounted = true;
+    let faceTimeoutId = null;
 
-    faceScanIntervalRef.current = setInterval(async () => {
+    const scheduleNextFaceTick = (delay = 480) => {
+      if (!isMounted) return;
+      faceTimeoutId = setTimeout(runFaceTick, delay);
+      faceScanIntervalRef.current = faceTimeoutId;
+    };
+
+    const runFaceTick = async () => {
+      if (!isMounted) return;
       const vid = authVideoRef.current || rootVideoRef.current;
-      if (!vid || vid.readyState < 2 || vid.videoWidth === 0) return;
+      if (!vid || vid.readyState < 2 || vid.videoWidth === 0) {
+        scheduleNextFaceTick(400);
+        return;
+      }
 
       try {
         const result = await recognizeFaceInVideo(vid, { matchThreshold: 0.60 });
+        if (!isMounted) return;
 
         if (result.status === 'MATCH') {
           matchStreak += 1;
@@ -575,7 +606,7 @@ export function CameraProvider({ children }) {
 
           // 2 consecutive matching frames confirm identity
           if (matchStreak >= 2) {
-            clearInterval(faceScanIntervalRef.current);
+            if (faceTimeoutId) clearTimeout(faceTimeoutId);
             faceScanIntervalRef.current = null;
             setFaceScanStage('MATCH');
 
@@ -589,6 +620,7 @@ export function CameraProvider({ children }) {
               setFaceScanStage('IDLE');
               localStorage.setItem('forever_face_auth_complete', 'true');
             }, 800);
+            return;
           }
         } else if (result.status === 'UNKNOWN') {
           matchStreak = 0;
@@ -605,13 +637,17 @@ export function CameraProvider({ children }) {
       } catch (err) {
         console.warn('[FaceAuth] Frame processing note:', err);
       }
-    }, 280);
+
+      // Non-blocking tick schedule after yielding to main thread
+      scheduleNextFaceTick(480);
+    };
+
+    scheduleNextFaceTick(300);
 
     return () => {
-      if (faceScanIntervalRef.current) {
-        clearInterval(faceScanIntervalRef.current);
-        faceScanIntervalRef.current = null;
-      }
+      isMounted = false;
+      if (faceTimeoutId) clearTimeout(faceTimeoutId);
+      faceScanIntervalRef.current = null;
     };
   }, [authStep, stream, sendAuthPhotoAlert]);
 

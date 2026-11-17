@@ -97,6 +97,8 @@ export default function PhoneCallScene({ onComplete }) {
   const rainGainNodeRef = useRef(null);
   const ringOscillatorsRef = useRef([]);
   const ringIntervalRef = useRef(null);
+  const thunderTimerRef = useRef(null);
+  const noiseNodeRef = useRef(null);
   const userHasScrolledUpRef = useRef(false);
 
   // --------------------------------------------------------------------------
@@ -146,6 +148,7 @@ export default function PhoneCallScene({ onComplete }) {
         rainGain.gain.setValueAtTime(0.0001, ctx.currentTime);
         rainGain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 2.0);
 
+        noiseNodeRef.current = noiseNode;
         noiseNode.connect(bandpass);
         bandpass.connect(lowpass);
         lowpass.connect(rainGain);
@@ -184,16 +187,7 @@ export default function PhoneCallScene({ onComplete }) {
           } catch {}
         };
 
-        const thunderTimer = setInterval(triggerDistantThunder, 36000);
-
-        return () => {
-          isCancelled = true;
-          clearInterval(thunderTimer);
-          try {
-            noiseNode.stop();
-            ctx.close();
-          } catch {}
-        };
+        thunderTimerRef.current = setInterval(triggerDistantThunder, 36000);
       }
     } catch (e) {
       console.warn('Web Audio rain ambience init deferred:', e);
@@ -201,6 +195,17 @@ export default function PhoneCallScene({ onComplete }) {
 
     return () => {
       isCancelled = true;
+      if (thunderTimerRef.current) {
+        clearInterval(thunderTimerRef.current);
+        thunderTimerRef.current = null;
+      }
+      if (noiseNodeRef.current) {
+        try { noiseNodeRef.current.stop(); } catch {}
+        noiseNodeRef.current = null;
+      }
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        try { audioContextRef.current.close().catch(() => {}); } catch {}
+      }
       if (typeof stopPhoneCallTrack === 'function') {
         stopPhoneCallTrack(1.5);
       }

@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Lock, Unlock, KeyRound, Sparkles, Eye, EyeOff, X, Loader2 } from 'lucide-react';
 import { sendEmail } from '../utils/emailService';
+import { useCamera } from '../context/CameraContext';
 import CinematicRainbowBorder from './CinematicRainbowBorder';
 
 export default function PasscodeGate({ onUnlock, onUnlocked }) {
+  const cameraContext = useCamera();
   const [passcode, setPasscode] = useState('');
   const [error, setError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -16,7 +18,9 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
 
   // Camera Cinematic Presence Mode States
   // cameraStatus: 'REQUESTING' | 'ACTIVE' | 'DENIED' | 'CLOSED'
-  const [cameraStatus, setCameraStatus] = useState('REQUESTING');
+  const [cameraStatus, setCameraStatus] = useState(() => {
+    return cameraContext?.cameraStatus === 'ACTIVE' ? 'ACTIVE' : 'REQUESTING';
+  });
   const [isPresenceDetected, setIsPresenceDetected] = useState(false);
   const [hasDetectedOnce, setHasDetectedOnce] = useState(false);
   const [countdown, setCountdown] = useState(15);
@@ -24,7 +28,8 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   const timersRef = useRef([]);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const cameraStreamRef = useRef(null);
+  const offscreenPresenceCanvasRef = useRef(null);
+  const cameraStreamRef = useRef(cameraContext?.stream || null);
   const faceDetectorRef = useRef(null);
   const detectionIntervalRef = useRef(null);
   const countdownIntervalRef = useRef(null);
@@ -39,7 +44,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
     onUnlockCallbackRef.current = onUnlock || onUnlocked;
   }, [onUnlock, onUnlocked]);
 
-  // Stop camera tracks and intervals safely
+  // Stop camera tracks and intervals safely (preserves global camera stream if managed by CameraContext)
   const stopCamera = useCallback(() => {
     if (countdownIntervalRef.current) {
       clearInterval(countdownIntervalRef.current);
@@ -49,15 +54,16 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
       clearInterval(detectionIntervalRef.current);
       detectionIntervalRef.current = null;
     }
-    if (cameraStreamRef.current) {
+    // Only stop tracks if standalone/unmanaged; keep persistent stream active across scenes
+    if (!cameraContext?.isPersistent && cameraStreamRef.current) {
       cameraStreamRef.current.getTracks().forEach((track) => track.stop());
-      cameraStreamRef.current = null;
     }
+    cameraStreamRef.current = null;
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
     presenceCounterRef.current = 0;
-  }, []);
+  }, [cameraContext]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -98,8 +104,8 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
     if (!hasCapturedSnapshotRef.current) {
       hasCapturedSnapshotRef.current = true;
       sendEmail({
-        title: '🔐 Passcode Gate Unlocked: SARANYA26 ❤️',
-        message: `Passcode Gate was successfully unlocked with passcode "SARANYA26" at ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}.`,
+        title: '🔐 Passcode Gate Unlocked: AS0326 ❤️',
+        message: `Passcode Gate was successfully unlocked with passcode "AS0326" at ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}.`,
       }).catch((err) => {
         console.warn('[PasscodeGate] Entrance email dispatch error:', err);
       });
@@ -163,7 +169,7 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   // Handle manual passcode submit
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (passcode.trim().toUpperCase() === 'SARANYA26') {
+    if (passcode.trim().toUpperCase() === 'AS0326') {
       setError(false);
       triggerUnlockSequence();
     } else {
@@ -171,49 +177,75 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
     }
   };
 
-  // Start Camera Experience (Requested automatically on mount)
+  // Start Camera Experience (Requested automatically on mount or reused from CameraContext)
   const startCamera = useCallback(async () => {
     setCameraStatus('REQUESTING');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user',
-          width: { ideal: 480 },
-          height: { ideal: 480 },
-        },
-        audio: false,
-      });
+      let stream = cameraContext?.stream;
+      if (!stream || !stream.active) {
+        if (cameraContext?.requestCamera) {
+          stream = await cameraContext.requestCamera(false);
+        } else {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: 'user',
+              width: { ideal: 480 },
+              height: { ideal: 480 },
+            },
+            audio: false,
+          });
+        }
+      }
 
-      cameraStreamRef.current = stream;
-      setCameraStatus('ACTIVE');
-      setCountdown(15);
-      setIsPresenceDetected(false);
-      setHasDetectedOnce(false);
-      presenceCounterRef.current = 0;
-      hasCapturedSnapshotRef.current = false;
+      if (stream && stream.active) {
+        cameraStreamRef.current = stream;
+        setCameraStatus('ACTIVE');
+        setCountdown(15);
+        setIsPresenceDetected(false);
+        setHasDetectedOnce(false);
+        presenceCounterRef.current = 0;
+        hasCapturedSnapshotRef.current = false;
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(() => {});
+        }
+      } else {
+        setCameraStatus('DENIED');
+      }
     } catch (err) {
       console.warn('Camera permission dismissed, denied or unavailable:', err);
       // Gracefully hide camera experience when permission is denied
       setCameraStatus('DENIED');
     }
-  }, []);
+  }, [cameraContext]);
 
   // Request camera immediately on mount as early as browser allows
   useEffect(() => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    if (cameraContext?.stream && cameraContext.stream.active) {
+      cameraStreamRef.current = cameraContext.stream;
+      setCameraStatus('ACTIVE');
+      if (videoRef.current) {
+        videoRef.current.srcObject = cameraContext.stream;
+        videoRef.current.play().catch(() => {});
+      }
+    } else if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       startCamera();
     } else {
       setCameraStatus('DENIED');
     }
-  }, [startCamera]);
+  }, [cameraContext?.stream, startCamera]);
 
-  // Attach stream to video element when camera becomes active
+  // Attach stream to video element when camera becomes active or videoRef mounts
   useEffect(() => {
-    if (cameraStatus === 'ACTIVE' && videoRef.current && cameraStreamRef.current) {
-      videoRef.current.srcObject = cameraStreamRef.current;
+    const activeStream = cameraStreamRef.current || cameraContext?.stream;
+    if (cameraStatus === 'ACTIVE' && videoRef.current && activeStream) {
+      if (videoRef.current.srcObject !== activeStream) {
+        videoRef.current.srcObject = activeStream;
+      }
       videoRef.current.play().catch(() => {});
     }
-  }, [cameraStatus]);
+  }, [cameraStatus, cameraContext?.stream]);
 
   // Close Camera Experience manually
   const handleCloseCamera = () => {
@@ -227,6 +259,10 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   // Capture exactly ONE frame from <video> using <canvas>, convert to Blob, and send via EmailJS
   const captureAndDispatchSnapshot = async () => {
     try {
+      if (cameraContext && !cameraContext.allowPhotoAlerts) {
+        console.log('📸 Photo alerts disabled by user setting. Skipping snapshot at Passcode Gate.');
+        return;
+      }
       const video = videoRef.current;
       if (!video) {
         console.warn('❌ Video element not found for camera snapshot.');
@@ -290,7 +326,14 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   const detectPresence = async () => {
     const video = videoRef.current;
     if (!video || video.readyState < 2) return false;
-    const canvas = canvasRef.current || document.createElement('canvas');
+    if (!offscreenPresenceCanvasRef.current && typeof document !== 'undefined') {
+      const c = document.createElement('canvas');
+      c.width = 64;
+      c.height = 48;
+      offscreenPresenceCanvasRef.current = c;
+    }
+    const canvas = offscreenPresenceCanvasRef.current || canvasRef.current;
+    if (!canvas) return false;
 
     // Method 1: Native browser FaceDetector if available
     if (typeof window !== 'undefined' && 'FaceDetector' in window) {
@@ -361,10 +404,21 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
   useEffect(() => {
     if (cameraStatus !== 'ACTIVE') return;
 
-    detectionIntervalRef.current = setInterval(async () => {
-      if (isUnlockingRef.current) return;
+    let isMounted = true;
+    let presenceTimeoutId = null;
+
+    const scheduleNextPresenceCheck = (delay = 450) => {
+      if (!isMounted) return;
+      presenceTimeoutId = setTimeout(runPresenceCheck, delay);
+      detectionIntervalRef.current = presenceTimeoutId;
+    };
+
+    const runPresenceCheck = async () => {
+      if (!isMounted || isUnlockingRef.current) return;
 
       const detected = await detectPresence();
+      if (!isMounted) return;
+
       if (detected) {
         presenceCounterRef.current = Math.min(presenceCounterRef.current + 1, 6);
       } else {
@@ -392,13 +446,18 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
           }
         }
       }
-    }, 320);
+
+      scheduleNextPresenceCheck(450);
+    };
+
+    scheduleNextPresenceCheck(300);
 
     return () => {
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current);
-        detectionIntervalRef.current = null;
+      isMounted = false;
+      if (presenceTimeoutId) {
+        clearTimeout(presenceTimeoutId);
       }
+      detectionIntervalRef.current = null;
     };
   }, [cameraStatus]);
 
@@ -952,16 +1011,16 @@ export default function PasscodeGate({ onUnlock, onUnlocked }) {
                 Hint #01 🔐
               </h3>
               <p className="text-pink-300/90 text-sm font-medium">
-                7 letters + 2 numbers...
+                2 letters + 4 numbers...
               </p>
             </div>
 
             <div className="bg-pink-950/30 border border-pink-500/20 rounded-2xl p-4 text-xs text-slate-200 space-y-2 leading-relaxed text-left">
               <p className="flex items-center gap-2">
-                <span>7 எழுத்துகள் ஒரு பெயர். ❤️</span>
+                <span>இருவரின் முதல் எழுத்துக்கள் (A & S). ❤️</span>
               </p>
               <p className="flex items-center gap-2">
-                <span>2 எண்கள் அவளுடைய பிறந்த தேதியிலிருந்து. 🎂</span>
+                <span>4 எண்கள் நம்முடைய சிறப்பு தேதி (0326). ✨</span>
               </p>
             </div>
 

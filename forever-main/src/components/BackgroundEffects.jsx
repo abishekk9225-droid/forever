@@ -29,18 +29,28 @@ function BackgroundEffects() {
   // Smooth RAF-driven mouse parallax on floating items container without React re-renders
   useEffect(() => {
     let rafId;
+    let halfW = (typeof window !== 'undefined' ? window.innerWidth : 1000) / 2;
+    let halfH = (typeof window !== 'undefined' ? window.innerHeight : 800) / 2;
+
+    const handleResize = () => {
+      halfW = window.innerWidth / 2;
+      halfH = window.innerHeight / 2;
+    };
+    window.addEventListener('resize', handleResize, { passive: true });
+
     const updateParallax = () => {
       if (containerRef.current) {
-        const mouseOffsetW = window.innerWidth / 2 || 500;
-        const mouseOffsetH = window.innerHeight / 2 || 400;
-        const dx = (mousePosRef.current.x - mouseOffsetW) * 0.02;
-        const dy = (mousePosRef.current.y - mouseOffsetH) * 0.02;
+        const dx = (mousePosRef.current.x - halfW) * 0.02;
+        const dy = (mousePosRef.current.y - halfH) * 0.02;
         containerRef.current.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
       }
       rafId = requestAnimationFrame(updateParallax);
     };
     rafId = requestAnimationFrame(updateParallax);
-    return () => cancelAnimationFrame(rafId);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const handleFlowerClick = (idx) => {
@@ -58,16 +68,20 @@ function BackgroundEffects() {
     if (window.playRomanticChime) window.playRomanticChime();
   };
 
-  // Shrink clicked flowers back over time (only updates when a flower is actively grown)
+  // Shrink clicked flowers back over time (only runs when a flower is actively grown)
   useEffect(() => {
+    const hasGrownFlower = flowerClicks.some(val => val > 1.0);
+    if (!hasGrownFlower) return;
+
     const interval = setInterval(() => {
       setFlowerClicks(prev => {
         if (prev.every(val => val <= 1.0)) return prev;
         return prev.map(val => Math.max(1.0, val - 0.02));
       });
-    }, 40);
+    }, 50);
+
     return () => clearInterval(interval);
-  }, []);
+  }, [flowerClicks]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
